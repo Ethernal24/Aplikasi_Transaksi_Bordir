@@ -24,7 +24,7 @@ use Yii;
  * @property User $user
  */
 class Shift extends \yii\db\ActiveRecord
-{   
+{
     /**
      * {@inheritdoc}
      */
@@ -46,12 +46,12 @@ class Shift extends \yii\db\ActiveRecord
         return [
             [['shift', 'waktu_kerja', 'nama_operator', 'mulai_istirahat', 'selesai_istirahat'], 'required'],
             [['user_id', 'ganti_benang', 'ganti_kain'], 'integer'],
-            [['tanggal', 'mulai_istirahat', 'selesai_istirahat','start_time', 'end_time','kendala'.'ganti_benang', 'ganti_kain'], 'safe'],
+            [['tanggal', 'mulai_istirahat', 'selesai_istirahat', 'start_time', 'end_time', 'kendala', 'ganti_benang', 'ganti_kain'], 'safe'],
             [['shift'], 'integer'],
-            [['waktu_kerja'], 'number', 'min' => 0, 'max' => 1], 
+            [['waktu_kerja'], 'number', 'min' => 0, 'max' => 1],
             [['waktu_kerja_hidden'], 'string'],
             [['nama_operator'], 'string', 'max' => 200],
-            [['user_id'], 'default', 'value' => Yii::$app->user->id], 
+            [['user_id'], 'default', 'value' => Yii::$app->user->id],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'user_id']],
             [['start_time', 'end_time'], 'match', 'pattern' => '/^([01]\d|2[0-3]):([0-5]\d)$/'],
         ];
@@ -84,7 +84,7 @@ class Shift extends \yii\db\ActiveRecord
             'kendala' => 'Kendala',
             'ganti_benang' => 'Ganti Benang',
             'ganti_kain' => 'Ganti Kain',
-            
+
         ];
     }
     public function beforeSave($insert)
@@ -103,7 +103,7 @@ class Shift extends \yii\db\ActiveRecord
         }
         return false;
     }
-    
+
     public function afterFind()
     {
         parent::afterFind();
@@ -114,7 +114,7 @@ class Shift extends \yii\db\ActiveRecord
             }
         }
     }
-    
+
 
     /**
      * Gets query for [[LaporanProduksis]].
@@ -151,6 +151,4 @@ class Shift extends \yii\db\ActiveRecord
     {
         return $this->hasMany(LaporanProduksi::class, ['shift_id' => 'shift_id']);
     }
-
-
 }

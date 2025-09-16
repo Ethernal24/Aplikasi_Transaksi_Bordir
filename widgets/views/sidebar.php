@@ -7,7 +7,7 @@ $roleName = Yii::$app->user->identity->roleName;
 
 $dashboardUrl = Url::to(['site/index']);
 $UserUrl = Url::to(['/user/index']);
-$BarangUrl = Url::to(['/barang/index']);
+$BahanUrl = Url::to(['/barang/index']);
 $SupplierUrl = Url::to(['/supplier/index']);
 $UnitUrl = Url::to(['/unit/index']);
 $MesinUrl = Url::to(['/mesin/index']);
@@ -72,9 +72,18 @@ $samplePageUrl = Url::to(['site/sample-page']);
 
                     <li class="pc-item pc-hasmenu">
                         <a href="#!" class="pc-link"><span class="pc-micon">
+                                <i class="fi fi-ts-box-alt"></i> </span><span class="pc-mtext">Barang</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="<?= $BahanUrl ?>">List Bahan Baku</a></li>
+                            <li class="pc-item"><a class="pc-link" href="#!">List Barang Jadi</a></li>
+
+                        </ul>
+                    </li>
+
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon">
                                 <i class="fi fi-ts-dolly-flatbed-alt"></i> </span><span class="pc-mtext">Pembelian</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
                         <ul class="pc-submenu">
-                            <li class="pc-item"><a class="pc-link" href="<?= $BarangUrl ?>">List Barang Produksi</a></li>
                             <li class="pc-item"><a class="pc-link" href="<?= $PembelianUrl ?>">Riwayat Pembelian Bahan Produksi</a></li>
                             <!-- <li class="pc-item"><a class="pc-link" href="<?= $InvoiceUrl ?>">Detail Pembelian Bahan Produksi</a></li> -->
                             <!-- <li class="pc-item"><a class="pc-link" href="">Report Barang</a></li> -->

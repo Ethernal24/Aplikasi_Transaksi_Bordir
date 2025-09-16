@@ -14,7 +14,7 @@ use yii\widgets\LinkPager;
 
 $pagination = $dataProvider->getPagination();
 
-$this->title = 'List Barang';
+$this->title = 'List Bahan Baku';
 $this->params['breadcrumbs'][] = $this->title;
 
 if (Yii::$app->session->hasFlash('success')) {
@@ -29,9 +29,8 @@ if (Yii::$app->session->hasFlash('success')) {
 <div class="pc-content">
     <div class="card table-card">
         <div class="card-header">
-            <!-- <h1><?= Html::encode($this->title) ?></h1> -->
-            <h1>List Barang</h1>
-            <?= Html::a('Create Barang', ['create'], ['class' => 'btn btn-success']) ?>
+            <h1><?= Html::encode($this->title) ?></h1>
+            <?= Html::a('Tambahkan Bahan Baku', ['create'], ['class' => 'btn btn-success']) ?>
         </div>
         <div class="card-body mx-4">
             <div class="table-responsive">
