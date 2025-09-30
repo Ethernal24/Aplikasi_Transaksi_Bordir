@@ -521,13 +521,12 @@ class PesanDetailController extends BaseController
             // Perform the query
             Yii::debug("Performing search query for: " . $q);
             $items = Barang::find()
-                ->select(['barang_id', 'kode_barang', 'nama_barang', 'angka', 'warna', 'unit.satuan'])
+                ->select(['barang_id', 'kode_barang', 'nama_barang', 'angka', 'unit.satuan'])
                 ->leftJoin('unit', 'barang.unit_id = unit.unit_id')
                 ->where(['like', 'barang_id', $q])
                 ->orWhere(['like', 'nama_barang', $q])
                 ->orWhere(['like', 'kode_barang', $q])
-                ->orWhere(['like', 'angka', $q])
-                ->orWhere(['like', 'warna', $q])
+                ->orWhere(['like', 'tipe_barang', $q])
                 ->orWhere(['like', 'unit.satuan', $q])
                 ->limit(10)
                 ->asArray()
@@ -545,9 +544,8 @@ class PesanDetailController extends BaseController
                         'barang_id' => null,
                         'kode_barang' => null,
                         'nama_barang' => 'Barang tidak ditemukan',
-                        'angka' => null,
+                        'tipe_barang' => null,
                         'satuan' => null,
-                        'warna' => null,
                         'value' => 'Barang tidak ditemukan'
                     ]
                 ];
@@ -561,9 +559,8 @@ class PesanDetailController extends BaseController
                     'barang_id' => $item['barang_id'],
                     'kode_barang' => $item['kode_barang'],
                     'nama_barang' => $item['nama_barang'],
-                    'angka' => $item['angka'],
+                    'tipe_barang' => $item['tipe_barang'],
                     'satuan' => $item['satuan'],
-                    'warna' => $item['warna'],
                     // Conditional value based on whether it's a search form or not
                     'value' => $is_search_form ? $item['nama_barang'] : $item['kode_barang'] . " - " . $item['nama_barang'] . " - " . $item['angka'] . " - " . $item['satuan']
                 ];

@@ -13,9 +13,8 @@ use yii\db\Expression;
  * @property string $kode_barang
  * @property string $nama_barang
  * @property int $unit_id
- * @property float $angka
- * @property string $tipe
- * @property string|null $warna
+ * @property int $stock
+ * @property string $tipe_barang
  * @property string|null $created_at
  * @property string|null $updated_at
  *
@@ -30,13 +29,17 @@ class Barang extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'barang';
+        return 'master_barang';
     }
 
     /**
      * {@inheritdoc}
      */
 
+    public static function primaryKey()
+    {
+        return ['barang_id'];
+    }
     public function behaviors()
     {
         return [
@@ -53,11 +56,10 @@ class Barang extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['kode_barang', 'nama_barang', 'unit_id', 'tipe'], 'required'],
+            [['kode_barang', 'nama_barang', 'unit_id', 'tipe_barang'], 'required'],
             [['unit_id'], 'integer'],
-            [['angka'], 'number'],
             [['created_at', 'updated_at'], 'safe'],
-            [['kode_barang', 'nama_barang', 'tipe', 'warna'], 'string', 'max' => 255],
+            [['kode_barang', 'nama_barang', 'tipe_barang'], 'string', 'max' => 255],
             [['kode_barang'], 'unique'],
             [['unit_id'], 'exist', 'skipOnError' => true, 'targetClass' => Unit::class, 'targetAttribute' => ['unit_id' => 'unit_id']],
         ];
@@ -72,10 +74,8 @@ class Barang extends \yii\db\ActiveRecord
             'barang_id' => 'Barang ID',
             'kode_barang' => 'Kode Barang',
             'nama_barang' => 'Nama Barang',
-            'angka' => 'Angka',
             'unit_id' => 'Satuan',
-            'tipe' => 'Tipe',
-            'warna' => 'Warna',
+            'tipe_barang' => 'Tipe Barang',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];

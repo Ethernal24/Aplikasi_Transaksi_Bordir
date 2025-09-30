@@ -29,6 +29,7 @@ $PenggunaanUrl = Url::to(['/penggunaan/index']);
 $SuratJalanUrl = Url::to(['/surat-jalan/index']);
 $GudangUrl = Url::to(['/gudang/index']);
 $PemesananUrl = Url::to(['/pemesanan/index']);
+$PermintaanPelangganUrl = Url::to(['/permintaan-pelanggan/index']);
 $JenisUrl = Url::to(['/jenis/index']);
 $BarangProUrl = Url::to(['/barangproduksi/index']);
 $NotaUrl = Url::to(['/nota/index']);
@@ -70,14 +71,17 @@ $samplePageUrl = Url::to(['site/sample-page']);
                         </a>
                     </li>
 
-                    <li class="pc-item pc-hasmenu">
-                        <a href="#!" class="pc-link"><span class="pc-micon">
-                                <i class="fi fi-ts-box-alt"></i> </span><span class="pc-mtext">Barang</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
-                        <ul class="pc-submenu">
-                            <li class="pc-item"><a class="pc-link" href="<?= $BahanUrl ?>">List Bahan Baku</a></li>
-                            <li class="pc-item"><a class="pc-link" href="#!">List Barang Jadi</a></li>
-
-                        </ul>
+                    <li class="pc-item">
+                        <a href="<?= $BahanUrl ?>" class="pc-link">
+                            <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
+                            <span class="pc-mtext">Master Barang</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="<?= $PermintaanPelangganUrl ?>" class="pc-link">
+                            <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
+                            <span class="pc-mtext">Histori Permintaan</span>
+                        </a>
                     </li>
 
                     <li class="pc-item pc-hasmenu">

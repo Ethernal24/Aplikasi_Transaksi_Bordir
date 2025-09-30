@@ -62,11 +62,6 @@ if (Yii::$app->session->hasFlash('success')) {
                                 'placeholder' => 'Cari Nama Barang',
                             ],
                         ],
-                        'angka' => [
-                            'attribute' => 'angka',
-                            'label' => 'Jumlah',
-                            'filter' => false
-                        ],
                         'unit.satuan' => [
                             'attribute' => 'satuan',
                             'value' => 'unit.satuan',
@@ -77,10 +72,21 @@ if (Yii::$app->session->hasFlash('success')) {
                             ],
                         ],
                         [
-                            'attribute' => 'tipe',
+                            'attribute' => 'tipe_barang',
+                            'value' => function ($model){
+                                $list = [
+                                    0 => 'Bahan Baku',
+                                    1 => 'Setengah Jadi',
+                                    2 => 'Barang Jadi',
+                                    3 => 'Non Consumable',
+                                ];
+                                return $list[$model->tipe_barang] ?? null;
+                            },
                             'filter' => [
-                                'Consumable' => 'Consumable',
-                                'Non Consumable' => 'Non Consumable',
+                                '0' => 'Bahan Baku',
+                                '1' => 'Setengah Jadi',
+                                '2' => 'Barang Jadi',
+                                '3' => 'Non Consumable',
                             ],
                             'filterInputOptions' => [
                                 'class' => 'form-control',
@@ -94,7 +100,6 @@ if (Yii::$app->session->hasFlash('success')) {
                                 return Url::toRoute([$action, 'barang_id' => $model->barang_id]);
                             }
                         ],
-
                     ],
                 ]); ?>
 

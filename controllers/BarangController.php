@@ -99,7 +99,6 @@ class BarangController extends BaseController
                 $transaction = Yii::$app->db->beginTransaction();
                 try {
                     foreach ($modelBarangs as $index => $modelBarang) {
-                        $modelBarang->warna = $modelBarang->warna ?? null;
                         $modelBarang->created_at = date('Y-m-d H:i:s');
                         $modelBarang->updated_at = date('Y-m-d H:i:s');
 

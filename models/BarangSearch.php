@@ -23,8 +23,7 @@ class BarangSearch extends Barang
     {
         return [
             [['barang_id', 'unit_id'], 'integer'],
-            [['kode_barang', 'nama_barang', 'tipe', 'warna', 'created_at', 'updated_at', 'satuan'], 'safe'],
-            [['angka'], 'number'],
+            [['kode_barang', 'nama_barang', 'tipe_barang', 'created_at', 'updated_at', 'satuan'], 'safe'],
         ];
     }
 
@@ -63,9 +62,7 @@ class BarangSearch extends Barang
                 'attributes' => [
                     'kode_barang',
                     'nama_barang',
-                    'angka',
-                    'tipe',
-                    'warna',
+                    'tipe_barang',
                     'satuan' => [
                         'asc' => ['unit.satuan' => SORT_ASC],
                         'desc' => ['unit.satuan' => SORT_DESC],
@@ -86,7 +83,6 @@ class BarangSearch extends Barang
         $query->andFilterWhere([
             'barang_id' => $this->barang_id,
             'unit_id' => $this->unit_id,
-            'angka' => $this->angka,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
@@ -95,11 +91,10 @@ class BarangSearch extends Barang
 
         $query->andFilterWhere(['like', 'kode_barang', $this->kode_barang])
             ->andFilterWhere(['like', 'nama_barang', $this->nama_barang])
-            ->andFilterWhere(['like', 'tipe', $this->tipe])
-            ->andFilterWhere(['like', 'warna', $this->warna]);
+            ->andFilterWhere(['like', 'tipe_barang', $this->tipe_barang]);
 
-        if (!empty($this->tipe)) {
-            $query->andFilterWhere(['tipe' => $this->tipe]);
+        if (!empty($this->tipe_barang)) {
+            $query->andFilterWhere(['tipe_barang' => $this->tipe_barang]);
         }
         return $dataProvider;
     }

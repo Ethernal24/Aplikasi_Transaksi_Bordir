@@ -24,14 +24,6 @@ use yii\grid\ActionColumn;
             <h1><?= Html::encode($this->title) ?></h1>
             <!-- Tambahkan tombol Toggle -->
             <!-- Tombol Consumable dan Non Consumable -->
-            <?= Html::button('Consumable', [
-                'class' => 'btn btn-outline-primary',
-                'id' => 'toggle-consumable-button',
-            ]) ?>
-            <?= Html::button('Non Consumable', [
-                'class' => 'btn btn-outline-secondary',
-                'id' => 'toggle-non-consumable-button',
-            ]) ?>
         </div>
         <div class="card-body mx-4">
 
@@ -60,14 +52,6 @@ use yii\grid\ActionColumn;
                             },
                         ],
                         [
-                            'attribute' => 'angka',
-                            'format' => 'raw',
-                            'label' => 'Jumlah',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form->field($model, "[$index]angka")->textInput(['maxlength' => true])->label(false);
-                            },
-                        ],
-                        [
                             'attribute' => 'unit_id',
                             'format' => 'raw',
                             'value' => function ($model, $key, $index, $column) use ($form) {
@@ -76,31 +60,24 @@ use yii\grid\ActionColumn;
                             },
                         ],
                         [
-                            'attribute' => 'tipe',
+                            'attribute' => 'tipe_barang',
                             'format' => 'raw',
                             'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form->field($model, "[$index]tipe")->textInput([
-                                    'class' => 'form-control tipe-field', // Menambahkan class "tipe-field"
-                                    'readonly' => true,                   // Membuat field menjadi readonly
-                                ])->label(false);
+                               $list = [
+                                0 => 'Bahan Baku',
+                                1 => 'Setengah Jadi',
+                                2 => 'Barang Jadi',
+                                3 => 'Non Consumable',
+                               ];
+                                return $form->field($model, "[$index]tipe_barang")->dropDownList(
+                                    $list,
+                                    [
+                                        'class' => 'form-control tipe-field',
+                                        'prompt' => 'Pilih Tipe Barang  ',
+                                    ]
+                                )->label(false);
                             },
                         ],
-                        [
-                            'attribute' => 'warna',
-                            'format' => 'raw',
-                            'headerOptions' => ['class' => 'warna-header'],
-                            'contentOptions' => ['class' => 'warna-column'],
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                // Mengatur ID dinamis berdasarkan indeks baris
-                                $inputId = "consumable-{$index}"; // ID unik menggunakan indeks baris
-                                return $form->field($model, "[$index]warna")->textInput([
-                                    'maxlength' => true,
-                                    'id' => $inputId, // Mengatur ID untuk setiap field
-                                ])->label(false);
-                            },
-                        ],
-
-
                         [
                             'class' => 'yii\grid\ActionColumn',
                             'template' => '{actions}',
@@ -147,25 +124,6 @@ foreach ($dataSatuan as $unitId => $satuan) {
 }
 
 $js = <<<JS
-    // Fungsi untuk menampilkan field "warna" dan header ketika tombol Consumable ditekan
-    $('#toggle-consumable-button').on('click', function() {
-        $('[id^="consumable-"]').show();  // Menampilkan semua field warna
-        $('.warna-header').show();        // Menampilkan header kolom "warna"
-        $('.warna-column').show();
-        $('.tipe-field').val('Consumable');        // Menampilkan kolom "warna" di setiap baris
-        $(this).removeClass('btn-outline-primary').addClass('btn-primary');
-        $('#toggle-non-consumable-button').removeClass('btn-secondary').addClass('btn-outline-secondary');
-    });
-
-    // Fungsi untuk menyembunyikan field "warna" dan header ketika tombol Non Consumable ditekan
-    $('#toggle-non-consumable-button').on('click', function() {
-        $('[id^="consumable-"]').hide();  // Menyembunyikan semua field warna
-        $('.warna-header').hide();        // Menyembunyikan header kolom "warna"
-        $('.warna-column').hide();        // Menyembunyikan kolom "warna" di setiap baris
-        $('.tipe-field').val('Non Consumable'); 
-        $('#toggle-consumable-button').removeClass('btn-primary').addClass('btn-outline-primary');
-        $(this).removeClass('btn-outline-secondary').addClass('btn-secondary');
-    });
     // Fungsi untuk mengatur tombol di setiap baris
     function updateRowButtons() {
         var rows = $('#barang-gridview table tbody tr');
@@ -196,7 +154,6 @@ $js = <<<JS
             <td class="serial-number">\${index + 1}</td>
             <td><input type="text" name="Barang[\${index}][kode_barang]" class="form-control" maxlength="true"></td>
             <td><input type="text" name="Barang[\${index}][nama_barang]" class="form-control" maxlength="true"></td>
-            <td><input type="text" name="Barang[\${index}][angka]" class="form-control" maxlength="true"></td>
             <td>
                 <select name="Barang[\${index}][unit_id]" class="form-control">
                     <option value="">Pilih Satuan</option>
@@ -204,9 +161,14 @@ $js = <<<JS
                 </select>
             </td>
             <td>
-                <input type="text" name="Barang[\${index}][tipe]" class="form-control tipe-field" readonly>
+                <select name="Barang[\${index}][tipe_barang]" class="form-control tipe-field" readonly>
+                    <option value = ""> Pilih Tipe Barang </option>
+                    <option value = "0"> Bahan Baku </option>
+                    <option value = "1"> Setengah Jadi </option>
+                    <option value = "2"> Barang Jadi </option>
+                    <option value = "3"> Non Consumable </option>
+                </select
             </td>
-            <td class="warna-column"><input type="text" name="Barang[\${index}][warna]" class="form-control warna-field" id="consumable-\${index}" maxlength="true"></td>
             <td>
                 <div class="d-flex justify-content-between align-content-center align-items-center">
                     <a href="#" class="btn btn-success btn-xs pb-1 px-2 add-row" title="Tambah Baris">
