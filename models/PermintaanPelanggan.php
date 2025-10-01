@@ -44,4 +44,9 @@ class PermintaanPelanggan extends \yii\db\ActiveRecord
             'tanggal_permintaan' => 'Tanggal Permintaan',
         ];
     }
+
+    public function getDetail()
+    {
+        return $this->hasMany(PermintaanDetail::class);
+    }
 }
