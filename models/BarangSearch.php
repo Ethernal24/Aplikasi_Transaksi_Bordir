@@ -23,7 +23,7 @@ class BarangSearch extends Barang
     {
         return [
             [['barang_id', 'unit_id'], 'integer'],
-            [['kode_barang', 'nama_barang', 'tipe_barang', 'created_at', 'updated_at', 'satuan'], 'safe'],
+            [['kode_barang', 'nama_barang', 'jenis', 'tipe_barang', 'created_at', 'updated_at', 'satuan'], 'safe'],
         ];
     }
 
@@ -63,6 +63,9 @@ class BarangSearch extends Barang
                     'kode_barang',
                     'nama_barang',
                     'tipe_barang',
+                    'jenis',
+                    'stok',
+                    'leadtime',
                     'satuan' => [
                         'asc' => ['unit.satuan' => SORT_ASC],
                         'desc' => ['unit.satuan' => SORT_DESC],

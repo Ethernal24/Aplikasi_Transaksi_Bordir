@@ -4,12 +4,12 @@ namespace app\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\PermintaanPelanggan;
+use app\models\Forecast;
 
 /**
- * PermintaanPelangganSearch represents the model behind the search form of `app\models\PermintaanPelanggan`.
+ * ForecastSearch represents the model behind the search form of `app\models\Forecast`.
  */
-class PermintaanPelangganSearch extends PermintaanPelanggan
+class ForecastSearch extends Forecast
 {
     /**
      * {@inheritdoc}
@@ -17,9 +17,8 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
     public function rules()
     {
         return [
-            [['permintaan_id'], 'integer'],
-            [['nama_pelanggan'], 'string'],
-            [['tanggal_permintaan'], 'safe'],
+            [['forecast_id', 'barang_id', 'mse', 'hasil_forecast'], 'integer'],
+            [['metode'], 'safe'],
         ];
     }
 
@@ -41,7 +40,7 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
      */
     public function search($params)
     {
-        $query = PermintaanPelanggan::find();
+        $query = Forecast::find();
 
         // add conditions that should always apply here
 
@@ -59,10 +58,13 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'permintaan_id' => $this->permintaan_id,
-            'nama_pelanggan' => $this->nama_pelanggan,
-            'tanggal_permintaan' => $this->tanggal_permintaan,
+            'forecast_id' => $this->forecast_id,
+            'barang_id' => $this->barang_id,
+            'mse' => $this->mse,
+            'hasil_forecast' => $this->hasil_forecast,
         ]);
+
+        $query->andFilterWhere(['like', 'metode', $this->metode]);
 
         return $dataProvider;
     }

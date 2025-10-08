@@ -2,11 +2,16 @@
 
 namespace app\controllers;
 
+use app\helpers\ModelHelper;
+use app\models\PermintaanDetail;
 use app\models\PermintaanPelanggan;
 use app\models\PermintaanPelangganSearch;
+use Yii;
+use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\base\Model;
 
 /**
  * PermintaanPelangganController implements the CRUD actions for PermintaanPelanggan model.
@@ -68,17 +73,39 @@ class PermintaanPelangganController extends Controller
     public function actionCreate()
     {
         $model = new PermintaanPelanggan();
+        $modelDetails = [new PermintaanDetail()];
 
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'permintaan_id' => $model->permintaan_id]);
+
+        if ($model->load($this->request->post())) {
+            $modelDetails = ModelHelper::createMultiple(PermintaanDetail::class);
+            Model::loadMultiple($modelDetails, $this->request->post());
+            $valid = $model->validate();
+            $valid = Model::validateMultiple($modelDetails) && $valid;
+
+            if ($valid) {
+                $transaction = Yii::$app->db->beginTransaction();
+                try {
+                    if ($model->save(false)) {
+                        foreach ($modelDetails as $detail) {
+                            $detail->permintaan_id = $model->permintaan_id;
+                            if (! $detail->save(false)) {
+                                $transaction->rollBack();
+                                break;
+                            }
+                        }
+                    }
+                    $transaction->commit();
+                    return $this->redirect(['view', 'permintaan_id' => $model->permintaan_id]);
+                } catch (\Exception $e) {
+                    $transaction->rollBack();
+                    throw $e;
+                }
             }
-        } else {
-            $model->loadDefaultValues();
         }
 
         return $this->render('create', [
             'model' => $model,
+            'modelDetails' => $modelDetails
         ]);
     }
 
@@ -92,13 +119,50 @@ class PermintaanPelangganController extends Controller
     public function actionUpdate($permintaan_id)
     {
         $model = $this->findModel($permintaan_id);
+        $modelDetails = $model->detail; // relasi dari PermintaanPelanggan -> PermintaanDetail
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'permintaan_id' => $model->permintaan_id]);
+        if ($model->load(Yii::$app->request->post())) {
+            $oldIDs = ArrayHelper::map($modelDetails, 'permintaan_id', 'permintaan_id'); // ambil id lama detail
+            $modelDetails = ModelHelper::createMultiple(PermintaanDetail::class, $modelDetails);
+            Model::loadMultiple($modelDetails, Yii::$app->request->post());
+            $deletedIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($modelDetails, 'id', 'id')));
+
+            // validasi master dan detail
+            $valid = $model->validate();
+            $valid = Model::validateMultiple($modelDetails) && $valid;
+
+            if ($valid) {
+                $transaction = Yii::$app->db->beginTransaction();
+                try {
+                    if ($model->save(false)) {
+                        // hapus data detail yang dihapus dari form
+                        if (!empty($deletedIDs)) {
+                            PermintaanDetail::deleteAll(['permintaan_id' => $deletedIDs]);
+                        }
+
+                        // simpan data detail
+                        foreach ($modelDetails as $detail) {
+                            $detail->permintaan_id = $model->permintaan_id;
+                            if (! $detail->save(false)) {
+                                $transaction->rollBack();
+                                Yii::error($detail->errors);
+                                break;
+                            }
+                        }
+
+                        $transaction->commit();
+                        return $this->redirect(['view', 'permintaan_id' => $model->permintaan_id]);
+                    }
+                } catch (\Exception $e) {
+                    $transaction->rollBack();
+                    throw $e;
+                }
+            }
         }
 
         return $this->render('update', [
             'model' => $model,
+            'modelDetails' => empty($modelDetails) ? [new PermintaanDetail()] : $modelDetails,
         ]);
     }
 

@@ -33,6 +33,7 @@ $PermintaanPelangganUrl = Url::to(['/permintaan-pelanggan/index']);
 $JenisUrl = Url::to(['/jenis/index']);
 $BarangProUrl = Url::to(['/barangproduksi/index']);
 $NotaUrl = Url::to(['/nota/index']);
+$ForecastUrl = Url::to(['/riwayat-permintaan/index']);
 
 
 
@@ -81,6 +82,12 @@ $samplePageUrl = Url::to(['site/sample-page']);
                         <a href="<?= $PermintaanPelangganUrl ?>" class="pc-link">
                             <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
                             <span class="pc-mtext">Histori Permintaan</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="<?= $ForecastUrl ?>" class="pc-link">
+                            <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
+                            <span class="pc-mtext">Forecast</span>
                         </a>
                     </li>
 

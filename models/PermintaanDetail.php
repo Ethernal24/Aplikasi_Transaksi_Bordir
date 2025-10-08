@@ -28,8 +28,9 @@ class PermintaanDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['permintaan_id', 'barang_id', 'jumlah'], 'required'],
+            [['barang_id', 'jumlah'], 'required'],
             [['permintaan_id', 'barang_id', 'jumlah'], 'integer'],
+            [['permintaan_id'], 'safe'],
         ];
     }
 
@@ -45,10 +46,12 @@ class PermintaanDetail extends \yii\db\ActiveRecord
             'jumlah' => 'Jumlah',
         ];
     }
-    public function getPermintaan(){
-        return $this->hasOne(PermintaanPelanggan::class, ['permintaan_id'=> 'permintaan_id']);
+    public function getPermintaan()
+    {
+        return $this->hasOne(PermintaanPelanggan::class, ['permintaan_id' => 'permintaan_id']);
     }
-    public function getBarang(){
-        return $this->hasOne(Barang::class, ['barang_id'=> 'barang_id']);
+    public function getBarang()
+    {
+        return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
     }
 }

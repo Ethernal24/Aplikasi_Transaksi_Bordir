@@ -56,10 +56,10 @@ class Barang extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['kode_barang', 'nama_barang', 'unit_id', 'tipe_barang'], 'required'],
-            [['unit_id'], 'integer'],
+            [['kode_barang', 'nama_barang', 'jenis', 'unit_id', 'tipe_barang', 'leadtime'], 'required'],
+            [['unit_id', 'jenis', 'stok', 'leadtime', 'tipe_barang'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
-            [['kode_barang', 'nama_barang', 'tipe_barang'], 'string', 'max' => 255],
+            [['kode_barang', 'nama_barang'], 'string', 'max' => 255],
             [['kode_barang'], 'unique'],
             [['unit_id'], 'exist', 'skipOnError' => true, 'targetClass' => Unit::class, 'targetAttribute' => ['unit_id' => 'unit_id']],
         ];
@@ -74,6 +74,9 @@ class Barang extends \yii\db\ActiveRecord
             'barang_id' => 'Barang ID',
             'kode_barang' => 'Kode Barang',
             'nama_barang' => 'Nama Barang',
+            'jenis' => 'jenis',
+            'stok' => 'stok',
+            'leadtime' => 'leadtime',
             'unit_id' => 'Satuan',
             'tipe_barang' => 'Tipe Barang',
             'created_at' => 'Created At',
@@ -98,7 +101,7 @@ class Barang extends \yii\db\ActiveRecord
      */
     public function getStocks()
     {
-        return $this->hasMany(Stock::class, ['barang_id' => 'barang_id']);
+        return $this->hasOne(Stock::class, ['barang_id' => 'barang_id']);
     }
 
     /**
@@ -109,5 +112,10 @@ class Barang extends \yii\db\ActiveRecord
     public function getUnit()
     {
         return $this->hasOne(Unit::class, ['unit_id' => 'unit_id']);
+    }
+
+    public function getRiwayat()
+    {
+        return $this->hasMany(RiwayatPermintaan::class, ['barang_id' => 'barang_id']);
     }
 }

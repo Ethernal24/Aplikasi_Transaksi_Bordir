@@ -8,7 +8,7 @@ use Yii;
  * This is the model class for table "permintaan_pelanggan".
  *
  * @property int $permintaan_id
- * @property int $jumlah
+ * @property int $nama_pelanggan
  * @property string $tanggal_permintaan
  */
 class PermintaanPelanggan extends \yii\db\ActiveRecord
@@ -27,8 +27,8 @@ class PermintaanPelanggan extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['jumlah', 'tanggal_permintaan'], 'required'],
-            [['jumlah'], 'integer'],
+            [['nama_pelanggan', 'tanggal_permintaan'], 'required'],
+            [['nama_pelanggan'], 'string'],
             [['tanggal_permintaan'], 'safe'],
         ];
     }
@@ -40,13 +40,13 @@ class PermintaanPelanggan extends \yii\db\ActiveRecord
     {
         return [
             'permintaan_id' => 'Permintaan ID',
-            'jumlah' => 'Jumlah',
+            'nama_pelanggan' => 'Nama Pelanggan',
             'tanggal_permintaan' => 'Tanggal Permintaan',
         ];
     }
 
     public function getDetail()
     {
-        return $this->hasMany(PermintaanDetail::class);
+        return $this->hasMany(PermintaanDetail::class, ['permintaan_id' => 'permintaan_id']);
     }
 }

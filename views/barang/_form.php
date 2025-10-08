@@ -63,12 +63,12 @@ use yii\grid\ActionColumn;
                             'attribute' => 'tipe_barang',
                             'format' => 'raw',
                             'value' => function ($model, $key, $index, $column) use ($form) {
-                               $list = [
-                                0 => 'Bahan Baku',
-                                1 => 'Setengah Jadi',
-                                2 => 'Barang Jadi',
-                                3 => 'Non Consumable',
-                               ];
+                                $list = [
+                                    0 => 'Bahan Baku',
+                                    1 => 'Setengah Jadi',
+                                    2 => 'Barang Jadi',
+                                    3 => 'Non Consumable',
+                                ];
                                 return $form->field($model, "[$index]tipe_barang")->dropDownList(
                                     $list,
                                     [

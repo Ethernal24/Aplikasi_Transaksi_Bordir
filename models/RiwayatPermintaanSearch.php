@@ -4,12 +4,12 @@ namespace app\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\PermintaanPelanggan;
+use app\models\RiwayatPermintaan;
 
 /**
- * PermintaanPelangganSearch represents the model behind the search form of `app\models\PermintaanPelanggan`.
+ * RiwayatPermintaanSearch represents the model behind the search form of `app\models\RiwayatPermintaan`.
  */
-class PermintaanPelangganSearch extends PermintaanPelanggan
+class RiwayatPermintaanSearch extends RiwayatPermintaan
 {
     /**
      * {@inheritdoc}
@@ -17,9 +17,8 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
     public function rules()
     {
         return [
-            [['permintaan_id'], 'integer'],
-            [['nama_pelanggan'], 'string'],
-            [['tanggal_permintaan'], 'safe'],
+            [['riwayat_id', 'barang_id', 'tahun', 'jumlah_permintaan'], 'integer'],
+            [['bulan'], 'safe'],
         ];
     }
 
@@ -41,7 +40,7 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
      */
     public function search($params)
     {
-        $query = PermintaanPelanggan::find();
+        $query = RiwayatPermintaan::find();
 
         // add conditions that should always apply here
 
@@ -59,10 +58,13 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'permintaan_id' => $this->permintaan_id,
-            'nama_pelanggan' => $this->nama_pelanggan,
-            'tanggal_permintaan' => $this->tanggal_permintaan,
+            'riwayat_id' => $this->riwayat_id,
+            'barang_id' => $this->barang_id,
+            'tahun' => $this->tahun,
+            'jumlah_permintaan' => $this->jumlah_permintaan,
         ]);
+
+        $query->andFilterWhere(['like', 'bulan', $this->bulan]);
 
         return $dataProvider;
     }
