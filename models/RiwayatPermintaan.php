@@ -50,6 +50,6 @@ class RiwayatPermintaan extends \yii\db\ActiveRecord
     }
     public function getBarang()
     {
-        return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
+        return $this->hasOne(Barang::class, ['barang_id' => 'barang_id'])->alias('barang');
     }
 }

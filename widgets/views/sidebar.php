@@ -81,13 +81,13 @@ $samplePageUrl = Url::to(['site/sample-page']);
                     <li class="pc-item">
                         <a href="<?= $PermintaanPelangganUrl ?>" class="pc-link">
                             <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
-                            <span class="pc-mtext">Histori Permintaan</span>
+                            <span class="pc-mtext">Data Pelanggan</span>
                         </a>
                     </li>
                     <li class="pc-item">
                         <a href="<?= $ForecastUrl ?>" class="pc-link">
                             <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
-                            <span class="pc-mtext">Forecast</span>
+                            <span class="pc-mtext">Histori permintaan</span>
                         </a>
                     </li>
 

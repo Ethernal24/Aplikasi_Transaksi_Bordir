@@ -58,7 +58,7 @@ class Barang extends \yii\db\ActiveRecord
         return [
             [['kode_barang', 'nama_barang', 'jenis', 'unit_id', 'tipe_barang', 'leadtime'], 'required'],
             [['unit_id', 'jenis', 'stok', 'leadtime', 'tipe_barang'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['created_at', 'updated_at', 'stok'], 'safe'],
             [['kode_barang', 'nama_barang'], 'string', 'max' => 255],
             [['kode_barang'], 'unique'],
             [['unit_id'], 'exist', 'skipOnError' => true, 'targetClass' => Unit::class, 'targetAttribute' => ['unit_id' => 'unit_id']],
@@ -117,5 +117,9 @@ class Barang extends \yii\db\ActiveRecord
     public function getRiwayat()
     {
         return $this->hasMany(RiwayatPermintaan::class, ['barang_id' => 'barang_id']);
+    }
+    public function getForecast()
+    {
+        return $this->hasMany(Forecast::class, ['barang_id' => 'barang_id']);
     }
 }

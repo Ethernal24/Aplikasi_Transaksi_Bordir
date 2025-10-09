@@ -29,9 +29,10 @@ class Forecast extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['barang_id', 'metode', 'mse', 'hasil_forecast'], 'required'],
-            [['barang_id', 'mse', 'hasil_forecast'], 'integer'],
+            [['barang_id', 'metode', 'hasil_forecast', 'bulan', 'tahun'], 'required'],
+            [['barang_id', 'mse', 'hasil_forecast', 'bulan', 'tahun'], 'integer'],
             [['metode'], 'string', 'max' => 255],
+            [['mse'], 'safe'],
         ];
     }
 
@@ -43,9 +44,16 @@ class Forecast extends \yii\db\ActiveRecord
         return [
             'forecast_id' => 'Forecast ID',
             'barang_id' => 'Barang ID',
+            'bulan' => 'Bulan',
+            'tahun' => 'Tahun',
             'metode' => 'Metode',
             'mse' => 'Mse',
             'hasil_forecast' => 'Hasil Forecast',
         ];
+    }
+
+    public function getBarang()
+    {
+        return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
     }
 }

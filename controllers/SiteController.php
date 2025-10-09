@@ -100,7 +100,7 @@ class SiteController extends BaseController
         $randomItem = Yii::$app->db->createCommand("
             SELECT b.nama_barang, b.kode_barang, g.quantity_akhir
             FROM gudang g
-            JOIN barang b ON g.barang_id = b.barang_id
+            JOIN master_barang b ON g.barang_id = b.barang_id
             WHERE (g.barang_id, g.created_at) IN (
                 SELECT barang_id, MAX(created_at)
                 FROM gudang
@@ -112,7 +112,7 @@ class SiteController extends BaseController
         $randomItemProduksi = Yii::$app->db->createCommand("
             SELECT b.nama_barang, b.kode_barang, s.quantity_akhir
             FROM stock s
-            JOIN barang b ON s.barang_id = b.barang_id
+            JOIN master_barang b ON s.barang_id = b.barang_id
             WHERE (s.barang_id, s.created_at) IN (
                 SELECT barang_id, MAX(created_at)
                 FROM stock

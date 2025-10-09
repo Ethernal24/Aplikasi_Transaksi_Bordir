@@ -52,6 +52,24 @@ use yii\grid\ActionColumn;
                             },
                         ],
                         [
+                            'attribute' => 'Jenis',
+                            'format' => 'raw',
+                            'value' => function ($model, $key, $index, $column) use ($form) {
+                                $list = [
+                                    0 => 'Beli',
+                                    1 => 'Produksi',
+                                ];
+                                return $form->field($model, "[$index]jenis")->dropDownList(
+                                    $list,
+                                    [
+                                        'class' => 'form-control tipe-field',
+                                        'prompt' => 'Pilih jenis  ',
+                                    ]
+                                )->label(false);
+                            },
+                        ],
+
+                        [
                             'attribute' => 'unit_id',
                             'format' => 'raw',
                             'value' => function ($model, $key, $index, $column) use ($form) {
@@ -76,6 +94,13 @@ use yii\grid\ActionColumn;
                                         'prompt' => 'Pilih Tipe Barang  ',
                                     ]
                                 )->label(false);
+                            },
+                        ],
+                        [
+                            'attribute' => 'leadtime',
+                            'format' => 'raw',
+                            'value' => function ($model, $key, $index, $column) use ($form) {
+                                return $form->field($model, "[$index]leadtime")->textInput(['maxlength' => true])->label(false);
                             },
                         ],
                         [

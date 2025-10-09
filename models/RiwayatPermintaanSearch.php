@@ -14,11 +14,12 @@ class RiwayatPermintaanSearch extends RiwayatPermintaan
     /**
      * {@inheritdoc}
      */
+    public $nama_barang;
     public function rules()
     {
         return [
             [['riwayat_id', 'barang_id', 'tahun', 'jumlah_permintaan'], 'integer'],
-            [['bulan'], 'safe'],
+            [['nama_barang', 'bulan'], 'safe'],
         ];
     }
 
@@ -41,11 +42,23 @@ class RiwayatPermintaanSearch extends RiwayatPermintaan
     public function search($params)
     {
         $query = RiwayatPermintaan::find();
+        $query->joinWith(['barang']);
 
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'pagination' => [
+                'pageSize' => 15, // Jumlah item per halaman
+            ],
+            'sort' => [
+                'attributes' => [
+                    'nama_barang',
+                    'bulan',
+                    'tahun',
+                    'jumlah_permintaan',
+                ],
+            ],
         ]);
 
         $this->load($params);
@@ -65,7 +78,7 @@ class RiwayatPermintaanSearch extends RiwayatPermintaan
         ]);
 
         $query->andFilterWhere(['like', 'bulan', $this->bulan]);
-
+        $query->andFilterWhere(['like', 'barang.nama_barang', $this->nama_barang]);
         return $dataProvider;
     }
 }

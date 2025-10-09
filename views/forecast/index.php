@@ -13,35 +13,58 @@ use yii\grid\GridView;
 $this->title = 'Forecasts';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="forecast-index">
+<div class="pc-content">
+    <div class="card table-card">
+        <div class="card-header">
+            <h1><?= Html::encode($this->title) ?></h1>
+            <?= Html::a('Riwayat Permintaan', ['riwayat-permintaan/index'], ['class' => 'btn btn-info']) ?>
+        </div>
+        <div class="card-body mx-4">
+            <?= GridView::widget([
+                'dataProvider' => $dataProvider,
+                'filterModel' => $searchModel,
+                'columns' => [
+                    ['class' => 'yii\grid\SerialColumn'],
 
-    <h1><?= Html::encode($this->title) ?></h1>
+                    // 'forecast_id',
+                    [
+                        'attribute' => 'barang_id',
+                        'value' => 'barang.nama_barang',
+                        'label' => 'Nama Produk',
 
-    <p>
-        <?= Html::a('Create Forecast', ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
-
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
-
-    <?= GridView::widget([
-        'dataProvider' => $dataProvider,
-        'filterModel' => $searchModel,
-        'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
-
-            'forecast_id',
-            'barang_id',
-            'metode',
-            'mse',
-            'hasil_forecast',
-            [
-                'class' => ActionColumn::className(),
-                'urlCreator' => function ($action, Forecast $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'forecast_id' => $model->forecast_id]);
-                 }
-            ],
-        ],
-    ]); ?>
-
-
+                    ],
+                    [
+                        'attribute' => 'bulan',
+                        'value' => function ($model) {
+                            $list = [
+                                '1' => 'Januari',
+                                '2' => 'Februari',
+                                '3' => 'Maret',
+                                '4' => 'April',
+                                '5' => 'Mei',
+                                '6' => 'Juni',
+                                '7' => 'Juli',
+                                '8' => 'Agustus',
+                                '9' => 'September',
+                                '10' => 'Oktober',
+                                '11' => 'November',
+                                '12' => 'Desember',
+                            ];
+                            return $list[$model->bulan] ?? null;
+                        },
+                    ],
+                    'tahun',
+                    'metode',
+                    'mse',
+                    'hasil_forecast',
+                    [
+                        'class' => ActionColumn::className(),
+                        'urlCreator' => function ($action, Forecast $model, $key, $index, $column) {
+                            return Url::toRoute([$action, 'forecast_id' => $model->forecast_id]);
+                        }
+                    ],
+                ],
+            ]); ?>
+        </div>
+    </div>
 </div>

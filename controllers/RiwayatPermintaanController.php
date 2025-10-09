@@ -2,8 +2,10 @@
 
 namespace app\controllers;
 
+use app\models\Forecast;
 use app\models\RiwayatPermintaan;
 use app\models\RiwayatPermintaanSearch;
+use DateTime;
 use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -40,11 +42,34 @@ class RiwayatPermintaanController extends Controller
     public function actionIndex()
     {
         $searchModel = new RiwayatPermintaanSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        // Filter berdasarkan barang_id jika ada
+        $barangId = Yii::$app->request->get('barang_id');
+        $query = RiwayatPermintaan::find()
+            ->select(['barang_id', 'tahun', 'bulan', 'jumlah_permintaan'])
+            ->orderBy(['tahun' => SORT_ASC, 'bulan' => SORT_ASC]);
+
+        if ($barangId) {
+            $query->andWhere(['barang_id' => $barangId]);
+        }
+
+        $rows = $query->asArray()->all();
+
+        $labels = [];
+        $values = [];
+
+        foreach ($rows as $r) {
+            $labels[] = $r['tahun'] . '-' . str_pad($r['bulan'], 2, '0', STR_PAD_LEFT);
+            $values[] = (int) $r['jumlah_permintaan'];
+        }
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'labels' => json_encode($labels),
+            'values' => json_encode($values),
+            'barangId' => $barangId,
         ]);
     }
 
@@ -68,7 +93,7 @@ class RiwayatPermintaanController extends Controller
      */
     public function actionCreate()
     {
-        $model = new \app\models\RiwayatPermintaan();
+        $model = new RiwayatPermintaan();
 
         if (Yii::$app->request->isPost) {
             $post = Yii::$app->request->post();
@@ -86,7 +111,7 @@ class RiwayatPermintaanController extends Controller
                     }
 
                     // setiap baris input = instance baru dari RiwayatPermintaan
-                    $riwayat = new \app\models\RiwayatPermintaan();
+                    $riwayat = new RiwayatPermintaan();
                     $riwayat->barang_id = $barangId;
                     $riwayat->bulan = $bulans[$i];
                     $riwayat->tahun = $tahuns[$i];
@@ -159,5 +184,63 @@ class RiwayatPermintaanController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    public function actionGenerateForecast()
+    {
+        $riwayats = RiwayatPermintaan::find()
+            ->select(['barang_id', 'tahun', 'bulan', 'jumlah_permintaan'])
+            ->orderBy(['barang_id' => SORT_ASC, 'tahun' => SORT_ASC, 'bulan' => SORT_ASC])
+            ->asArray()
+            ->all();
+
+        $grouped = [];
+        foreach ($riwayats as $r) {
+            $grouped[$r['barang_id']][] = $r;
+        }
+
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            foreach ($grouped as $barangId => $records) {
+                $values = array_column($records, 'jumlah_permintaan');
+                $window = 3; // 3 bulan moving average
+
+                // Ambil bulan dan tahun terakhir dari data riwayat
+                $last = end($records);
+                $dt = DateTime::createFromFormat('Y-n', $last['tahun'] . '-' . $last['bulan']);
+
+                // Loop untuk prediksi 3 bulan ke depan
+                for ($i = 0; $i < 3; $i++) {
+                    $slice = array_slice($values, max(0, count($values) - $window));
+                    $avg = $slice ? array_sum($slice) / count($slice) : 0;
+                    $prediksi = round($avg);
+
+                    // Tambahkan bulan berikutnya
+                    $dt->modify('+1 month');
+                    $bulan = (int)$dt->format('n');
+                    $tahun = (int)$dt->format('Y');
+
+                    // Simpan ke tabel forecast
+                    $forecast = new Forecast();
+                    $forecast->barang_id = $barangId;
+                    $forecast->bulan = $bulan;
+                    $forecast->tahun = $tahun;
+                    $forecast->metode = 'Single Moving Average';
+                    $forecast->hasil_forecast = $prediksi;
+                    $forecast->save(false);
+
+                    // tambahkan nilai prediksi ke array agar bisa digunakan untuk prediksi selanjutnya
+                    $values[] = $prediksi;
+                }
+            }
+
+            $transaction->commit();
+            Yii::$app->session->setFlash('success', 'Hasil forecast berhasil disimpan ke tabel forecast.');
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            Yii::$app->session->setFlash('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+
+        return $this->redirect(['forecast/index']);
     }
 }
