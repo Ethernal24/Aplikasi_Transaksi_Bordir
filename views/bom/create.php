@@ -3,10 +3,10 @@
 use yii\helpers\Html;
 
 /** @var yii\web\View $this */
-/** @var app\models\Mesin $model */
+/** @var app\models\Bom $model */
 
-$this->title = 'Create Mesin';
-$this->params['breadcrumbs'][] = ['label' => 'Mesins', 'url' => ['index']];
+$this->title = 'Create Bom';
+$this->params['breadcrumbs'][] = ['label' => 'Boms', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="pc-content">
@@ -14,7 +14,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
 
     <?= $this->render('_form', [
-        'modelMesins' => $modelMesins,
+        'modelBoms' => $modelBoms,
     ]) ?>
 
 </div>

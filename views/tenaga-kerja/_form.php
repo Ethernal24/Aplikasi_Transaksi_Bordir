@@ -1,105 +1,68 @@
 <?php
 
-use app\models\Barang;
-use app\models\Unit;
-use yii\bootstrap5\Alert as Bootstrap5Alert;
 use yii\grid\GridView;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
-use yii\data\ActiveDataProvider;
-use yii\grid\ActionColumn;
 
 /** @var yii\web\View $this */
-/** @var app\models\Barang $model */
+/** @var app\models\TenagaKerja $model */
 /** @var yii\widgets\ActiveForm $form */
-/** @var yii\data\ActiveDataProvider $dataProvider */
-
-
 ?>
 
-<div class="barang-form">
+<div class="tenaga-kerja-form">
     <div class="card table-card">
         <div class="card-header">
             <h1><?= Html::encode($this->title) ?></h1>
-            <!-- Tambahkan tombol Toggle -->
-            <!-- Tombol Consumable dan Non Consumable -->
         </div>
         <div class="card-body mx-4">
-
             <?php $form = ActiveForm::begin(); ?>
             <div id="barang-gridview">
                 <?= GridView::widget([
                     'dataProvider' => new \yii\data\ArrayDataProvider([
-                        'allModels' => $modelBarangs, // Pastikan $modelBarangs adalah array model Barang
+                        'allModels' => $modelTenagas, // Pastikan $modelTenagas adalah array model Barang
                         'pagination' => false,
                     ]),
                     'columns' => [
                         ['class' => 'yii\grid\SerialColumn'],
 
                         [
-                            'attribute' => 'kode_barang',
+                            'attribute' => 'nama',
                             'format' => 'raw',
                             'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form->field($model, "[$index]kode_barang")->textInput(['maxlength' => true])->label(false);
+                                return $form->field($model, "[$index]nama")->textInput(['maxlength' => true])->label(false);
                             },
                         ],
                         [
-                            'attribute' => 'nama_barang',
+                            'attribute' => 'jabatan',
                             'format' => 'raw',
                             'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form->field($model, "[$index]nama_barang")->textInput(['maxlength' => true])->label(false);
+                                return $form->field($model, "[$index]jabatan")->textInput(['maxlength' => true])->label(false);
                             },
                         ],
                         [
-                            'attribute' => 'Jenis',
+                            'attribute' => 'kemampuan',
                             'format' => 'raw',
                             'value' => function ($model, $key, $index, $column) use ($form) {
-                                $list = [
-                                    0 => 'Beli',
-                                    1 => 'Produksi',
-                                ];
-                                return $form->field($model, "[$index]jenis")->dropDownList(
-                                    $list,
-                                    [
-                                        'class' => 'form-control tipe-field',
-                                        'prompt' => 'Pilih jenis  ',
-                                    ]
-                                )->label(false);
-                            },
-                        ],
-
-                        [
-                            'attribute' => 'unit_id',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                $dataPost = ArrayHelper::map(Unit::find()->asArray()->all(), 'unit_id', 'satuan');
-                                return $form->field($model, "[$index]unit_id")->dropDownList($dataPost, ['prompt' => 'Pilih Satuan'])->label(false);
+                                return $form->field($model, "[$index]kemampuan")->textInput(['maxlength' => true])->label(false);
                             },
                         ],
                         [
-                            'attribute' => 'tipe_barang',
+                            'attribute' => 'status_kerja',
                             'format' => 'raw',
                             'value' => function ($model, $key, $index, $column) use ($form) {
-                                $list = [
-                                    0 => 'Bahan Baku',
-                                    1 => 'Setengah Jadi',
-                                    3 => 'Non Consumable',
-                                ];
-                                return $form->field($model, "[$index]tipe_barang")->dropDownList(
-                                    $list,
-                                    [
-                                        'class' => 'form-control tipe-field',
-                                        'prompt' => 'Pilih Tipe Barang  ',
-                                    ]
-                                )->label(false);
-                            },
-                        ],
-                        [
-                            'attribute' => 'leadtime',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form->field($model, "[$index]leadtime")->textInput(['maxlength' => true])->label(false);
+                                return $form->field($model, "[$index]status_kerja")
+                                    ->dropDownList(
+                                        [
+                                            0 => 'Available',
+                                            1 => 'Off',
+                                        ],
+                                        [
+                                            'class' => 'form-control tipe-field',
+                                            'prompt' => 'Pilih Status Kerja',
+                                        ]
+                                    )
+                                    ->label(false);
                             },
                         ],
                         [
@@ -117,7 +80,7 @@ use yii\grid\ActionColumn;
                                                 'class' => 'btn btn-danger btn-xs pb-1 px-2 delete-row ',
                                                 'onclick' => 'return false;',
                                             ]),
-                                        ['class' => 'd-flex justify-content-between align-content-center align-items-center']
+                                        ['class' => 'd-flex justify-content-center gap-1 align-content-center align-items-center']
                                     );
                                 },
                             ], // Tambahkan kelas untuk gaya CSS khusus
@@ -125,28 +88,15 @@ use yii\grid\ActionColumn;
                     ],
                 ]); ?>
             </div>
-
             <div class="form-group">
                 <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
                 <?= Html::a('Back', 'index', ['class' => 'btn btn-secondary']) ?>
             </div>
-
             <?php ActiveForm::end(); ?>
         </div>
     </div>
-
-
 </div>
-
 <?php
-$dataSatuan = ArrayHelper::map(Unit::find()->asArray()->all(), 'unit_id', 'satuan');
-
-// Create options HTML
-$optionsHtml = '';
-foreach ($dataSatuan as $unitId => $satuan) {
-    $optionsHtml .= "<option value=\"{$unitId}\">{$satuan}</option>";
-}
-
 $js = <<<JS
     // Fungsi untuk mengatur tombol di setiap baris
     function updateRowButtons() {
@@ -176,33 +126,18 @@ $js = <<<JS
         var index = $('#barang-gridview table tbody tr').length;
         var newRow = `<tr>
             <td class="serial-number">\${index + 1}</td>
-            <td><input type="text" name="Barang[\${index}][kode_barang]" class="form-control" maxlength="true"></td>
-            <td><input type="text" name="Barang[\${index}][nama_barang]" class="form-control" maxlength="true"></td>
+            <td><input type="text" name="TenagaKerja[\${index}][nama]" class="form-control" maxlength="true"></td>
+            <td><input type="text" name="TenagaKerja[\${index}][jabatan]" class="form-control" maxlength="true"></td>
+            <td><input type="text" name="TenagaKerja[\${index}][kemampuan]" class="form-control" maxlength="true"></td>
             <td>
-                <select name="Barang[\${index}][jenis]" class="form-control tipe-field">
-                    <option value = ""> Pilih Jenis </option>
-                    <option value = "0"> Beli </option>
-                    <option value = "1"> Produksi </option>
+                <select name="TenagaKerja[\${index}][status_kerja]" class="form-control tipe-field">
+                    <option value = ""> Pilih Status Kerja </option>
+                    <option value = "0"> Available </option>
+                    <option value = "1"> Off </option>
                 </select
             </td>
-            
             <td>
-                <select name="Barang[\${index}][unit_id]" class="form-control">
-                    <option value="">Pilih Satuan</option>
-                    $optionsHtml <!-- Use the options generated in PHP -->
-                </select>
-            </td>
-            <td>
-                <select name="Barang[\${index}][tipe_barang]" class="form-control tipe-field">
-                    <option value = ""> Pilih Tipe Barang </option>
-                    <option value = "0"> Bahan Baku </option>
-                    <option value = "1"> Setengah Jadi </option>
-                    <option value = "3"> Non Consumable </option>
-                </select
-            </td>
-            <td><input type="text" name="Barang[\${index}][leadtime]" class="form-control" maxlength="true"></td>
-            <td>
-                <div class="d-flex justify-content-between align-content-center align-items-center">
+                <div class="d-flex justify-content-center gap-1 align-content-center align-items-center">
                     <a href="#" class="btn btn-success btn-xs pb-1 px-2 add-row" title="Tambah Baris">
                         <i class="fas fa-plus"></i>
                     </a>
@@ -231,18 +166,3 @@ $js = <<<JS
 JS;
 $this->registerJs($js);
 ?>
-
-<style>
-    .small-btn {
-        padding: 2px 6px;
-        font-size: 0.8em;
-        margin-right: 2px;
-    }
-
-    /* Mengatur tata letak tombol secara horizontal */
-    .action-buttons {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-</style>

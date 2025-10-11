@@ -3,18 +3,15 @@
 use yii\helpers\Html;
 
 /** @var yii\web\View $this */
-/** @var app\models\Mesin $model */
+/** @var app\models\Mps $model */
 
-$this->title = 'Create Mesin';
-$this->params['breadcrumbs'][] = ['label' => 'Mesins', 'url' => ['index']];
+$this->title = 'Create Mps';
+$this->params['breadcrumbs'][] = ['label' => 'Mps', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="pc-content">
-
-
-
     <?= $this->render('_form', [
-        'modelMesins' => $modelMesins,
+        'model' => $model,
     ]) ?>
 
 </div>

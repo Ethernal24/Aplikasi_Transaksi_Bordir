@@ -14,7 +14,7 @@ use yii\widgets\LinkPager;
 
 $pagination = $dataProvider->getPagination();
 
-$this->title = 'List Bahan Baku';
+$this->title = 'List Barang Produksi';
 $this->params['breadcrumbs'][] = $this->title;
 
 if (Yii::$app->session->hasFlash('success')) {
@@ -30,8 +30,9 @@ if (Yii::$app->session->hasFlash('success')) {
     <div class="card table-card">
         <div class="card-header">
             <h1><?= Html::encode($this->title) ?></h1>
-            <?= Html::a('Tambahkan Bahan Baku', ['create'], ['class' => 'btn btn-success']) ?>
-            <?= Html::a('List Barang Jadi', ['index-barang-jadi'], ['class' => 'btn btn-info']) ?>
+            <?= Html::a('Tambahkan Barang Produksi', ['create-barang-jadi'], ['class' => 'btn btn-success']) ?>
+            <?= Html::a('Tambahkan BOM', ['bom/create'], ['class' => 'btn btn-success']) ?>
+            <?= Html::a('List Bahan Baku', ['index'], ['class' => 'btn btn-info']) ?>
         </div>
         <div class="card-body mx-4">
             <div class="table-responsive">
@@ -111,9 +112,7 @@ if (Yii::$app->session->hasFlash('success')) {
                                 return $list[$model->tipe_barang] ?? null;
                             },
                             'filter' => [
-                                '0' => 'Bahan Baku',
-                                '1' => 'Setengah Jadi',
-                                '3' => 'Non Consumable',
+                                '2' => 'Barang Jadi',
                             ],
                             'filterInputOptions' => [
                                 'class' => 'form-control',
@@ -122,8 +121,12 @@ if (Yii::$app->session->hasFlash('success')) {
                         ],
                         [
                             'class' => ActionColumn::className(),
-                            'template' => '{update}',
+                            'template' => '{update} {view}',
                             'urlCreator' => function ($action, Barang $model, $key, $index, $column) {
+                                if ($action === 'update') {
+                                    $backUrl = $model->tipe_barang == 2 ? 'index-barang-jadi' : 'index';
+                                    return Url::toRoute([$action, 'barang_id' => $model->barang_id, 'backurl' => $backUrl]);
+                                }
                                 return Url::toRoute([$action, 'barang_id' => $model->barang_id]);
                             }
                         ],

@@ -1,10 +1,17 @@
 <?php
 
+use app\models\Barang;
 use app\models\RiwayatPermintaan;
+use kartik\widgets\Select2;
+use kartik\widgets\Typeahead;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
+use yii\helpers\ArrayHelper;
+use dosamigos\chartjs\ChartJs;
+use yii\bootstrap5\Modal;
+use yii\widgets\Pjax;
 
 /** @var yii\web\View $this */
 /** @var app\models\RiwayatPermintaanSearch $searchModel */
@@ -20,127 +27,214 @@ $this->params['breadcrumbs'][] = $this->title;
 
             <?= Html::a('Create Riwayat Permintaan', ['create'], ['class' => 'btn btn-success']) ?>
             <?= Html::a('Forecast', ['forecast/index'], ['class' => 'btn btn-info']) ?>
-            <?= Html::a('Generate Forecast', ['generate-forecast'], [
-                'class' => 'btn btn-info',
-                'data' => [
-                    'confirm' => 'Apakah ingin generate data forecast?',
-                    'method' => 'post',
-                ]
-            ]) ?>
+            <!-- <?= Html::a('Generate Forecast', ['generate-forecast'], [
+                        'class' => 'btn btn-info',
+                        'data' => [
+                            'confirm' => 'Apakah ingin generate data forecast?',
+                            'method' => 'post',
+                        ]
+                    ]) ?> -->
 
-            <!-- Dropdown Filter Barang -->
-            <div class="my-3">
-                <label for="barangFilter"><b>Filter berdasarkan Barang:</b></label>
-                <?= Html::dropDownList(
-                    'barang_id',
-                    $barangId,
-                    \yii\helpers\ArrayHelper::map(
-                        \app\models\Barang::find()->where(['tipe_barang' => 2])->all(),
-                        'barang_id',
-                        'nama_barang'
-                    ),
-                    [
-                        'prompt' => 'Semua Barang',
-                        'id' => 'barangFilter',
-                        'class' => 'form-control',
-                        'style' => 'max-width:300px; display:inline-block; margin-left:10px;'
-                    ]
-                ) ?>
-            </div>
+            <!-- Modal Forecasting -->
+            <?= Html::a('Generate Forecast', ['riwayat-permintaan/forecast-form'], [
+                'class' => 'btn btn-info btn-modal',
+            ]); ?>
 
-            <!-- Grafik -->
-            <div class="border border-dark p-3 m-4 rounded drop-shado">
-                <?= $this->render('view-grafik', [
-                    'labels' => $labels,
-                    'values' => $values,
-                ]) ?>
-            </div>
+            <?php
+            Modal::begin([
+                'id' => 'ajaxModal',
+                'title' => 'Pengaturan Forecast',
+            ]);
+            echo '<div id="modalContent"></div>';
+            Modal::end();
+            ?>
         </div>
         <div class="card-body mx-4">
+            <?php Pjax::begin(); ?>
             <div class="table-responsive">
-                <?= GridView::widget([
-                    'dataProvider' => $dataProvider,
-                    'filterModel' => $searchModel,
-                    'columns' => [
-                        ['class' => 'yii\grid\SerialColumn'],
+                <div>
+                    <?php
+                    // ambil data yang difilter dari dataProvider
+                    $dataQuery = clone $dataProvider->query;
+                    $data = $dataQuery
+                        ->select([
+                            'bulan' => 'bulan',
+                            'tahun' => 'tahun',
+                            'jumlah_permintaan' => 'SUM(jumlah_permintaan)',
+                        ])
+                        ->groupBy(['bulan', 'tahun'])
+                        ->orderBy(['tahun' => SORT_ASC, 'bulan' => SORT_ASC])
+                        ->asArray()
+                        ->all();
 
-                        // 'riwayat_id',
-                        [
-                            'attribute' => 'nama_barang',
-                            'value' => 'barang.nama_barang',
-                            'label' => 'Nama Produk',
+                    $labels = array_map(function ($d) {
+                        $bulanNama = [
+                            1 => 'Jan',
+                            2 => 'Feb',
+                            3 => 'Mar',
+                            4 => 'Apr',
+                            5 => 'Mei',
+                            6 => 'Jun',
+                            7 => 'Jul',
+                            8 => 'Agu',
+                            9 => 'Sep',
+                            10 => 'Okt',
+                            11 => 'Nov',
+                            12 => 'Des'
+                        ];
+                        return $bulanNama[$d['bulan']] . ' ' . $d['tahun'];
+                    }, $data);
+                    $values = array_map(fn($d) => (int) $d['jumlah_permintaan'], $data);
+                    ?>
 
+                    <?= ChartJs::widget([
+                        'type' => 'line',
+                        'options' => [
+                            'width' => 500,
+                            'height' => 150,
                         ],
-                        'bulan' => [
-                            'attribute' => 'bulan',
-                            'value' => function ($model) {
-                                $list = [
-                                    '1' => 'Januari',
-                                    '2' => 'Februari',
-                                    '3' => 'Maret',
-                                    '4' => 'April',
-                                    '5' => 'Mei',
-                                    '6' => 'Juni',
-                                    '7' => 'Juli',
-                                    '8' => 'Agustus',
-                                    '9' => 'September',
-                                    '10' => 'Oktober',
-                                    '11' => 'November',
-                                    '12' => 'Desember',
-                                ];
-                                return $list[$model->bulan] ?? null;
-                            }
+                        'data' => [
+                            'labels' => $labels,
+                            'datasets' => [
+                                [
+                                    'label' => 'Jumlah Permintaan',
+                                    'data' => $values,
+                                    'backgroundColor' => 'rgba(54, 162, 235, 0.5)',
+                                    'borderColor' => 'rgba(54, 162, 235, 1)',
+                                    'borderWidth' => 1,
+                                ],
+                            ],
                         ],
-                        'tahun',
-                        'jumlah_permintaan',
-                        [
-                            'class' => ActionColumn::className(),
-                            'urlCreator' => function ($action, RiwayatPermintaan $model, $key, $index, $column) {
-                                return Url::toRoute([$action, 'riwayat_id' => $model->riwayat_id]);
-                            }
+                    ]) ?>
+                </div>
+                <hr>
+                <div>
+
+                    <?= GridView::widget([
+                        'dataProvider' => $dataProvider,
+                        'filterModel' => $searchModel,
+                        'columns' => [
+                            ['class' => 'yii\grid\SerialColumn'],
+
+                            // 'riwayat_id',
+                            [
+                                'attribute' => 'nama_barang',
+                                'value' => 'barang.nama_barang',
+                                'label' => 'Nama Produk',
+                                'filter' => Select2::widget([
+                                    'model' => $searchModel,
+                                    'attribute' => 'nama_barang',
+                                    'data' => ArrayHelper::map(
+                                        Barang::find()
+                                            ->select('nama_barang')
+                                            ->where(['tipe_barang' => 2])
+                                            ->distinct()
+                                            ->orderBy(['nama_barang' => SORT_ASC])
+                                            ->asArray()
+                                            ->all(),
+                                        'nama_barang',
+                                        'nama_barang'
+                                    ),
+                                    'options' => [
+                                        'placeholder' => 'pilih Produk',
+                                        'class' => 'form-control',
+                                    ],
+                                    'pluginOptions' => [
+                                        'allowClear' => true,
+                                    ]
+                                ]),
+                            ],
+                            'bulan' => [
+                                'attribute' => 'bulan',
+                                'value' => function ($model) {
+                                    $list = [
+                                        '1' => 'Januari',
+                                        '2' => 'Februari',
+                                        '3' => 'Maret',
+                                        '4' => 'April',
+                                        '5' => 'Mei',
+                                        '6' => 'Juni',
+                                        '7' => 'Juli',
+                                        '8' => 'Agustus',
+                                        '9' => 'September',
+                                        '10' => 'Oktober',
+                                        '11' => 'November',
+                                        '12' => 'Desember',
+                                    ];
+                                    return $list[$model->bulan] ?? null;
+                                },
+                                'filter' => Select2::widget([
+                                    'model' => $searchModel,
+                                    'attribute' => 'bulan',
+                                    'data' => ArrayHelper::map(
+                                        RiwayatPermintaan::find()
+                                            ->select('bulan')
+                                            ->distinct()
+                                            ->orderBy(['bulan' => SORT_ASC])
+                                            ->asArray()
+                                            ->all(),
+                                        'bulan',
+                                        'bulan'
+                                    ),
+                                    'options' => [
+                                        'placeholder' => 'pilih bulan',
+                                        'class' => 'form-control',
+                                    ],
+                                    'pluginOptions' => [
+                                        'allowClear' => true,
+                                    ]
+                                ])
+                            ],
+                            'tahun' => [
+                                'attribute' => 'tahun',
+                                'value' => 'tahun',
+                                'filter' => Select2::widget([
+                                    'model' => $searchModel,
+                                    'attribute' => 'tahun',
+                                    'data' => ArrayHelper::map(
+                                        RiwayatPermintaan::find()
+                                            ->select('tahun')
+                                            ->distinct()
+                                            ->orderBy(['tahun' => SORT_DESC])
+                                            ->asArray()
+                                            ->all(),
+                                        'tahun',
+                                        'tahun'
+                                    ),
+                                    'options' => [
+                                        'placeholder' => 'pilih tahun',
+                                        'class' => 'form-control',
+                                    ],
+                                    'pluginOptions' => [
+                                        'allowClear' => true,
+                                    ]
+                                ])
+                            ],
+                            'jumlah_permintaan',
+                            [
+                                'class' => ActionColumn::className(),
+                                'urlCreator' => function ($action, RiwayatPermintaan $model, $key, $index, $column) {
+                                    return Url::toRoute([$action, 'riwayat_id' => $model->riwayat_id]);
+                                }
+                            ],
                         ],
-                    ],
-                ]); ?>
+
+                    ]); ?>
+                </div>
             </div>
+            <?php Pjax::end(); ?>
         </div>
     </div>
 </div>
-<canvas id="permintaanChart" height="100"></canvas>
 
 <?php
-$chartUrl = \yii\helpers\Url::to(['chart-data']);
 $script = <<<JS
-let chartCtx = document.getElementById('permintaanChart').getContext('2d');
-let permintaanChart;
-
-function updateChart(filters = {}) {
-    $.get('$chartUrl', filters, function(data) {
-        let labels = data.map(item => item.nama_barang);
-        let values = data.map(item => item.total);
-
-        if (permintaanChart) permintaanChart.destroy();
-        permintaanChart = new Chart(chartCtx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Jumlah Permintaan',
-                    data: values
-                }]
-            }
-        });
+    $('.btn-modal').on('click', function(e) {
+    e.preventDefault();
+    $('#ajaxModal').modal('show')
+    .find('#modalContent')
+    .load($(this).attr('href'));
     });
-}
-
-// pertama kali load
-updateChart();
-
-// kalau mau sinkron dengan filter GridView, tangkap event submit form filter
-$('#w0').on('beforeSubmit', function(e) {
-    let filters = $(this).serializeArray().reduce((acc, cur) => (acc[cur.name] = cur.value, acc), {});
-    updateChart(filters);
-    return false; // biar tidak reload
-});
-JS;
+    JS;
 $this->registerJs($script);
 ?>

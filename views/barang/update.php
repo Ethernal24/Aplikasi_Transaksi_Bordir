@@ -14,7 +14,8 @@ $this->params['breadcrumbs'][] = 'Update';
 
 
     <?= $this->render('_form-update', [
-        'modelBarang' => $modelBarang
+        'modelBarang' => $modelBarang,
+        'backUrl' => $backUrl
     ]) ?>
 
 </div>

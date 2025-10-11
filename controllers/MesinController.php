@@ -2,9 +2,11 @@
 
 namespace app\controllers;
 
+use app\helpers\ModelHelper;
 use Yii;
 use app\models\Mesin;
 use app\models\Mesinsearch;
+use yii\base\Model;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -78,20 +80,34 @@ class MesinController extends BaseController
      */
     public function actionCreate()
     {
-        $model = new Mesin();
+        $modelMesins = [new Mesin()];
 
-        if ($this->request->isPost) {
-            $model->load($this->request->post());
+        if (Yii::$app->request->isPost) {
+            $modelMesins = ModelHelper::createMultiple(Mesin::className());
+            Model::loadMultiple($modelMesins, Yii::$app->request->post());
 
-            if ($model->save()) {
-                Yii::$app->session->setFlash('success', 'Mesin berhasil ditambahkan.');
-                return $this->redirect(['view', 'mesin_id' => $model->mesin_id]);
+            if (Model::validateMultiple($modelMesins)) {
+                $transaction = Yii::$app->db->beginTransaction();
+                try {
+                    foreach ($modelMesins as $index => $modelMesin) {
+                        if (!$modelMesin->save(false)) {
+                            throw new \yii\db\Exception('Gagal simpan data mesin #' . $index);
+                        }
+                    }
+                    $transaction->commit();
+                    Yii::$app->session->setFlash('success', 'Data berhasil disimpan.');
+                    return $this->redirect(['index']);
+                } catch (\Exception $e) {
+                    $transaction->rollBack();
+                    Yii::$app->session->setFlash('error', 'Error: ' . $e->getMessage());
+                }
             } else {
-                Yii::$app->session->setFlash('error', 'Terjadi kesalahan saat menyimpan Mesin.');
+                Yii::$app->session->setFlash('error', 'Validasi gagal.');
             }
         }
+
         return $this->render('create', [
-            'model' => $model,
+            'modelMesins' => $modelMesins,
         ]);
     }
 

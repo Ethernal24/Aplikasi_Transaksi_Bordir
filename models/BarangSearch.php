@@ -18,7 +18,6 @@ class BarangSearch extends Barang
      */
 
     public $satuan;
-
     public function rules()
     {
         return [
@@ -43,7 +42,7 @@ class BarangSearch extends Barang
      *
      * @return ActiveDataProvider
      */
-    public function search($params)
+    public function search($params, $filterTipe = null)
     {
         $query = Barang::find()->joinWith(['unit']);
         $query->orderBy([
@@ -52,6 +51,11 @@ class BarangSearch extends Barang
             // 'kode_pembelian' => SORT_DESC,
         ]);
         // add conditions that should always apply here
+        if ($filterTipe === 'non-jadi') {
+            $query->andWhere(['!=', 'tipe_barang', 2]);
+        } elseif ($filterTipe === 'jadi') {
+            $query->andWhere(['tipe_barang' => 2]);
+        }
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

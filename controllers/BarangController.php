@@ -11,6 +11,7 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use Yii;
 use yii\base\Model;
+use yii\web\Response;
 
 /**
  * BarangController implements the CRUD actions for Barang model.
@@ -53,13 +54,25 @@ class BarangController extends BaseController
     public function actionIndex()
     {
         $searchModel = new BarangSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+        $dataProvider = $searchModel->search($this->request->queryParams, 'non-jadi');
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
     }
+    public function actionIndexBarangJadi()
+    {
+        $searchModel = new BarangSearch();
+        $dataProvider = $searchModel->search($this->request->queryParams, 'jadi');
+
+        return $this->render('index-barang-jadi', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+
 
     /**
      * Displays a single Barang model.
@@ -69,8 +82,14 @@ class BarangController extends BaseController
      */
     public function actionView($barang_id)
     {
+        $model = $this->findModel($barang_id);
+        $Bom = $model->boms;
+        if (empty($Bom)) {
+            Yii::info("Data BOM tidak ditemukan untuk barang_id: $barang_id");
+        }
         return $this->render('view', [
-            'model' => $this->findModel($barang_id),
+            'model' => $model,
+            'bom' => $Bom
         ]);
     }
 
@@ -139,6 +158,67 @@ class BarangController extends BaseController
             'isReadonly' => true,
         ]);
     }
+    public function actionCreateBarangJadi()
+    {
+        $modelBarangs = [new Barang()];
+
+        if (Yii::$app->request->isPost) {
+            // Load multiple instances
+            $modelBarangs = ModelHelper::createMultiple(Barang::classname());
+            if (Model::loadMultiple($modelBarangs, Yii::$app->request->post())) {
+                foreach ($modelBarangs as $index => $modelBarang) {
+                    Yii::info("Loaded ModelBarang #$index: " . json_encode($modelBarang->attributes), 'modelData');
+                }
+            } else {
+                Yii::info("Data failed to load into modelBarangs.", 'loadError');
+            }
+
+            // Validate models
+            if (Model::validateMultiple($modelBarangs)) {
+                $transaction = Yii::$app->db->beginTransaction();
+                try {
+                    foreach ($modelBarangs as $index => $modelBarang) {
+                        $modelBarang->tipe_barang = 2;
+                        $modelBarang->created_at = date('Y-m-d H:i:s');
+                        $modelBarang->updated_at = date('Y-m-d H:i:s');
+
+                        if (!$modelBarang->save()) {
+                            Yii::$app->session->setFlash('error', "Failed to save item #{$index}: " . json_encode($modelBarang->getErrors()));
+                            throw new \yii\db\Exception('Failed to save items.');
+                        }
+                    }
+
+                    $transaction->commit();
+
+                    // Set success flash message
+                    Yii::$app->session->setFlash('success', 'Data berhasil disimpan.');
+
+                    Yii::$app->session->set('modelBarangs', $modelBarangs);
+                    return $this->redirect(['index']);
+                } catch (\yii\db\Exception $e) {
+                    $transaction->rollBack();
+                    Yii::$app->session->setFlash('error', 'Database error: ' . $e->getMessage());
+                } catch (\Exception $e) {
+                    $transaction->rollBack();
+                    Yii::$app->session->setFlash('error', 'Error: ' . $e->getMessage());
+                }
+            } else {
+                $allErrors = [];
+                foreach ($modelBarangs as $index => $modelBarang) {
+                    $errors = $modelBarang->getErrors();
+                    if (!empty($errors)) {
+                        $allErrors[] = "Item #{$index} errors: " . json_encode($errors);
+                    }
+                }
+                Yii::$app->session->setFlash('error', 'Validation failed: ' . implode(' | ', $allErrors));
+            }
+        }
+
+        return $this->render('create-barang-jadi', [
+            'modelBarangs' => $modelBarangs,
+            'isReadonly' => true,
+        ]);
+    }
 
 
     /**
@@ -148,13 +228,21 @@ class BarangController extends BaseController
      * @return string|\yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($barang_id)
+    public function actionUpdate($barang_id, $backUrl = null)
     {
         // Cari model Barang berdasarkan ID
         $modelBarang = Barang::findOne($barang_id);
 
         if (!$modelBarang) {
             throw new NotFoundHttpException("Barang tidak ditemukan.");
+        }
+
+        if ($backUrl === null) {
+            if ($modelBarang->tipe_barang == 2) {
+                $backUrl = 'index-barang-jadi';
+            } else {
+                $backUrl = 'index';
+            }
         }
 
         // Cek jika ada data yang di-post
@@ -174,6 +262,7 @@ class BarangController extends BaseController
 
         return $this->render('update', [
             'modelBarang' => $modelBarang,
+            'backUrl' => $backUrl
         ]);
     }
 
@@ -203,6 +292,45 @@ class BarangController extends BaseController
             ->all();
 
         return \yii\helpers\Json::encode($data); // Kembalikan dalam format JSON
+    }
+
+    public function actionSearchBahan($q = null)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $query = Barang::find()
+            ->select(['barang_id', 'nama_barang'])
+            ->where(['!=', 'tipe_barang', 2])
+            ->andFilterWhere(['like', 'nama_barang', $q])
+            ->limit(10)
+            ->all();
+
+        $result = [];
+        foreach ($query as $item) {
+            $result[] = [
+                'barang_id' => $item->barang_id,
+                'nama_barang' => $item->nama_barang,
+            ];
+        }
+        return $result;
+    }
+    public function actionSearchProduk($q = null)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $query = Barang::find()
+            ->select(['barang_id', 'nama_barang'])
+            ->where(['tipe_barang' => 2])
+            ->andFilterWhere(['like', 'nama_barang', $q])
+            ->limit(10)
+            ->all();
+
+        $result = [];
+        foreach ($query as $item) {
+            $result[] = [
+                'barang_id' => $item->barang_id,
+                'nama_barang' => $item->nama_barang,
+            ];
+        }
+        return $result;
     }
 
 

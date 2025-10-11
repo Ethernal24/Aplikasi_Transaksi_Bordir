@@ -31,6 +31,10 @@ $this->params['breadcrumbs'][] = $this->title;
                         'attribute' => 'barang_id',
                         'value' => 'barang.nama_barang',
                         'label' => 'Nama Produk',
+                        'filterInputOptions' => [
+                            'class' => 'form-control',
+                            'placeholder' => 'Cari Nama Produk',
+                        ]
 
                     ],
                     [

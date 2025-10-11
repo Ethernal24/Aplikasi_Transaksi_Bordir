@@ -81,18 +81,16 @@ use yii\grid\ActionColumn;
                             'attribute' => 'tipe_barang',
                             'format' => 'raw',
                             'value' => function ($model, $key, $index, $column) use ($form) {
-                                $list = [
-                                    0 => 'Bahan Baku',
-                                    1 => 'Setengah Jadi',
-                                    3 => 'Non Consumable',
-                                ];
-                                return $form->field($model, "[$index]tipe_barang")->dropDownList(
-                                    $list,
-                                    [
-                                        'class' => 'form-control tipe-field',
-                                        'prompt' => 'Pilih Tipe Barang  ',
-                                    ]
-                                )->label(false);
+                                return $form->field($model, "[$index]tipe_barang")
+                                    ->dropDownList(
+                                        [2 => 'Barang Jadi'], // hanya satu opsi
+                                        [
+                                            'class' => 'form-control tipe-field',
+                                            'disabled' => true, // bikin readonly
+                                        ]
+                                    )
+                                    ->label(false)
+                                    . Html::activeHiddenInput($model, "[$index]tipe_barang", ['value' => 2]);
                             },
                         ],
                         [
@@ -128,7 +126,7 @@ use yii\grid\ActionColumn;
 
             <div class="form-group">
                 <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
-                <?= Html::a('Back', 'index', ['class' => 'btn btn-secondary']) ?>
+                <?= Html::a('Back', 'index-barang-jadi', ['class' => 'btn btn-secondary']) ?>
             </div>
 
             <?php ActiveForm::end(); ?>
@@ -193,12 +191,10 @@ $js = <<<JS
                 </select>
             </td>
             <td>
-                <select name="Barang[\${index}][tipe_barang]" class="form-control tipe-field">
-                    <option value = ""> Pilih Tipe Barang </option>
-                    <option value = "0"> Bahan Baku </option>
-                    <option value = "1"> Setengah Jadi </option>
-                    <option value = "3"> Non Consumable </option>
+                <select name="Barang[\${index}][tipe_barang]" class="form-control tipe-field" disabled>  
+                    <option value = "2"> Barang Jadi </option>
                 </select
+                <input type="hidden" name="Barang[\${index}][tipe_barang]" value="2">
             </td>
             <td><input type="text" name="Barang[\${index}][leadtime]" class="form-control" maxlength="true"></td>
             <td>

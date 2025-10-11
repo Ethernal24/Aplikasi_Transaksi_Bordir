@@ -19,6 +19,7 @@ use yii\db\Expression;
  * @property string|null $updated_at
  *
  * @property PembelianDetail[] $pembelianDetails
+ * @property Bom[] $boms
  * @property Stock[] $stocks
  * @property Unit $unit
  */
@@ -121,5 +122,25 @@ class Barang extends \yii\db\ActiveRecord
     public function getForecast()
     {
         return $this->hasMany(Forecast::class, ['barang_id' => 'barang_id']);
+    }
+    public function getBoms()
+    {
+        return $this->hasMany(Bom::class, ['produk_id' => 'barang_id']);
+    }
+    public function getJenisLabel()
+    {
+        return [
+            0 => 'beli',
+            1 => 'Produksi',
+        ][$this->jenis] ?? '-';
+    }
+    public function getTipeLabel()
+    {
+        return [
+            0 => 'Bahan Baku',
+            1 => 'Setengah Jadi',
+            2 => 'Barang Jadi',
+            3 => 'Non-Consumable',
+        ][$this->tipe_barang] ?? '-';
     }
 }

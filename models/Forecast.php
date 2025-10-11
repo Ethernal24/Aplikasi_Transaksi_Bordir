@@ -56,4 +56,8 @@ class Forecast extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
     }
+    public function getMps()
+    {
+        return $this->hasOne(Barang::class, ['forecast_id' => 'forecast_id']);
+    }
 }

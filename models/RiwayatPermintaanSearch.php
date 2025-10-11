@@ -5,6 +5,7 @@ namespace app\models;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\RiwayatPermintaan;
+use Yii;
 
 /**
  * RiwayatPermintaanSearch represents the model behind the search form of `app\models\RiwayatPermintaan`.
@@ -15,6 +16,22 @@ class RiwayatPermintaanSearch extends RiwayatPermintaan
      * {@inheritdoc}
      */
     public $nama_barang;
+    public function init()
+    {
+        parent::init();
+        if (
+            $this->barang_id === null &&
+            empty(Yii::$app->request->get($this->formName()))
+        ) {
+            $barang = Barang::find()
+                ->select('barang_id')
+                ->where(['tipe_barang' => 2])
+                ->limit(1)
+                ->scalar();
+
+            $this->barang_id = $barang; // ✅ set default filter hanya sekali
+        }
+    }
     public function rules()
     {
         return [
@@ -72,11 +89,10 @@ class RiwayatPermintaanSearch extends RiwayatPermintaan
         // grid filtering conditions
         $query->andFilterWhere([
             'riwayat_id' => $this->riwayat_id,
-            'barang_id' => $this->barang_id,
             'tahun' => $this->tahun,
             'jumlah_permintaan' => $this->jumlah_permintaan,
         ]);
-
+        $query->andFilterWhere(['riwayat_permintaan.barang_id' => $this->barang_id]);
         $query->andFilterWhere(['like', 'bulan', $this->bulan]);
         $query->andFilterWhere(['like', 'barang.nama_barang', $this->nama_barang]);
         return $dataProvider;

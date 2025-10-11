@@ -7,7 +7,10 @@ $roleName = Yii::$app->user->identity->roleName;
 
 $dashboardUrl = Url::to(['site/index']);
 $UserUrl = Url::to(['/user/index']);
+$KaryawanUrl = Url::to(['/tenaga-kerja/index']);
 $BahanUrl = Url::to(['/barang/index']);
+$MpsUrl = Url::to(['/mps/index']);
+$ProdukUrl = Url::to(['/barang/index-barang-jadi']);
 $SupplierUrl = Url::to(['/supplier/index']);
 $UnitUrl = Url::to(['/unit/index']);
 $MesinUrl = Url::to(['/mesin/index']);
@@ -68,16 +71,35 @@ $samplePageUrl = Url::to(['site/sample-page']);
                     <li class="pc-item">
                         <a href="<?= $UserUrl ?>" class="pc-link">
                             <span class="pc-micon"><i class="ph ph-user"></i></span>
+                            <span class="pc-mtext">Akun</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="<?= $KaryawanUrl ?>" class="pc-link">
+                            <span class="pc-micon"><i class="ph ph-user"></i></span>
                             <span class="pc-mtext">Karyawan</span>
                         </a>
                     </li>
 
-                    <li class="pc-item">
-                        <a href="<?= $BahanUrl ?>" class="pc-link">
-                            <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
-                            <span class="pc-mtext">Master Barang</span>
-                        </a>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon">
+                                <i class="fi fi-ts-box-alt"></i> </span><span class="pc-mtext">Master Barang</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="<?= $BahanUrl ?>">Bahan Baku</a></li>
+                            <li class="pc-item"><a class="pc-link" href="<?= $ProdukUrl ?>">Produk</a></li>
+
+                        </ul>
                     </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon">
+                                <i class="fi fi-ts-box-alt"></i> </span><span class="pc-mtext">Perencanaan</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="<?= $MpsUrl ?>">MPS</a></li>
+                            <li class="pc-item"><a class="pc-link" href="#">MRP</a></li>
+
+                        </ul>
+                    </li>
+
                     <li class="pc-item">
                         <a href="<?= $PermintaanPelangganUrl ?>" class="pc-link">
                             <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
