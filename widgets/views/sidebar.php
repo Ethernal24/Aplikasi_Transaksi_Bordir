@@ -10,6 +10,7 @@ $UserUrl = Url::to(['/user/index']);
 $KaryawanUrl = Url::to(['/tenaga-kerja/index']);
 $BahanUrl = Url::to(['/barang/index']);
 $MpsUrl = Url::to(['/mps/index']);
+$RoutingUrl = Url::to(['/master-routing/index']);
 $ProdukUrl = Url::to(['/barang/index-barang-jadi']);
 $SupplierUrl = Url::to(['/supplier/index']);
 $UnitUrl = Url::to(['/unit/index']);
@@ -110,6 +111,12 @@ $samplePageUrl = Url::to(['site/sample-page']);
                         <a href="<?= $ForecastUrl ?>" class="pc-link">
                             <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
                             <span class="pc-mtext">Histori permintaan</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="<?= $RoutingUrl ?>" class="pc-link">
+                            <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
+                            <span class="pc-mtext">Master Routing</span>
                         </a>
                     </li>
 
