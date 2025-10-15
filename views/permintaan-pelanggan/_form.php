@@ -16,12 +16,38 @@ use yii\widgets\ActiveForm;
             <h1><?= Html::encode($this->title) ?></h1>
         </div>
         <div class="card-body mx-4">
-
             <?php $form = ActiveForm::begin(['id' => 'dynamic-form']); ?>
+            <div class="row">
+                <div class="col">
+                    <?= $form->field($model, 'kode_permintaan')->textInput() ?>
+                </div>
+                <div class="col">
+                    <?= $form->field($model, 'nama_pelanggan')->textInput() ?>
+                </div>
+                <div class="col">
+                    <?= $form->field($model, 'tanggal_permintaan')->input("date") ?>
+                </div>
+                <div class="col">
+                    <?= $form->field($model, 'tenggat_waktu')->input("date") ?>
+                </div>
+                <div class="col">
+                    <?= $form->field($model, 'status_pesanan')
+                        ->dropDownList(
+                            [
+                                0 => 'antrian',
+                                1 => 'sedang dikerjakan',
+                                2 => 'selesai',
+                            ],
+                            [
+                                'prompt' => 'Pilih status pesanan...',
+                                'class' => 'form-control tipe-field',
+                            ]
+                        ) ?>
+                </div>
+            </div>
 
-            <?= $form->field($model, 'nama_pelanggan')->textInput() ?>
 
-            <?= $form->field($model, 'tanggal_permintaan')->input("date") ?>
+
             <?php DynamicFormWidget::begin([
                 'widgetContainer' => 'dynamicform_wrapper',
                 'widgetBody' => '.container-items',
@@ -38,8 +64,9 @@ use yii\widgets\ActiveForm;
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th style="width: 50%;">Barang</th>
+                        <th style="width: 40%;">Barang</th>
                         <th style="width: 25%;">Jumlah</th>
+                        <th style="width: 25%;">Deskripsi</th>
                         <th style="width: 10%; text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -49,13 +76,17 @@ use yii\widgets\ActiveForm;
                             <td>
                                 <?= $form->field($detail, "[{$i}]barang_id", ['template' => "{input}\n{error}"])
                                     ->dropDownList(
-                                        \yii\helpers\ArrayHelper::map(\app\models\Barang::find()->where(['tipe_barang' => 2])->all(), 'barang_id', 'nama_barang'),
+                                        \yii\helpers\ArrayHelper::map(\app\models\Barang::find()->where(['tipe_barang' => [2, 4]])->all(), 'barang_id', 'nama_barang'),
                                         ['prompt' => 'Pilih Barang']
                                     ) ?>
                             </td>
                             <td>
                                 <?= $form->field($detail, "[{$i}]jumlah", ['template' => "{input}\n{error}"])
                                     ->textInput(['type' => 'number', 'min' => 1]) ?>
+                            </td>
+                            <td>
+                                <?= $form->field($detail, "[{$i}]deskripsi", ['template' => "{input}\n{error}"])
+                                    ->textInput(['type' => 'text']) ?>
                             </td>
                             <td style="text-align:center;">
                                 <button type="button" class="remove-item btn btn-danger btn-sm">

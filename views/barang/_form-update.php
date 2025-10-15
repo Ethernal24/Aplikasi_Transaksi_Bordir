@@ -43,13 +43,12 @@ use yii\grid\ActionColumn;
 
             <?php
             // Field tipe_barang hanya beda tampilannya
-            if ($modelBarang->tipe_barang == 2) {
-                // Barang Jadi → tampil readonly / fixed
-                echo '<div class="form-group">';
-                echo Html::label('Tipe Barang', null, ['class' => 'form-label']);
-                echo '<input class="form-control" value="Barang Jadi" readonly>';
-                echo Html::activeHiddenInput($modelBarang, 'tipe_barang', ['value' => 2]);
-                echo '</div>';
+            if ($modelBarang->tipe_barang == 2 || $modelBarang->tipe_barang == 4) {
+                $list = [
+                    2 => 'Barang jadi',
+                    4 => 'Template',
+                ];
+                echo $form->field($modelBarang, 'tipe_barang')->dropDownList($list, ['promt' => 'Pilih tipe barang']);
             } else {
                 // Bahan Baku atau Setengah Jadi → dropdown biasa
                 $list = [

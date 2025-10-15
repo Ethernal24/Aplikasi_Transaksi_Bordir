@@ -83,14 +83,16 @@ use yii\grid\ActionColumn;
                             'value' => function ($model, $key, $index, $column) use ($form) {
                                 return $form->field($model, "[$index]tipe_barang")
                                     ->dropDownList(
-                                        [2 => 'Barang Jadi'], // hanya satu opsi
+                                        [
+                                            2 => 'Barang Jadi',
+                                            4 => 'Template',
+                                        ], // hanya satu opsi
                                         [
                                             'class' => 'form-control tipe-field',
-                                            'disabled' => true, // bikin readonly
+                                            'prompt' => 'Pilih tipe barang...',
                                         ]
                                     )
-                                    ->label(false)
-                                    . Html::activeHiddenInput($model, "[$index]tipe_barang", ['value' => 2]);
+                                    ->label(false);
                             },
                         ],
                         [
@@ -191,10 +193,11 @@ $js = <<<JS
                 </select>
             </td>
             <td>
-                <select name="Barang[\${index}][tipe_barang]" class="form-control tipe-field" disabled>  
+                <select name="Barang[\${index}][tipe_barang]" class="form-control tipe-field">  
+                    <option value = ""> Pilih tipe barang... </option>
                     <option value = "2"> Barang Jadi </option>
+                    <option value = "4"> Template </option>
                 </select
-                <input type="hidden" name="Barang[\${index}][tipe_barang]" value="2">
             </td>
             <td><input type="text" name="Barang[\${index}][leadtime]" class="form-control" maxlength="true"></td>
             <td>

@@ -37,14 +37,6 @@ use yii\helpers\Html;
             ],
         ])
     ?>
-
-    <?= $form->field($model, 'periode')
-        ->label('Periode perhitungan')
-        ->textInput(['type' => 'number', 'min' => 2]) ?>
-    <?= $form->field($model, 'horizon')
-        ->label('Periode Prediksi')
-        ->textInput(['type' => 'number']) ?>
-
     <div class="form-group">
         <?= Html::submitButton('Proses Forecast', ['class' => 'btn btn-primary']) ?>
     </div>

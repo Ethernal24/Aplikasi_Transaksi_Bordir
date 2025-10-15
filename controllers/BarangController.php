@@ -318,7 +318,7 @@ class BarangController extends BaseController
         Yii::$app->response->format = Response::FORMAT_JSON;
         $query = Barang::find()
             ->select(['barang_id', 'nama_barang'])
-            ->where(['tipe_barang' => 2])
+            ->where(['tipe_barang' => [2, 4]])
             ->andFilterWhere(['like', 'nama_barang', $q])
             ->limit(10)
             ->all();

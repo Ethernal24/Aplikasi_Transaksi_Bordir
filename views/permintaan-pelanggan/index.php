@@ -29,9 +29,23 @@ $this->params['breadcrumbs'][] = $this->title;
                     'columns' => [
                         ['class' => 'yii\grid\SerialColumn'],
 
-                        'permintaan_id',
+                        // 'permintaan_id',
+                        'kode_permintaan',
                         'nama_pelanggan',
                         'tanggal_permintaan',
+                        'tenggat_waktu',
+                        [
+                            'attribute' => 'status_pesanan',
+                            'value' => function ($model) {
+                                $list = [
+                                    0 => 'antrian',
+                                    1 => 'prosess',
+                                    2 => 'selesai',
+                                ];
+                                return $list[$model->status_pesanan] ?? null;
+                            }
+
+                        ],
                         [
                             'class' => ActionColumn::className(),
                             'urlCreator' => function ($action, PermintaanPelanggan $model, $key, $index, $column) {

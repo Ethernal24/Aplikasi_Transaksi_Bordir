@@ -30,7 +30,8 @@ class Bom extends \yii\db\ActiveRecord
     {
         return [
             [['produk_id', 'bahan_id', 'qty_per_unit', 'unit_id'], 'required'],
-            [['produk_id', 'bahan_id', 'qty_per_unit', 'unit_id'], 'integer'],
+            [['produk_id', 'bahan_id', 'unit_id'], 'integer'],
+            [['qty_per_unit'], 'number'],
         ];
     }
 

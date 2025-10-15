@@ -108,11 +108,13 @@ if (Yii::$app->session->hasFlash('success')) {
                                     1 => 'Setengah Jadi',
                                     2 => 'Barang Jadi',
                                     3 => 'Non Consumable',
+                                    4 => 'Template',
                                 ];
                                 return $list[$model->tipe_barang] ?? null;
                             },
                             'filter' => [
                                 '2' => 'Barang Jadi',
+                                '4' => 'Template',
                             ],
                             'filterInputOptions' => [
                                 'class' => 'form-control',

@@ -2,8 +2,10 @@
 
 namespace app\controllers;
 
+use app\models\Barang;
 use app\models\Forecast;
 use app\models\ForecastForm;
+use app\models\Mps;
 use app\models\RiwayatPermintaan;
 use app\models\RiwayatPermintaanSearch;
 use DateTime;
@@ -203,62 +205,82 @@ class RiwayatPermintaanController extends Controller
 
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             $barangIds = (array) $model->barang_id;
-            $periode = (int) $model->periode;
-            $horizon = (int) $model->horizon;
+            $window = 3; // ambil 3 bulan terakhir
+
             $transaction = Yii::$app->db->beginTransaction();
+
             try {
                 foreach ($barangIds as $barangId) {
+                    // Ambil 3 bulan terakhir dari riwayat permintaan
                     $riwayats = RiwayatPermintaan::find()
                         ->select(['barang_id', 'tahun', 'bulan', 'jumlah_permintaan'])
                         ->where(['barang_id' => $barangId])
-                        ->orderBy(['tahun' => SORT_ASC, 'bulan' => SORT_ASC])
+                        ->orderBy(['tahun' => SORT_DESC, 'bulan' => SORT_DESC])
+                        ->limit($window)
                         ->asArray()
                         ->all();
 
-                    if (empty($riwayats)) {
-                        return ['success' => false, 'message' => 'Data riwayat permintaan untuk barang ini tidak ditemukan.'];
+                    if (empty($riwayats) || count($riwayats) < $window) {
+                        return [
+                            'success' => false,
+                            'message' => 'Data riwayat permintaan kurang dari 3 bulan untuk melakukan forecast.'
+                        ];
                     }
 
+                    // Urutkan ulang ascending agar urutan bulan benar
+                    $riwayats = array_reverse($riwayats);
                     $values = array_column($riwayats, 'jumlah_permintaan');
-                    $window = $periode;
 
+                    // Hitung rata-rata (Single Moving Average)
+                    $avg = array_sum($values) / count($values);
+                    $prediksi = round($avg);
+
+                    // Tentukan bulan & tahun berikutnya
                     $last = end($riwayats);
                     $dt = DateTime::createFromFormat('Y-n', $last['tahun'] . '-' . $last['bulan']);
+                    $dt->modify('+1 month');
+                    $bulan = (int)$dt->format('n');
+                    $tahun = (int)$dt->format('Y');
 
-
-                    // Loop prediksi 3 bulan ke depan (atau bisa ubah sesuai kebutuhan)
-                    for ($i = 0; $i < $horizon; $i++) {
-                        $slice = array_slice($values, max(0, count($values) - $window));
-                        $avg = $slice ? array_sum($slice) / count($slice) : 0;
-                        $prediksi = round($avg);
-
-                        $dt->modify('+1 month');
-                        $bulan = (int)$dt->format('n');
-                        $tahun = (int)$dt->format('Y');
-
-                        $forecast = new Forecast();
-                        $forecast->barang_id = $barangId;
-                        $forecast->bulan = $bulan;
-                        $forecast->tahun = $tahun;
-                        $forecast->metode = 'Single Moving Average';
-                        $forecast->hasil_forecast = $prediksi;
-                        $forecast->save(false);
-
-                        $values[] = $prediksi; // tambahkan nilai prediksi
+                    // Simpan hasil forecast
+                    $forecast = new Forecast();
+                    $forecast->barang_id = $barangId;
+                    $forecast->bulan = $bulan;
+                    $forecast->tahun = $tahun;
+                    $forecast->metode = 'Single Moving Average';
+                    $forecast->hasil_forecast = $prediksi;
+                    $forecast->save(false);
+                    // $barang = Barang::findOne($barangId);
+                    $stockAwal = 0;
+                    $rencanaproduksi = $prediksi - $stockAwal;
+                    if ($rencanaproduksi < 0) {
+                        $rencanaproduksi = 0;
                     }
+                    $mps = new Mps();
+                    $mps->forecast_id = $forecast->forecast_id;
+                    $mps->stock_awal = $stockAwal;
+                    $mps->rencana_produksi = $rencanaproduksi;
+                    $mps->save(false);
                 }
                 $transaction->commit();
-                Yii::$app->session->setFlash('success', 'Forecast berhasil diproses dan disimpan.');
-                return $this->redirect(['forecast/index']);
+
+                return [
+                    'success' => true,
+                    'message' => 'Forecast berhasil diproses dan disimpan.',
+                    'data' => [
+                        'barang_id' => $barangId,
+                        'bulan' => $bulan,
+                        'tahun' => $tahun,
+                        'hasil_forecast' => $prediksi
+                    ]
+                ];
             } catch (\Throwable $e) {
                 $transaction->rollBack();
-                return ['success' => false, 'message' => 'Kesalahan: ' . $e->getMessage()];
+                return [
+                    'success' => false,
+                    'message' => 'Kesalahan: ' . $e->getMessage()
+                ];
             }
         }
-        return [
-
-            'success' => false,
-            'message' => 'Input tidak valid.'
-        ];
     }
 }

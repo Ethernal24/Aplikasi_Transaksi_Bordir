@@ -54,7 +54,7 @@ class BarangSearch extends Barang
         if ($filterTipe === 'non-jadi') {
             $query->andWhere(['!=', 'tipe_barang', 2]);
         } elseif ($filterTipe === 'jadi') {
-            $query->andWhere(['tipe_barang' => 2]);
+            $query->andWhere(['tipe_barang' => [2, 4],]);
         }
 
         $dataProvider = new ActiveDataProvider([

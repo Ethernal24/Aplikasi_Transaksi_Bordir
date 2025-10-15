@@ -14,21 +14,29 @@ class ModelHelper
         $post = Yii::$app->request->post($formName);
         $models = [];
 
+        // Bangun array model lama, jika tersedia
+        $indexedModels = [];
         if (!empty($multipleModels)) {
-            $keys = array_keys(ArrayHelper::map($multipleModels, $indexKey, $indexKey));
-            $multipleModels = array_combine($keys, $multipleModels);
+            foreach ($multipleModels as $m) {
+                if (isset($m->{$indexKey})) {
+                    $indexedModels[$m->{$indexKey}] = $m;
+                }
+            }
         }
 
         if ($post && is_array($post)) {
             foreach ($post as $i => $item) {
-                if (isset($item[$indexKey]) && !empty($item[$indexKey]) && isset($multipleModels[$item[$indexKey]])) {
-                    // Load model yang ada dari multipleModels
-                    $models[] = $multipleModels[$item[$indexKey]];
+                if (isset($item[$indexKey]) && !empty($item[$indexKey]) && isset($indexedModels[$item[$indexKey]])) {
+                    // Gunakan model lama
+                    $models[] = $indexedModels[$item[$indexKey]];
                 } else {
-                    // Buat model baru jika id tidak ada
+                    // Buat model baru
                     $models[] = new $modelClass;
                 }
             }
+        } else {
+            // Jika belum ada data POST, tampilkan model lama
+            $models = $multipleModels;
         }
 
         return $models;

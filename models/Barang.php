@@ -127,6 +127,10 @@ class Barang extends \yii\db\ActiveRecord
     {
         return $this->hasMany(Bom::class, ['produk_id' => 'barang_id']);
     }
+    public function getBomCustom()
+    {
+        return $this->hasMany(BomCustom::class, ['bahan_id' => 'barang_id']);
+    }
     public function getJenisLabel()
     {
         return [
@@ -141,6 +145,7 @@ class Barang extends \yii\db\ActiveRecord
             1 => 'Setengah Jadi',
             2 => 'Barang Jadi',
             3 => 'Non-Consumable',
+            4 => 'Template',
         ][$this->tipe_barang] ?? '-';
     }
 }

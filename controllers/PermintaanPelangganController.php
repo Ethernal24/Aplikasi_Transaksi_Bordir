@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\helpers\ModelHelper;
+use app\models\BomCustom;
 use app\models\PermintaanDetail;
 use app\models\PermintaanPelanggan;
 use app\models\PermintaanPelangganSearch;
@@ -60,8 +61,18 @@ class PermintaanPelangganController extends Controller
      */
     public function actionView($permintaan_id)
     {
+        $model = $this->findModel($permintaan_id);
+        $detail = $model->details;
+        foreach ($detail as $details) {
+            $bomCustom = $details->bomCustom;
+        }
+        if (empty($detail)) {
+            Yii::info('Data Details Tidak ditemukan untuk permintaan_id: $permintaan_id');
+        }
         return $this->render('view', [
+            'detail' => $detail,
             'model' => $this->findModel($permintaan_id),
+            'bomCustom' => $bomCustom
         ]);
     }
 
@@ -92,6 +103,14 @@ class PermintaanPelangganController extends Controller
                                 $transaction->rollBack();
                                 break;
                             }
+                            foreach ($detail->barang->boms as $bom) {
+                                $bomCustom = new BomCustom();
+                                $bomCustom->permintaan_detail_id = $detail->permintaan_detail_id;
+                                $bomCustom->bahan_id = $bom->bahan_id;
+                                $bomCustom->qty_per_unit = $bom->qty_per_unit;
+                                $bomCustom->unit_id = $bom->unit_id;
+                                $bomCustom->save(false);
+                            }
                         }
                     }
                     $transaction->commit();
@@ -119,7 +138,7 @@ class PermintaanPelangganController extends Controller
     public function actionUpdate($permintaan_id)
     {
         $model = $this->findModel($permintaan_id);
-        $modelDetails = $model->detail; // relasi dari PermintaanPelanggan -> PermintaanDetail
+        $modelDetails = $model->details; // relasi dari PermintaanPelanggan -> PermintaanDetail
 
         if ($model->load(Yii::$app->request->post())) {
             $oldIDs = ArrayHelper::map($modelDetails, 'permintaan_id', 'permintaan_id'); // ambil id lama detail

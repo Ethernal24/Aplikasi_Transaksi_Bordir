@@ -10,6 +10,7 @@ use Yii;
  * @property int $permintaan_id
  * @property int $nama_pelanggan
  * @property string $tanggal_permintaan
+ * @property PermintaanDetail[] $details
  */
 class PermintaanPelanggan extends \yii\db\ActiveRecord
 {
@@ -27,9 +28,9 @@ class PermintaanPelanggan extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['nama_pelanggan', 'tanggal_permintaan'], 'required'],
-            [['nama_pelanggan'], 'string'],
-            [['tanggal_permintaan'], 'safe'],
+            [['nama_pelanggan', 'kode_permintaan', 'tenggat_waktu', 'status_pesanan'], 'required'],
+            [['nama_pelanggan', 'kode_permintaan'], 'string'],
+            [['tanggal_permintaan', 'dibuat_pada', 'diupdate_pada'], 'safe'],
         ];
     }
 
@@ -42,10 +43,13 @@ class PermintaanPelanggan extends \yii\db\ActiveRecord
             'permintaan_id' => 'Permintaan ID',
             'nama_pelanggan' => 'Nama Pelanggan',
             'tanggal_permintaan' => 'Tanggal Permintaan',
+            'kode_permintaan' => 'Kode Permintaan',
+            'tenggat_waktu' => 'Tenggat Waktu',
+            'status_pesanan' => 'Status Pesanan',
         ];
     }
 
-    public function getDetail()
+    public function getDetails()
     {
         return $this->hasMany(PermintaanDetail::class, ['permintaan_id' => 'permintaan_id']);
     }
