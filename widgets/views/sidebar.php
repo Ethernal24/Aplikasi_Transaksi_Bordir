@@ -8,6 +8,7 @@ $roleName = Yii::$app->user->identity->roleName;
 $dashboardUrl = Url::to(['site/index']);
 $UserUrl = Url::to(['/user/index']);
 $KaryawanUrl = Url::to(['/tenaga-kerja/index']);
+$PelangganUrl = Url::to(['/master-pelanggan/index']);
 $BahanUrl = Url::to(['/barang/index']);
 $MpsUrl = Url::to(['/mps/index']);
 $RoutingUrl = Url::to(['/master-routing/index']);
@@ -100,19 +101,17 @@ $samplePageUrl = Url::to(['site/sample-page']);
 
                         </ul>
                     </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon">
+                                <i class="fi fi-ts-box-alt"></i> </span><span class="pc-mtext">Penjualan</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="<?= $PelangganUrl ?>">Data Pelanggan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="<?= $PermintaanPelangganUrl?>">Detail Penjualan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="<?= $ForecastUrl?>">Histori Permintaan</a></li>
 
-                    <li class="pc-item">
-                        <a href="<?= $PermintaanPelangganUrl ?>" class="pc-link">
-                            <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
-                            <span class="pc-mtext">Data Pelanggan</span>
-                        </a>
+                        </ul>
                     </li>
-                    <li class="pc-item">
-                        <a href="<?= $ForecastUrl ?>" class="pc-link">
-                            <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
-                            <span class="pc-mtext">Histori permintaan</span>
-                        </a>
-                    </li>
+
                     <li class="pc-item">
                         <a href="<?= $RoutingUrl ?>" class="pc-link">
                             <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
