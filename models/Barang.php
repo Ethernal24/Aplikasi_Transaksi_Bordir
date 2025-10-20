@@ -123,6 +123,10 @@ class Barang extends \yii\db\ActiveRecord
     {
         return $this->hasMany(Forecast::class, ['barang_id' => 'barang_id']);
     }
+    public function getPermintaanDetails()
+    {
+        return $this->hasMany(PermintaanDetail::class, ['barang_id' => 'barang_id']);
+    }
     public function getBoms()
     {
         return $this->hasMany(Bom::class, ['produk_id' => 'barang_id']);

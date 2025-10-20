@@ -22,7 +22,11 @@ use yii\widgets\ActiveForm;
                     <?= $form->field($model, 'kode_permintaan')->textInput() ?>
                 </div>
                 <div class="col">
-                    <?= $form->field($model, 'nama_pelanggan')->textInput() ?>
+                    <?= $form->field($model, 'pelanggan_id')->dropDownList(
+                        \yii\helpers\ArrayHelper::map(\app\models\MasterPelanggan::find()
+                            ->all(), 'pelanggan_id', 'nama_pelanggan'),
+                        ['prompt' => 'Pilih Pelanggan']
+                    ) ?>
                 </div>
                 <div class="col">
                     <?= $form->field($model, 'tanggal_permintaan')->input("date") ?>

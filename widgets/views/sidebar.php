@@ -11,6 +11,7 @@ $KaryawanUrl = Url::to(['/tenaga-kerja/index']);
 $PelangganUrl = Url::to(['/master-pelanggan/index']);
 $BahanUrl = Url::to(['/barang/index']);
 $MpsUrl = Url::to(['/mps/index']);
+$MrpUrl = Url::to(['/mrp/index']);
 $RoutingUrl = Url::to(['/master-routing/index']);
 $ProdukUrl = Url::to(['/barang/index-barang-jadi']);
 $SupplierUrl = Url::to(['/supplier/index']);
@@ -97,7 +98,7 @@ $samplePageUrl = Url::to(['site/sample-page']);
                                 <i class="fi fi-ts-box-alt"></i> </span><span class="pc-mtext">Perencanaan</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
                         <ul class="pc-submenu">
                             <li class="pc-item"><a class="pc-link" href="<?= $MpsUrl ?>">MPS</a></li>
-                            <li class="pc-item"><a class="pc-link" href="#">MRP</a></li>
+                            <li class="pc-item"><a class="pc-link" href="<?= $MrpUrl ?>">MRP</a></li>
 
                         </ul>
                     </li>
@@ -106,8 +107,8 @@ $samplePageUrl = Url::to(['site/sample-page']);
                                 <i class="fi fi-ts-box-alt"></i> </span><span class="pc-mtext">Penjualan</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
                         <ul class="pc-submenu">
                             <li class="pc-item"><a class="pc-link" href="<?= $PelangganUrl ?>">Data Pelanggan</a></li>
-                            <li class="pc-item"><a class="pc-link" href="<?= $PermintaanPelangganUrl?>">Detail Penjualan</a></li>
-                            <li class="pc-item"><a class="pc-link" href="<?= $ForecastUrl?>">Histori Permintaan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="<?= $PermintaanPelangganUrl ?>">Detail Penjualan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="<?= $ForecastUrl ?>">Histori Permintaan</a></li>
 
                         </ul>
                     </li>

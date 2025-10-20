@@ -46,8 +46,12 @@ class MasterPelanggan extends \yii\db\ActiveRecord
             'pelanggan_id' => 'Pelanggan ID',
             'nama_pelanggan' => 'Nama Pelanggan',
             'instansi' => 'Instansi',
-            'pesenan_terakhir' => 'Pesenan Terakhir',
+            'pesenan_terakhir' => 'Pesanan Terakhir',
         ];
     }
 
+    public function getPermintaanPelanggan()
+    {
+        return $this->hasMany(PermintaanPelanggan::class, ['pelanggan_id' => 'pelanggan_id']);
+    }
 }

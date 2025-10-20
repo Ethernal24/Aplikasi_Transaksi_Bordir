@@ -8,9 +8,13 @@ use Yii;
  * This is the model class for table "mps".
  *
  * @property int $mps_id
- * @property int $forecast_id
- * @property int $stock_awal
- * @property int $rencana_produksi
+ * @property int $barang_id
+ * @property int $periode
+ * @property int $qty
+ * @property int $tipe
+ * @property int $sumber
+ * @property int $status_mps
+ * @property string $dateline
  */
 class Mps extends \yii\db\ActiveRecord
 {
@@ -28,8 +32,9 @@ class Mps extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['forecast_id', 'stock_awal'], 'required'],
-            [['forecast_id', 'stock_awal', 'rencana_produksi'], 'integer'],
+            [['barang_id', 'periode', 'qty', 'tipe', 'dateline', 'sumber', 'status_mps'], 'required'],
+            [['barang_id', 'tipe', 'status_mps', 'sumber'], 'integer'],
+            [['qty'], 'number'],
             [['rencana_produksi'], 'safe'],
         ];
     }
@@ -41,14 +46,18 @@ class Mps extends \yii\db\ActiveRecord
     {
         return [
             'mps_id' => 'Mps ID',
-            'forecast_id' => 'Forecast ID',
-            'stock_awal' => 'Stock Awal',
-            'rencana_produksi' => 'Rencana Produksi',
+            'barang_id' => "Barang ID",
+            'periode' => "Periode",
+            'qty' => "Qty",
+            'tipe' => "Tipe",
+            'dateline' => "Dateline",
+            'sumber' => "Sumber",
+            'status_mps' => "Status MPS",
         ];
     }
 
-    public function getForecast()
+    public function getBarang()
     {
-        return $this->hasOne(Forecast::class, ['forecast_id' => 'forecast_id']);
+        return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
     }
 }

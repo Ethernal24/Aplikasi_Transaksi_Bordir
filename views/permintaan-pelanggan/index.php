@@ -31,7 +31,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                         // 'permintaan_id',
                         'kode_permintaan',
-                        'nama_pelanggan',
+                        'pelanggan_id',
                         'tanggal_permintaan',
                         'tenggat_waktu',
                         [

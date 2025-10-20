@@ -8,7 +8,7 @@ use Yii;
  * This is the model class for table "permintaan_pelanggan".
  *
  * @property int $permintaan_id
- * @property int $nama_pelanggan
+ * @property int $pelanggan_id
  * @property string $tanggal_permintaan
  * @property PermintaanDetail[] $details
  */
@@ -28,8 +28,9 @@ class PermintaanPelanggan extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['nama_pelanggan', 'kode_permintaan', 'tenggat_waktu', 'status_pesanan'], 'required'],
-            [['nama_pelanggan', 'kode_permintaan'], 'string'],
+            [['pelanggan_id', 'kode_permintaan', 'tenggat_waktu', 'status_pesanan'], 'required'],
+            [['kode_permintaan'], 'string'],
+            [['pelanggan_id'], 'integer'],
             [['tanggal_permintaan', 'dibuat_pada', 'diupdate_pada'], 'safe'],
         ];
     }
@@ -41,7 +42,7 @@ class PermintaanPelanggan extends \yii\db\ActiveRecord
     {
         return [
             'permintaan_id' => 'Permintaan ID',
-            'nama_pelanggan' => 'Nama Pelanggan',
+            'pelanggan_id' => 'pelanggan ID',
             'tanggal_permintaan' => 'Tanggal Permintaan',
             'kode_permintaan' => 'Kode Permintaan',
             'tenggat_waktu' => 'Tenggat Waktu',
@@ -52,5 +53,9 @@ class PermintaanPelanggan extends \yii\db\ActiveRecord
     public function getDetails()
     {
         return $this->hasMany(PermintaanDetail::class, ['permintaan_id' => 'permintaan_id']);
+    }
+    public function getPelanggan()
+    {
+        return $this->hasOne(MasterPelanggan::class, ['pelanggan_id' => 'pelanggan_id']);
     }
 }

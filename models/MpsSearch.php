@@ -17,7 +17,10 @@ class MpsSearch extends Mps
     public function rules()
     {
         return [
-            [['mps_id', 'forecast_id', 'stock_awal', 'rencana_produksi'], 'integer'],
+            [['mps_id', 'barang_id', 'periode', 'qty', 'tipe', 'dateline', 'sumber', 'status_mps'], 'integer'],
+            [['dateline'], 'safe']
+
+
         ];
     }
 
@@ -58,9 +61,13 @@ class MpsSearch extends Mps
         // grid filtering conditions
         $query->andFilterWhere([
             'mps_id' => $this->mps_id,
-            'forecast_id' => $this->forecast_id,
-            'stock_awal' => $this->stock_awal,
-            'rencana_produksi' => $this->rencana_produksi,
+            'barang_id' => $this->barang_id,
+            'periode' => $this->periode,
+            'qty' => $this->qty,
+            'tipe' => $this->tipe,
+            'dateline' => $this->dateline,
+            'sumber' => $this->sumber,
+            'status_mps' => $this->status_mps,
         ]);
 
         return $dataProvider;

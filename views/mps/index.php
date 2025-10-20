@@ -27,16 +27,13 @@ $this->params['breadcrumbs'][] = $this->title;
                     ['class' => 'yii\grid\SerialColumn'],
 
                     // 'mps_id',
-                    'forecast.barang.nama_barang',
-                    'forecast.bulan',
-                    'forecast.tahun',
-                    'forecast_id' => [
-                        'attribute' => 'forecast_id',
-                        'value' => 'forecast.hasil_forecast',
-                        'label' => 'hasil Forecast',
-                    ],
-                    'stock_awal',
-                    'rencana_produksi',
+                    'barang_id',
+                    'periode',
+                    'qty',
+                    'tipe',
+                    'dateline',
+                    'sumber',
+                    'status_mps',
                     [
                         'class' => ActionColumn::className(),
                         'urlCreator' => function ($action, Mps $model, $key, $index, $column) {

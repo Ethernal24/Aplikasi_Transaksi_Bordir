@@ -2,18 +2,16 @@
 
 namespace app\controllers;
 
-use app\models\MasterPelanggan;
-use app\models\MasterPelangganSearch;
-use app\models\PermintaanDetail;
-use app\models\PermintaanPelanggan;
+use app\models\MrpDetail;
+use app\models\MrpDetailSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * MasterPelangganController implements the CRUD actions for MasterPelanggan model.
+ * MrpDetailController implements the CRUD actions for MrpDetail model.
  */
-class MasterPelangganController extends Controller
+class MrpDetailController extends Controller
 {
     /**
      * @inheritDoc
@@ -34,13 +32,13 @@ class MasterPelangganController extends Controller
     }
 
     /**
-     * Lists all MasterPelanggan models.
+     * Lists all MrpDetail models.
      *
      * @return string
      */
     public function actionIndex()
     {
-        $searchModel = new MasterPelangganSearch();
+        $searchModel = new MrpDetailSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
         return $this->render('index', [
@@ -50,36 +48,30 @@ class MasterPelangganController extends Controller
     }
 
     /**
-     * Displays a single MasterPelanggan model.
-     * @param int $pelanggan_id Pelanggan ID
+     * Displays a single MrpDetail model.
+     * @param int $mrp_detail_id Mrp Detail ID
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($pelanggan_id)
+    public function actionView($mrp_detail_id)
     {
-        $model = $this->findModel($pelanggan_id);
-        $produk = PermintaanDetail::find()
-            ->joinWith(['permintaan', 'barang'])
-            ->where(['permintaan_pelanggan.pelanggan_id' => $pelanggan_id])
-            ->all();
         return $this->render('view', [
-            'model' => $model,
-            'produk' => $produk,
+            'model' => $this->findModel($mrp_detail_id),
         ]);
     }
 
     /**
-     * Creates a new MasterPelanggan model.
+     * Creates a new MrpDetail model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
      */
     public function actionCreate()
     {
-        $model = new MasterPelanggan();
+        $model = new MrpDetail();
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'pelanggan_id' => $model->pelanggan_id]);
+                return $this->redirect(['view', 'mrp_detail_id' => $model->mrp_detail_id]);
             }
         } else {
             $model->loadDefaultValues();
@@ -91,18 +83,18 @@ class MasterPelangganController extends Controller
     }
 
     /**
-     * Updates an existing MasterPelanggan model.
+     * Updates an existing MrpDetail model.
      * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $pelanggan_id Pelanggan ID
+     * @param int $mrp_detail_id Mrp Detail ID
      * @return string|\yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($pelanggan_id)
+    public function actionUpdate($mrp_detail_id)
     {
-        $model = $this->findModel($pelanggan_id);
+        $model = $this->findModel($mrp_detail_id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'pelanggan_id' => $model->pelanggan_id]);
+            return $this->redirect(['view', 'mrp_detail_id' => $model->mrp_detail_id]);
         }
 
         return $this->render('update', [
@@ -111,29 +103,29 @@ class MasterPelangganController extends Controller
     }
 
     /**
-     * Deletes an existing MasterPelanggan model.
+     * Deletes an existing MrpDetail model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $pelanggan_id Pelanggan ID
+     * @param int $mrp_detail_id Mrp Detail ID
      * @return \yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionDelete($pelanggan_id)
+    public function actionDelete($mrp_detail_id)
     {
-        $this->findModel($pelanggan_id)->delete();
+        $this->findModel($mrp_detail_id)->delete();
 
         return $this->redirect(['index']);
     }
 
     /**
-     * Finds the MasterPelanggan model based on its primary key value.
+     * Finds the MrpDetail model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $pelanggan_id Pelanggan ID
-     * @return MasterPelanggan the loaded model
+     * @param int $mrp_detail_id Mrp Detail ID
+     * @return MrpDetail the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($pelanggan_id)
+    protected function findModel($mrp_detail_id)
     {
-        if (($model = MasterPelanggan::findOne(['pelanggan_id' => $pelanggan_id])) !== null) {
+        if (($model = MrpDetail::findOne(['mrp_detail_id' => $mrp_detail_id])) !== null) {
             return $model;
         }
 

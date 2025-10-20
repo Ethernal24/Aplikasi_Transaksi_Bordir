@@ -20,7 +20,6 @@ use yii\widgets\ActiveForm;
 
             <?= $form->field($model, 'instansi')->textInput(['maxlength' => true]) ?>
 
-            <?= $form->field($model, 'pesenan_terakhir')->textInput() ?>
 
             <div class="form-group">
                 <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
@@ -29,6 +28,6 @@ use yii\widgets\ActiveForm;
         </div>
     </div>
 
-    
+
 
 </div>

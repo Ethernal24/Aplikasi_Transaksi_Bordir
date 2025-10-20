@@ -4,12 +4,12 @@ namespace app\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\PermintaanPelanggan;
+use app\models\MrpDetail;
 
 /**
- * PermintaanPelangganSearch represents the model behind the search form of `app\models\PermintaanPelanggan`.
+ * MrpDetailSearch represents the model behind the search form of `app\models\MrpDetail`.
  */
-class PermintaanPelangganSearch extends PermintaanPelanggan
+class MrpDetailSearch extends MrpDetail
 {
     /**
      * {@inheritdoc}
@@ -17,9 +17,9 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
     public function rules()
     {
         return [
-            [['permintaan_id', 'status_pesanan', 'pelanggan_id'], 'integer'],
-            [['kode_permintaan'], 'string'],
-            [['tanggal_permintaan', 'tenggat_waktu', 'dibuat_pada', 'diupdate_pada'], 'safe'],
+            [['mrp_detail_id', 'mrp_id', 'bahan_id', 'stock_tersedia', 'kebutuhan_bersih', 'leadtime'], 'integer'],
+            [['kebutuhan_kotor'], 'number'],
+            [['planned_order_release', 'planned_order_receipt'], 'safe'],
         ];
     }
 
@@ -41,7 +41,7 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
      */
     public function search($params)
     {
-        $query = PermintaanPelanggan::find();
+        $query = MrpDetail::find();
 
         // add conditions that should always apply here
 
@@ -59,9 +59,15 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'permintaan_id' => $this->permintaan_id,
-            'pelanggan_id' => $this->pelanggan_id,
-            'tanggal_permintaan' => $this->tanggal_permintaan,
+            'mrp_detail_id' => $this->mrp_detail_id,
+            'mrp_id' => $this->mrp_id,
+            'bahan_id' => $this->bahan_id,
+            'kebutuhan_kotor' => $this->kebutuhan_kotor,
+            'stock_tersedia' => $this->stock_tersedia,
+            'kebutuhan_bersih' => $this->kebutuhan_bersih,
+            'leadtime' => $this->leadtime,
+            'planned_order_release' => $this->planned_order_release,
+            'planned_order_receipt' => $this->planned_order_receipt,
         ]);
 
         return $dataProvider;

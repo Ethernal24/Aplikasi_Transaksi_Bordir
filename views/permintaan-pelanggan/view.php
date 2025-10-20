@@ -24,7 +24,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="row mx-3">
             <div class="col">
                 <div><strong>Kode Permintaan : </strong> <?= $model->kode_permintaan ?></div>
-                <div><strong>Nama Pelangga : </strong> <?= $model->nama_pelanggan ?></div>
+                <div><strong>Nama Pelanggan : </strong> <?= $model->pelanggan_id ?></div>
             </div>
             <div class="col">
                 <div><strong>Tanggal Permintaan : </strong> <?= $model->tanggal_permintaan ?></div>

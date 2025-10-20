@@ -4,12 +4,12 @@ namespace app\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\PermintaanPelanggan;
+use app\models\MasterMrp;
 
 /**
- * PermintaanPelangganSearch represents the model behind the search form of `app\models\PermintaanPelanggan`.
+ * MasterMrpSearch represents the model behind the search form of `app\models\MasterMrp`.
  */
-class PermintaanPelangganSearch extends PermintaanPelanggan
+class MasterMrpSearch extends MasterMrp
 {
     /**
      * {@inheritdoc}
@@ -17,9 +17,7 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
     public function rules()
     {
         return [
-            [['permintaan_id', 'status_pesanan', 'pelanggan_id'], 'integer'],
-            [['kode_permintaan'], 'string'],
-            [['tanggal_permintaan', 'tenggat_waktu', 'dibuat_pada', 'diupdate_pada'], 'safe'],
+            [['mrp_id', 'mps_id', 'status'], 'integer'],
         ];
     }
 
@@ -41,7 +39,7 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
      */
     public function search($params)
     {
-        $query = PermintaanPelanggan::find();
+        $query = MasterMrp::find();
 
         // add conditions that should always apply here
 
@@ -59,9 +57,9 @@ class PermintaanPelangganSearch extends PermintaanPelanggan
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'permintaan_id' => $this->permintaan_id,
-            'pelanggan_id' => $this->pelanggan_id,
-            'tanggal_permintaan' => $this->tanggal_permintaan,
+            'mrp_id' => $this->mrp_id,
+            'mps_id' => $this->mps_id,
+            'status' => $this->status,
         ]);
 
         return $dataProvider;
