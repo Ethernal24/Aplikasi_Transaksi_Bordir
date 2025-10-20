@@ -34,10 +34,10 @@ $this->params['breadcrumbs'][] = $this->title;
             'bahan_id',
             'kebutuhan_kotor',
             'stock_tersedia',
-            //'kebutuhan_bersih',
-            //'leadtime:datetime',
-            //'planned_order_release',
-            //'planned_order_receipt',
+            'kebutuhan_bersih',
+            'leadtime:datetime',
+            'planned_order_release',
+            'planned_order_receipt',
             [
                 'class' => ActionColumn::className(),
                 'urlCreator' => function ($action, MrpDetail $model, $key, $index, $column) {

@@ -11,7 +11,8 @@ $KaryawanUrl = Url::to(['/tenaga-kerja/index']);
 $PelangganUrl = Url::to(['/master-pelanggan/index']);
 $BahanUrl = Url::to(['/barang/index']);
 $MpsUrl = Url::to(['/mps/index']);
-$MrpUrl = Url::to(['/mrp/index']);
+$MrpUrl = Url::to(['/master-mrp/index']);
+$MrpDetailUrl = Url::to(['/mrp-detail/index']);
 $RoutingUrl = Url::to(['/master-routing/index']);
 $ProdukUrl = Url::to(['/barang/index-barang-jadi']);
 $SupplierUrl = Url::to(['/supplier/index']);
@@ -99,6 +100,7 @@ $samplePageUrl = Url::to(['site/sample-page']);
                         <ul class="pc-submenu">
                             <li class="pc-item"><a class="pc-link" href="<?= $MpsUrl ?>">MPS</a></li>
                             <li class="pc-item"><a class="pc-link" href="<?= $MrpUrl ?>">MRP</a></li>
+                            <li class="pc-item"><a class="pc-link" href="<?= $MrpDetailUrl ?>">MRP Detail</a></li>
 
                         </ul>
                     </li>

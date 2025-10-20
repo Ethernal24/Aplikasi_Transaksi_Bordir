@@ -10,10 +10,11 @@ use app\models\RiwayatPermintaan;
 use app\models\RiwayatPermintaanSearch;
 use DateTime;
 use Yii;
+use yii\db\Expression;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-
+use Carbon\Carbon;
 /**
  * RiwayatPermintaanController implements the CRUD actions for RiwayatPermintaan model.
  */
@@ -257,9 +258,15 @@ class RiwayatPermintaanController extends Controller
                         $rencanaproduksi = 0;
                     }
                     $mps = new Mps();
-                    $mps->forecast_id = $forecast->forecast_id;
-                    $mps->stock_awal = $stockAwal;
-                    $mps->rencana_produksi = $rencanaproduksi;
+                    $mps->barang_id = $forecast->barang_id;
+                    $mps->periode = $forecast->bulan;
+                    $mps->qty = $rencanaproduksi;
+                    $mps->tipe = 0;
+                    $mps->dateline = new Expression("CONCAT(LAST_DAY(NOW()), ' 23:59:59')");
+                    $mps->sumber = 0;
+                    $mps->status_mps = 0;
+                    $mps->dibuat_pada = date('Y-m-d H:i:s');
+                    $mps->diupdate_pada = date('Y-m-d H:i:s');
                     $mps->save(false);
                 }
                 $transaction->commit();

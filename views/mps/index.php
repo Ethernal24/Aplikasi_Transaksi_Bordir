@@ -27,13 +27,68 @@ $this->params['breadcrumbs'][] = $this->title;
                     ['class' => 'yii\grid\SerialColumn'],
 
                     // 'mps_id',
-                    'barang_id',
-                    'periode',
+                    'barang_id' => [
+                        'attribute' => 'barang_id',
+                        'value' => 'barang.nama_barang',
+                        'label' => 'Nama barang',
+                    ],
+                    'periode'=>[
+                        'attribute' => 'periode',
+                        'label' => 'Periode',
+                        'value' => function ($model) {
+                            $list = [
+                                '1' => 'Januari',
+                                '2' => 'Februari',
+                                '3' => 'Maret',
+                                '4' => 'April',
+                                '5' => 'Mei',
+                                '6' => 'Juni',
+                                '7' => 'Juli',
+                                '8' => 'Agustus',
+                                '9' => 'September',
+                                '10' => 'Oktober',
+                                '11' => 'November',
+                                '12' => 'Desember',
+                            ];
+                            return $list[$model->periode] ?? null;
+                        },
+                    ],
                     'qty',
-                    'tipe',
+                    'tipe' =>[
+                        'attribute' => 'tipe',
+                        'value' => function ($model) {
+                                $list = [
+                                    0 => 'MTS',
+                                    1 => 'MTO',
+                                ];
+                                return $list[$model->status_mps] ?? null;
+                            },
+                        "label" => 'Tipe',
+                        ],
                     'dateline',
-                    'sumber',
-                    'status_mps',
+                    // 'sumber' =>[
+                    //     'attribute' => 'sumber',
+                    //     'value' => function ($model) {
+                    //             $list = [
+                    //                 0 => 'Forecast',
+                    //                 1 => 'MTO',
+                    //             ];
+                    //             return $list[$model->sumber] ?? null;
+                    //         },
+                    //     "label" => 'sumber',
+                    //     ],
+                    'status_mps'=>[
+                        'attribute' => 'status_mps',
+                        'value' => function ($model) {
+                                $list = [
+                                    0 => 'pending',
+                                    1 => 'approved',
+                                ];
+                                return $list[$model->status_mps] ?? null;
+                            },
+                        "label" => 'Status MPS'
+
+                    ],
                     [
                         'class' => ActionColumn::className(),
                         'urlCreator' => function ($action, Mps $model, $key, $index, $column) {
