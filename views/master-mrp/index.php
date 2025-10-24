@@ -26,9 +26,38 @@ $this->params['breadcrumbs'][] = $this->title;
                 'columns' => [
                     ['class' => 'yii\grid\SerialColumn'],
 
-                    'mrp_id',
-                    'mps_id',
-                    'status',
+                    // 'mrp_id',
+                    // 'mps_id',
+                    [
+                        'attribute' => 'nama_barang',
+                        'value' => function ($model) {
+                            return $model->mps->barangName;
+                        },
+                        'label' => 'nama barang',
+                    ],
+                    [
+                        'attribute' => 'tanggal_awal',
+                        'value' => function ($model) {
+                            return date('d-M-Y', strtotime($model->mps->tanggal_awal));
+                        },
+                        'label' => 'Tanggal Awal',
+                    ],
+                    [
+                        'attribute' => 'dateline',
+                        'value' => function ($model) {
+                            return date('d-M-Y', strtotime($model->mps->tanggal_awal));
+                        },
+                        'label' => 'dateline',
+                    ],
+                    [
+                        'attribute' => 'status',
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            $label = $model->label;
+                            return "<span class='{$label['class']}'>{$label['label']}</span>";
+                        },
+                        'label' => 'Status',
+                    ],
                     [
                         'class' => ActionColumn::className(),
                         'urlCreator' => function ($action, MasterMrp $model, $key, $index, $column) {

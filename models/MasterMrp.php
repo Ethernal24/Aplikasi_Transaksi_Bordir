@@ -60,4 +60,28 @@ class MasterMrp extends \yii\db\ActiveRecord
             'status' => 'Status',
         ];
     }
+
+    public function getMps()
+    {
+        return $this->hasOne(Mps::class, ['mps_id' => 'mps_id']);
+    }
+
+    public function getLabel()
+    {
+        $status = [
+            '0' => [
+                'label' => 'Pending',
+                'class' => 'badge bg-warning'
+            ],
+            '1' => [
+                'label' => 'In progress',
+                'class' => 'badge bg-info'
+            ],
+            '2' => [
+                'label' => 'Done',
+                'class' => 'badge bg-success'
+            ],
+        ];
+        return isset($status[$this->status]) ? $status[$this->status] : ['label' => 'unknown', 'class' => 'badge bg-secondary'];
+    }
 }

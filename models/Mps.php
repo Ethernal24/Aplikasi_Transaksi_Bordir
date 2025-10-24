@@ -97,4 +97,13 @@ class Mps extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
     }
+
+    public function getTipeLabel()
+    {
+        $tipe = [
+            '0' => 'MTS',
+            '1' => 'MTO',
+        ];
+        return isset($tipe[$this->tipe]) ? $tipe[$this->tipe] : 'Unknown';;
+    }
 }
