@@ -8,7 +8,7 @@ use Yii;
  * This is the model class for table "bom_custom".
  *
  * @property int $bom_custom_id
- * @property int $permintaan_detail_id
+ * @property int $produk_custom_pelanggan_id
  * @property int $bahan_id
  * @property float $qty_per_unit
  * @property int $unit_id
@@ -30,10 +30,10 @@ class BomCustom extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['permintaan_detail_id', 'bahan_id', 'qty_per_unit', 'unit_id'], 'required'],
-            [['permintaan_detail_id', 'bahan_id', 'unit_id'], 'integer'],
+            [['bahan_id', 'qty_per_unit', 'unit_id'], 'required'],
+            [['produk_custom_pelanggan_id', 'bahan_id', 'unit_id'], 'integer'],
             [['qty_per_unit'], 'number', 'min' => 0],
-            [['catatan'], 'safe'],
+            [['produk_custom_pelanggan_id', 'catatan'], 'safe'],
             [['catatan'], 'string']
         ];
     }
@@ -45,7 +45,7 @@ class BomCustom extends \yii\db\ActiveRecord
     {
         return [
             'bom_custom_id' => 'Bom Custom ID',
-            'permintaan_detail_id' => 'Permintaan Detail ID',
+            'produk_custom_pelanggan_id' => 'Produk Custom Pelanggan Id',
             'bahan_id' => 'Bahan ID',
             'qty_per_unit' => 'Qty Per Unit',
             'unit_id' => 'Unit ID',
@@ -53,9 +53,10 @@ class BomCustom extends \yii\db\ActiveRecord
         ];
     }
 
-    public function getDetail()
+
+    public function getProdukCustom()
     {
-        return $this->hasOne(PermintaanDetail::class, ['permintaan_detail_id' => 'permintaan_detail_id']);
+        return $this->hasOne(ProdukCustomPelanggan::class, ['produk_custom_pelanggan_id' => 'produk_custom_pelanggan_id']);
     }
     public function getBahan()
     {

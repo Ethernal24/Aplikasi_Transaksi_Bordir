@@ -6,6 +6,8 @@ use app\models\MasterPelanggan;
 use app\models\MasterPelangganSearch;
 use app\models\PermintaanDetail;
 use app\models\PermintaanPelanggan;
+use app\models\ProdukCustomPelanggan;
+use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -58,9 +60,8 @@ class MasterPelangganController extends Controller
     public function actionView($pelanggan_id)
     {
         $model = $this->findModel($pelanggan_id);
-        $produk = PermintaanDetail::find()
-            ->joinWith(['permintaan', 'barang'])
-            ->where(['permintaan_pelanggan.pelanggan_id' => $pelanggan_id])
+        $produk = ProdukCustomPelanggan::find()
+            ->where(['pelanggan_id' => $pelanggan_id])
             ->all();
         return $this->render('view', [
             'model' => $model,
@@ -138,5 +139,29 @@ class MasterPelangganController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    public function actionDetailAjax($produk_custom_pelanggan_id)
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_HTML;
+
+        $produk = ProdukCustomPelanggan::find()
+            ->with('bomCustom') // jika kamu punya relasi BOM
+            ->where(['produk_custom_pelanggan_id' => $produk_custom_pelanggan_id])
+            ->one();
+
+        if (!$produk) {
+            return '<div class="text-danger">Data produk tidak ditemukan.</div>';
+        }
+
+        try {
+            return $this->renderPartial('_view_detail', [
+                'produk' => $produk,
+                'bomList' => $produk->bomCustom, // pastikan dipassing kalau di view butuh
+            ]);
+        } catch (\Throwable $e) {
+            Yii::error($e->getMessage(), __METHOD__);
+            return '<div class="text-danger">Terjadi kesalahan saat memuat detail.</div>';
+        }
     }
 }

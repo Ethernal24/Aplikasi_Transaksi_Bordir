@@ -21,7 +21,8 @@ $this->params['breadcrumbs'][] = $this->title;
         <?= Html::a('Create Mrp Detail', ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+    <?php // echo $this->render('_search', ['model' => $searchModel]); 
+    ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
@@ -35,14 +36,14 @@ $this->params['breadcrumbs'][] = $this->title;
             'kebutuhan_kotor',
             'stock_tersedia',
             'kebutuhan_bersih',
-            'leadtime:datetime',
+            'leadtime',
             'planned_order_release',
             'planned_order_receipt',
             [
                 'class' => ActionColumn::className(),
                 'urlCreator' => function ($action, MrpDetail $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'mrp_detail_id' => $model->mrp_detail_id]);
-                 }
+                }
             ],
         ],
     ]); ?>

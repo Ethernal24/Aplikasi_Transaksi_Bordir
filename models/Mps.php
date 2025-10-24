@@ -3,6 +3,8 @@
 namespace app\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "mps".
@@ -15,6 +17,7 @@ use Yii;
  * @property int $sumber
  * @property int $status_mps
  * @property string $dateline
+ * @property int $tanggal_awal
  */
 class Mps extends \yii\db\ActiveRecord
 {
@@ -26,6 +29,18 @@ class Mps extends \yii\db\ActiveRecord
         return 'mps';
     }
 
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'createdAtAttribute' => 'dibuat_pada',
+                'updatedAtAttribute' => 'diupdate_pada',
+                'value' => new Expression('NOW()'), // gunakan CURRENT_TIMESTAMP di DB
+            ],
+        ];
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -35,7 +50,7 @@ class Mps extends \yii\db\ActiveRecord
             [['barang_id', 'periode', 'qty', 'tipe', 'dateline', 'sumber', 'status_mps'], 'required'],
             [['barang_id', 'tipe', 'status_mps', 'sumber'], 'integer'],
             [['qty'], 'number'],
-            [['rencana_produksi'], 'safe'],
+            [['tanggal_awal'], 'safe'],
         ];
     }
 
@@ -53,7 +68,29 @@ class Mps extends \yii\db\ActiveRecord
             'dateline' => "Dateline",
             'sumber' => "Sumber",
             'status_mps' => "Status MPS",
+            'tanggal_awal' => 'Tanggal Awal',
         ];
+    }
+
+    public function getBarangRelasi()
+    {
+        if ($this->tipe === 0) {
+            return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
+        } elseif ($this->tipe === 1) {
+
+            return $this->hasOne(ProdukCustomPelanggan::class, ['produk_custom_pelanggan_id' => 'barang_id']);
+        }
+    }
+    public function getBarangName()
+    {
+        if (!$this->barangRelasi) return '-';
+        return $this->tipe === 0
+            ? $this->barangRelasi->nama_barang
+            : $this->barangRelasi->nama_barang_custom;
+    }
+    public function getPermintaan()
+    {
+        return $this->hasOne(PermintaanPelanggan::class, ['permintaan_id' => 'sumber']);
     }
 
     public function getBarang()

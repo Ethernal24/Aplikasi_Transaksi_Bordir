@@ -2,6 +2,8 @@
 
 use wbraganca\dynamicform\DynamicFormWidget;
 use yii\helpers\Html;
+use yii\helpers\Url;
+use yii\jui\DatePicker;
 use yii\widgets\ActiveForm;
 
 /** @var yii\web\View $this */
@@ -19,28 +21,37 @@ use yii\widgets\ActiveForm;
             <?php $form = ActiveForm::begin(['id' => 'dynamic-form']); ?>
             <div class="row">
                 <div class="col">
-                    <?= $form->field($model, 'kode_permintaan')->textInput() ?>
+                    <?= $form->field($model, 'kode_permintaan')->textInput(['readonly' => true]) ?>
                 </div>
                 <div class="col">
                     <?= $form->field($model, 'pelanggan_id')->dropDownList(
                         \yii\helpers\ArrayHelper::map(\app\models\MasterPelanggan::find()
                             ->all(), 'pelanggan_id', 'nama_pelanggan'),
-                        ['prompt' => 'Pilih Pelanggan']
-                    ) ?>
+                        [
+                            'prompt' => 'Pilih Pelanggan',
+                            'id' => 'pelanggan-id', // penting
+                        ]
+                    )->label('Nama Pelanggan') ?>
                 </div>
                 <div class="col">
-                    <?= $form->field($model, 'tanggal_permintaan')->input("date") ?>
+                    <?= $form->field($model, 'tanggal_permintaan')->widget(DatePicker::className(), [
+                        'dateFormat' => 'yyyy-MM-dd', // format yang sesuai database
+                        'options' => ['class' => 'form-control', 'placeholder' => 'Pilih Tanggal'],
+                    ]) ?>
                 </div>
                 <div class="col">
-                    <?= $form->field($model, 'tenggat_waktu')->input("date") ?>
+                    <?= $form->field($model, 'tenggat_waktu')->widget(DatePicker::className(), [
+                        'dateFormat' => 'yyyy-MM-dd', // format yang sesuai database
+                        'options' => ['class' => 'form-control', 'placeholder' => 'Pilih Tanggal'],
+                    ]) ?>
                 </div>
                 <div class="col">
                     <?= $form->field($model, 'status_pesanan')
                         ->dropDownList(
                             [
-                                0 => 'antrian',
-                                1 => 'sedang dikerjakan',
-                                2 => 'selesai',
+                                0 => 'Antrian',
+                                1 => 'Proses',
+                                2 => 'Selesai',
                             ],
                             [
                                 'prompt' => 'Pilih status pesanan...',
@@ -78,10 +89,13 @@ use yii\widgets\ActiveForm;
                     <?php foreach ($modelDetails as $i => $detail): ?>
                         <tr class="item">
                             <td>
-                                <?= $form->field($detail, "[{$i}]barang_id", ['template' => "{input}\n{error}"])
+                                <?= $form->field($detail, "[{$i}]produk_custom_pelanggan_id", ['template' => "{input}\n{error}"])
                                     ->dropDownList(
-                                        \yii\helpers\ArrayHelper::map(\app\models\Barang::find()->where(['tipe_barang' => [2, 4]])->all(), 'barang_id', 'nama_barang'),
-                                        ['prompt' => 'Pilih Barang']
+                                        [],
+                                        [
+                                            'prompt' => 'Pilih Barang',
+                                            'class' => 'barang-dropdown form-control',
+                                        ]
                                     ) ?>
                             </td>
                             <td>
@@ -109,11 +123,45 @@ use yii\widgets\ActiveForm;
 
             <div class="form-group">
                 <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
-                <?= Html::a('Back', 'index', ['class' => 'btn btn-secondary']) ?>
+                <?php if ($model->isNewRecord): ?>
+                    <?= Html::a('Back', ['index'], ['class' => 'btn btn-secondary']) ?>
+                <?php else: ?>
+                    <?= Html::a('Back', ['view', 'permintaan_id' => $model->permintaan_id], ['class' => 'btn btn-secondary']) ?>
+                <?php endif; ?>
             </div>
 
             <?php ActiveForm::end(); ?>
         </div>
     </div>
-
 </div>
+
+<?php
+
+$urlGetBarang = Url::to(['permintaan-pelanggan/get-barang-by-pelanggan']);
+$js = <<<JS
+    $('#pelanggan-id').on('change', function() {
+    var pelangganId = $(this).val();
+
+    if (!pelangganId) {
+        // reset semua dropdown barang jika pelanggan belum dipilih
+        $('.barang-dropdown').html('<option value="">Pilih Barang</option>');
+        return;
+    }
+
+    $.ajax({
+        url: '{$urlGetBarang}',
+        type: 'GET',
+        data: { pelanggan_id: pelangganId },
+        success: function(response) {
+            $('.barang-dropdown').each(function() {
+                $(this).html(response); // isi ulang semua dropdown barang
+            });
+        },
+        error: function() {
+            alert('Gagal mengambil data barang.');
+        }
+    });
+});
+JS;
+$this->registerJs($js);
+?>

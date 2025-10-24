@@ -3,6 +3,8 @@
 namespace app\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "permintaan_pelanggan".
@@ -10,6 +12,8 @@ use Yii;
  * @property int $permintaan_id
  * @property int $pelanggan_id
  * @property string $tanggal_permintaan
+ * @property string $tenggat_waktu
+ * @property int $status_pesanan
  * @property PermintaanDetail[] $details
  */
 class PermintaanPelanggan extends \yii\db\ActiveRecord
@@ -20,6 +24,18 @@ class PermintaanPelanggan extends \yii\db\ActiveRecord
     public static function tableName()
     {
         return 'permintaan_pelanggan';
+    }
+
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'createdAtAttribute' => 'dibuat_pada',
+                'updatedAtAttribute' => 'diupdate_pada',
+                'value' => new Expression('NOW()'), // gunakan CURRENT_TIMESTAMP di DB
+            ],
+        ];
     }
 
     /**
@@ -57,5 +73,21 @@ class PermintaanPelanggan extends \yii\db\ActiveRecord
     public function getPelanggan()
     {
         return $this->hasOne(MasterPelanggan::class, ['pelanggan_id' => 'pelanggan_id']);
+    }
+
+    public function getLabel()
+    {
+        $status = [
+            '0' => ['label' => 'Antrian', 'class' => 'badge bg-info'],
+            '1' => ['label' => 'Proses', 'class' => 'badge bg-warning'],
+            '2' => ['label' => 'Selesai', 'class' => 'badge bg-success'],
+        ];
+
+        return isset($status[$this->status_pesanan]) ? $status[$this->status_pesanan] : ['label' => 'Unknown', 'class' => 'badge bg-secondary'];
+    }
+
+    public function getMps()
+    {
+        return $this->belongsTo(Mps::class, ['sumber' => 'permintaan_id']);
     }
 }

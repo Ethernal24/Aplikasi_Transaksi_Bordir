@@ -18,7 +18,7 @@ class MasterPelangganSearch extends MasterPelanggan
     {
         return [
             [['pelanggan_id'], 'integer'],
-            [['nama_pelanggan', 'instansi', 'pesenan_terakhir'], 'safe'],
+            [['nama_pelanggan', 'instansi', 'pesenan_terakhir', 'kode'], 'safe'],
         ];
     }
 
@@ -61,6 +61,7 @@ class MasterPelangganSearch extends MasterPelanggan
         $query->andFilterWhere([
             'pelanggan_id' => $this->pelanggan_id,
             'pesenan_terakhir' => $this->pesenan_terakhir,
+            'kode' => $this->kode,
         ]);
 
         $query->andFilterWhere(['like', 'nama_pelanggan', $this->nama_pelanggan])

@@ -15,6 +15,7 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use Carbon\Carbon;
+
 /**
  * RiwayatPermintaanController implements the CRUD actions for RiwayatPermintaan model.
  */
@@ -243,6 +244,19 @@ class RiwayatPermintaanController extends Controller
                     $bulan = (int)$dt->format('n');
                     $tahun = (int)$dt->format('Y');
 
+                    // Cek Forecast
+                    $cekForecast = Forecast::find()
+                        ->where([
+                            'barang_id' => $barangId,
+                            'bulan' => $bulan,
+                            'tahun' => $tahun
+                        ])
+                        ->exists();
+                    if ($cekForecast) {
+                        continue;
+                    }
+
+
                     // Simpan hasil forecast
                     $forecast = new Forecast();
                     $forecast->barang_id = $barangId;
@@ -251,23 +265,12 @@ class RiwayatPermintaanController extends Controller
                     $forecast->metode = 'Single Moving Average';
                     $forecast->hasil_forecast = $prediksi;
                     $forecast->save(false);
-                    // $barang = Barang::findOne($barangId);
                     $stockAwal = 0;
                     $rencanaproduksi = $prediksi - $stockAwal;
                     if ($rencanaproduksi < 0) {
                         $rencanaproduksi = 0;
                     }
-                    $mps = new Mps();
-                    $mps->barang_id = $forecast->barang_id;
-                    $mps->periode = $forecast->bulan;
-                    $mps->qty = $rencanaproduksi;
-                    $mps->tipe = 0;
-                    $mps->dateline = new Expression("CONCAT(LAST_DAY(NOW()), ' 23:59:59')");
-                    $mps->sumber = 0;
-                    $mps->status_mps = 0;
-                    $mps->dibuat_pada = date('Y-m-d H:i:s');
-                    $mps->diupdate_pada = date('Y-m-d H:i:s');
-                    $mps->save(false);
+                    $this->createMps($barangId, $bulan, $tahun, $rencanaproduksi, 0, 0);
                 }
                 $transaction->commit();
 
@@ -289,5 +292,38 @@ class RiwayatPermintaanController extends Controller
                 ];
             }
         }
+    }
+
+    public function createMps($barang_id, $bulan, $tahun, $rencanaproduksi, $tipe, $sumber)
+    {
+        $cekMps = Mps::find()
+            ->where([
+                'barang_id' => $barang_id,
+            ])
+            ->andWhere(['between', 'periode', "$tahun-$bulan-01", "$tahun-$bulan-31"])
+            ->exists();
+
+        if ($cekMps) {
+            return false;
+        }
+
+        $mps = new Mps();
+        $periodeBulan = str_pad($bulan, 2, '0', STR_PAD_LEFT);
+        $tanggalForecast = strtotime("$tahun-$periodeBulan-01");
+        $periode = date('Y-m-01', $tanggalForecast);
+        $dateline = date('Y-m-t', $tanggalForecast);
+
+
+        $mps->periode = $periode;
+        $mps->tanggal_awal = $periode;
+        $mps->dateline = $dateline;
+        $mps->barang_id = $barang_id;
+        $mps->qty = $rencanaproduksi;
+        $mps->tipe = $tipe;
+        $mps->sumber = $sumber;
+        $mps->status_mps = 0;
+        $mps->dibuat_pada = date('Y-m-d H:i:s');
+        $mps->diupdate_pada = date('Y-m-d H:i:s');
+        $mps->save(false);
     }
 }

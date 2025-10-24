@@ -12,6 +12,8 @@ use Yii;
  * @property string $metode
  * @property int $mse
  * @property int $hasil_forecast
+ * @property int $bulan
+ * @property int $tahun
  */
 class Forecast extends \yii\db\ActiveRecord
 {

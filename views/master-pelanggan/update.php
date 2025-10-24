@@ -10,9 +10,7 @@ $this->params['breadcrumbs'][] = ['label' => 'Master Pelanggans', 'url' => ['ind
 $this->params['breadcrumbs'][] = ['label' => $model->pelanggan_id, 'url' => ['view', 'pelanggan_id' => $model->pelanggan_id]];
 $this->params['breadcrumbs'][] = 'Update';
 ?>
-<div class="master-pelanggan-update">
-
-    <h1><?= Html::encode($this->title) ?></h1>
+<div class="pc-content">
 
     <?= $this->render('_form', [
         'model' => $model,

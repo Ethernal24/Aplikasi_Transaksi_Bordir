@@ -17,7 +17,7 @@ class MpsSearch extends Mps
     public function rules()
     {
         return [
-            [['mps_id', 'barang_id', 'periode', 'qty', 'tipe', 'dateline', 'sumber', 'status_mps'], 'integer'],
+            [['mps_id', 'barang_id', 'periode', 'qty', 'tipe', 'dateline', 'sumber', 'status_mps', 'tanggal_awal'], 'integer'],
             [['dateline'], 'safe']
 
 
@@ -68,6 +68,7 @@ class MpsSearch extends Mps
             'dateline' => $this->dateline,
             'sumber' => $this->sumber,
             'status_mps' => $this->status_mps,
+            'tanggal_awal' => $this->tanggal_awal,
         ]);
 
         return $dataProvider;

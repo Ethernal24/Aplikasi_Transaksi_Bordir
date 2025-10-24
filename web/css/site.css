@@ -87,3 +87,10 @@ a.desc:after {
 .form-group {
     margin-bottom: 1rem;
 }
+
+.produk-grid .kv-expand-detail-row,
+.produk-grid .kv-expand-detail-cell {
+    color: white !important;
+    border: none !important;
+    padding: 0 !important;
+}

@@ -29,68 +29,68 @@ $this->params['breadcrumbs'][] = $this->title;
                     // 'mps_id',
                     'barang_id' => [
                         'attribute' => 'barang_id',
-                        'value' => 'barang.nama_barang',
+                        'value' => function ($model) {
+                            return $model->barangName;
+                        },
                         'label' => 'Nama barang',
                     ],
-                    'periode'=>[
+                    'periode' => [
                         'attribute' => 'periode',
                         'label' => 'Periode',
                         'value' => function ($model) {
-                            $list = [
-                                '1' => 'Januari',
-                                '2' => 'Februari',
-                                '3' => 'Maret',
-                                '4' => 'April',
-                                '5' => 'Mei',
-                                '6' => 'Juni',
-                                '7' => 'Juli',
-                                '8' => 'Agustus',
-                                '9' => 'September',
-                                '10' => 'Oktober',
-                                '11' => 'November',
-                                '12' => 'Desember',
-                            ];
-                            return $list[$model->periode] ?? null;
+                            return date('M-Y', strtotime($model->periode));
+                        },
+                    ],
+                    'tanggal_awal' => [
+                        'attribute' => 'tanggal_awal',
+                        'label' => 'Tanggal Awal',
+                        'value' => function ($model) {
+                            return $model->tanggal_awal ? date('d-M-Y', strtotime($model->tanggal_awal)) : "-";
                         },
                     ],
                     'qty',
-                    'tipe' =>[
+                    'tipe' => [
                         'attribute' => 'tipe',
                         'value' => function ($model) {
-                                $list = [
-                                    0 => 'MTS',
-                                    1 => 'MTO',
-                                ];
-                                return $list[$model->status_mps] ?? null;
-                            },
+                            $list = [
+                                0 => 'MTS',
+                                1 => 'MTO',
+                            ];
+                            return $list[$model->tipe] ?? null;
+                        },
                         "label" => 'Tipe',
-                        ],
-                    'dateline',
-                    // 'sumber' =>[
-                    //     'attribute' => 'sumber',
-                    //     'value' => function ($model) {
-                    //             $list = [
-                    //                 0 => 'Forecast',
-                    //                 1 => 'MTO',
-                    //             ];
-                    //             return $list[$model->sumber] ?? null;
-                    //         },
-                    //     "label" => 'sumber',
-                    //     ],
-                    'status_mps'=>[
+                    ],
+                    'dateline' => [
+                        'attribute' => 'dateline',
+                        'label' => 'dateline',
+                        'value' => function ($model) {
+                            return date('d-M-Y', strtotime($model->dateline));
+                        },
+                    ],
+                    'sumber' => [
+                        'attribute' => 'sumber',
+                        'value' => function ($model) {
+                            return $model->sumber ? $model->permintaan->kode_permintaan : "Forecast";
+                        },
+                        "label" => 'Sumber'
+
+                    ],
+                    'status_mps' => [
                         'attribute' => 'status_mps',
                         'value' => function ($model) {
-                                $list = [
-                                    0 => 'pending',
-                                    1 => 'approved',
-                                ];
-                                return $list[$model->status_mps] ?? null;
-                            },
+                            $list = [
+                                0 => 'Draft',
+                                1 => 'Approved',
+                            ];
+                            return $list[$model->status_mps] ?? null;
+                        },
                         "label" => 'Status MPS'
 
                     ],
+
                     [
                         'class' => ActionColumn::className(),
+                        'template' => '{view} {update}',
                         'urlCreator' => function ($action, Mps $model, $key, $index, $column) {
                             return Url::toRoute([$action, 'mps_id' => $model->mps_id]);
                         }

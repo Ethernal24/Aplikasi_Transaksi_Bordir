@@ -4,9 +4,12 @@ namespace app\controllers;
 
 use app\helpers\ModelHelper;
 use app\models\BomCustom;
+use app\models\MasterPelanggan;
+use app\models\Mps;
 use app\models\PermintaanDetail;
 use app\models\PermintaanPelanggan;
 use app\models\PermintaanPelangganSearch;
+use app\models\ProdukCustomPelanggan;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\web\Controller;
@@ -63,16 +66,12 @@ class PermintaanPelangganController extends Controller
     {
         $model = $this->findModel($permintaan_id);
         $detail = $model->details;
-        foreach ($detail as $details) {
-            $bomCustom = $details->bomCustom;
-        }
         if (empty($detail)) {
             Yii::info('Data Details Tidak ditemukan untuk permintaan_id: $permintaan_id');
         }
         return $this->render('view', [
             'detail' => $detail,
             'model' => $this->findModel($permintaan_id),
-            'bomCustom' => $bomCustom
         ]);
     }
 
@@ -86,6 +85,18 @@ class PermintaanPelangganController extends Controller
         $model = new PermintaanPelanggan();
         $modelDetails = [new PermintaanDetail()];
 
+        $last = PermintaanPelanggan::find()
+            ->select('kode_permintaan')
+            ->orderBy(['permintaan_id' => SORT_DESC])
+            ->one();
+
+        if ($last) {
+            $lastnumber = (int) str_replace('PO-', '', $last->kode_permintaan);
+            $nextnumber = $lastnumber + 1;
+        } else {
+            $nextnumber = 1;
+        }
+        $model->kode_permintaan = 'PO-' . '' . str_pad($nextnumber, 3, '0', STR_PAD_LEFT);
 
         if ($model->load($this->request->post())) {
             $modelDetails = ModelHelper::createMultiple(PermintaanDetail::class);
@@ -103,16 +114,14 @@ class PermintaanPelangganController extends Controller
                                 $transaction->rollBack();
                                 break;
                             }
-                            foreach ($detail->barang->boms as $bom) {
-                                $bomCustom = new BomCustom();
-                                $bomCustom->permintaan_detail_id = $detail->permintaan_detail_id;
-                                $bomCustom->bahan_id = $bom->bahan_id;
-                                $bomCustom->qty_per_unit = $bom->qty_per_unit;
-                                $bomCustom->unit_id = $bom->unit_id;
-                                $bomCustom->save(false);
-                            }
+                        }
+                        $pelanggan = MasterPelanggan::findOne($model->pelanggan_id);
+                        if ($pelanggan) {
+                            $pelanggan->pesenan_terakhir = $model->tanggal_permintaan;
+                            $pelanggan->save(false);
                         }
                     }
+                    $this->createMps($model);
                     $transaction->commit();
                     return $this->redirect(['view', 'permintaan_id' => $model->permintaan_id]);
                 } catch (\Exception $e) {
@@ -138,45 +147,67 @@ class PermintaanPelangganController extends Controller
     public function actionUpdate($permintaan_id)
     {
         $model = $this->findModel($permintaan_id);
-        $modelDetails = $model->details; // relasi dari PermintaanPelanggan -> PermintaanDetail
+        $modelDetails = $model->details;
 
-        if ($model->load(Yii::$app->request->post())) {
-            $oldIDs = ArrayHelper::map($modelDetails, 'permintaan_id', 'permintaan_id'); // ambil id lama detail
-            $modelDetails = ModelHelper::createMultiple(PermintaanDetail::class, $modelDetails);
-            Model::loadMultiple($modelDetails, Yii::$app->request->post());
-            $deletedIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($modelDetails, 'id', 'id')));
+        // Simpan nilai lama master
+        $oldTanggal = $model->tanggal_permintaan;
+        $oldTenggat = $model->tenggat_waktu;
 
-            // validasi master dan detail
-            $valid = $model->validate();
-            $valid = Model::validateMultiple($modelDetails) && $valid;
+        $post = Yii::$app->request->post();
+        if ($model->load($post)) {
+            // Pertahankan tanggal lama jika input kosong
+            $model->tanggal_permintaan = $model->tanggal_permintaan ?: $oldTanggal;
+            $model->tenggat_waktu = $model->tenggat_waktu ?: $oldTenggat;
+
+            // Ambil ID detail lama
+            $oldIDs = ArrayHelper::getColumn($modelDetails, 'id');
+
+            // Ambil data POST detail
+            $detailPost = isset($post['PermintaanDetail']) ? $post['PermintaanDetail'] : [];
+            $modelDetailsNew = [];
+
+            foreach ($detailPost as $i => $detailData) {
+                if (!empty($detailData['id'])) {
+                    // ambil model existing
+                    $detailModel = PermintaanDetail::findOne($detailData['id']);
+                    if (!$detailModel) $detailModel = new PermintaanDetail();
+                } else {
+                    $detailModel = new PermintaanDetail();
+                }
+                $detailModel->load(['PermintaanDetail' => $detailData]);
+                $modelDetailsNew[] = $detailModel;
+            }
+
+            $deletedIDs = array_diff($oldIDs, ArrayHelper::getColumn($modelDetailsNew, 'id'));
+
+            // Validasi
+            $valid = $model->validate() && Model::validateMultiple($modelDetailsNew);
 
             if ($valid) {
                 $transaction = Yii::$app->db->beginTransaction();
                 try {
-                    if ($model->save(false)) {
-                        // hapus data detail yang dihapus dari form
-                        if (!empty($deletedIDs)) {
-                            PermintaanDetail::deleteAll(['permintaan_id' => $deletedIDs]);
-                        }
+                    $model->save(false);
 
-                        // simpan data detail
-                        foreach ($modelDetails as $detail) {
-                            $detail->permintaan_id = $model->permintaan_id;
-                            if (! $detail->save(false)) {
-                                $transaction->rollBack();
-                                Yii::error($detail->errors);
-                                break;
-                            }
-                        }
-
-                        $transaction->commit();
-                        return $this->redirect(['view', 'permintaan_id' => $model->permintaan_id]);
+                    if (!empty($deletedIDs)) {
+                        PermintaanDetail::deleteAll(['id' => $deletedIDs]);
                     }
-                } catch (\Exception $e) {
+
+                    foreach ($modelDetailsNew as $detail) {
+                        $detail->permintaan_id = $model->permintaan_id;
+                        $detail->save(false);
+                    }
+
+                    $transaction->commit();
+                    return $this->redirect(['view', 'permintaan_id' => $model->permintaan_id]);
+                } catch (\Throwable $e) {
                     $transaction->rollBack();
-                    throw $e;
+                    Yii::$app->session->setFlash('error', 'Terjadi kesalahan: ' . $e->getMessage());
                 }
+            } else {
+                Yii::$app->session->setFlash('error', 'Validasi gagal.');
             }
+
+            $modelDetails = $modelDetailsNew;
         }
 
         return $this->render('update', [
@@ -184,6 +215,8 @@ class PermintaanPelangganController extends Controller
             'modelDetails' => empty($modelDetails) ? [new PermintaanDetail()] : $modelDetails,
         ]);
     }
+
+
 
     /**
      * Deletes an existing PermintaanPelanggan model.
@@ -213,5 +246,38 @@ class PermintaanPelangganController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    public function actionGetBarangByPelanggan($pelanggan_id)
+    {
+        $produks = ProdukCustomPelanggan::find()
+            ->where(['pelanggan_id' => $pelanggan_id])
+            ->all();
+
+        if ($produks) {
+            echo "<option value=''>Pilih Barang</option>";
+            foreach ($produks as $p) {
+                echo "<option value='{$p->produk_custom_pelanggan_id}'>" . htmlspecialchars($p->nama_barang_custom) . "</option>";
+            }
+        } else {
+            echo "<option value=''>Tidak ada barang</option>";
+        }
+    }
+
+    public function createMps($permintaan)
+    {
+        foreach ($permintaan->details as $detail) {
+            $mps = new Mps();
+            // Tentukan tipe barang
+            $mps->barang_id = $detail->produk_custom_pelanggan_id;
+            $mps->tipe = 1;
+            $mps->periode = Yii::$app->formatter->asDate($permintaan->tanggal_permintaan, 'php: Y-m-d');
+            $mps->tanggal_awal = Yii::$app->formatter->asDate($permintaan->tanggal_permintaan, 'php: Y-m-d');
+            $mps->qty = $detail->jumlah;
+            $mps->sumber = $permintaan->permintaan_id;
+            $mps->dateline = $permintaan->tenggat_waktu; // atau tenggat waktu
+            $mps->status_mps = 0;
+            $mps->save(false);
+        }
     }
 }

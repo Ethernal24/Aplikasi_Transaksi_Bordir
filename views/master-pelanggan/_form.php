@@ -19,10 +19,12 @@ use yii\widgets\ActiveForm;
             <?= $form->field($model, 'nama_pelanggan')->textInput(['maxlength' => true]) ?>
 
             <?= $form->field($model, 'instansi')->textInput(['maxlength' => true]) ?>
+            <?= $form->field($model, 'kode')->textInput(['maxlength' => true]) ?>
 
 
             <div class="form-group">
                 <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+                <?= Html::a('back', 'index', ['class' => 'btn btn-secondary']) ?>
             </div>
             <?php ActiveForm::end(); ?>
         </div>

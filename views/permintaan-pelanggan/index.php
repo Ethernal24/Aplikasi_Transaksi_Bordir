@@ -10,14 +10,14 @@ use yii\grid\GridView;
 /** @var app\models\PermintaanPelangganSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Data Pelanggan';
+$this->title = 'Permintaan Pelanggan';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="pc-content">
     <div class="card table-card">
         <div class="card-header">
             <h1><?= Html::encode($this->title) ?></h1>
-            <?= Html::a('Create Data Pelanggan', ['create'], ['class' => 'btn btn-success']) ?>
+            <?= Html::a('Create Permintaan Pelanggan', ['create'], ['class' => 'btn btn-success']) ?>
         </div>
         <div class="card-body mx-4">
             <div class="table-responsive">
@@ -31,16 +31,37 @@ $this->params['breadcrumbs'][] = $this->title;
 
                         // 'permintaan_id',
                         'kode_permintaan',
-                        'pelanggan_id',
-                        'tanggal_permintaan',
-                        'tenggat_waktu',
+                        'pelanggan_id' => [
+                            'attribute' => 'pelanggan_id',
+                            'value' => 'pelanggan.nama_pelanggan',
+                            'label' => 'Nama Pelanggan',
+                        ],
+                        [
+                            'attribute' => 'pelanggan_id',
+                            'value' => 'pelanggan.instansi',
+                            'label' => 'Asal Instansi',
+                        ],
+                        [
+                            'attribute' => 'tanggal_permintaan',
+                            'value' => function ($model) {
+                                return Yii::$app->formatter->asDate($model->tanggal_permintaan, 'php:d-mm-Y');
+                            },
+                            'label' => 'Tanggal Permintaan',
+                        ],
+                        [
+                            'attribute' => 'tenggat_waktu',
+                            'value' => function ($model) {
+                                return Yii::$app->formatter->asDate($model->tenggat_waktu, 'php:d-mm-Y');
+                            },
+                            'label' => 'Tenggat Waktu',
+                        ],
                         [
                             'attribute' => 'status_pesanan',
                             'value' => function ($model) {
                                 $list = [
-                                    0 => 'antrian',
-                                    1 => 'prosess',
-                                    2 => 'selesai',
+                                    0 => 'Antrian',
+                                    1 => 'Prosess',
+                                    2 => 'Selesai',
                                 ];
                                 return $list[$model->status_pesanan] ?? null;
                             }

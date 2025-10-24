@@ -11,6 +11,7 @@ use Yii;
  * @property string $nama_pelanggan
  * @property string $instansi
  * @property string|null $pesenan_terakhir
+ * @property string|null $kode
  */
 class MasterPelanggan extends \yii\db\ActiveRecord
 {
@@ -32,8 +33,8 @@ class MasterPelanggan extends \yii\db\ActiveRecord
         return [
             [['pesenan_terakhir'], 'default', 'value' => null],
             [['nama_pelanggan', 'instansi'], 'required'],
-            [['pesenan_terakhir'], 'safe'],
-            [['nama_pelanggan', 'instansi'], 'string', 'max' => 255],
+            [['pesenan_terakhir', 'kode'], 'safe'],
+            [['nama_pelanggan', 'instansi', 'kode'], 'string', 'max' => 255],
         ];
     }
 
@@ -46,6 +47,7 @@ class MasterPelanggan extends \yii\db\ActiveRecord
             'pelanggan_id' => 'Pelanggan ID',
             'nama_pelanggan' => 'Nama Pelanggan',
             'instansi' => 'Instansi',
+            'kode' => 'Kode',
             'pesenan_terakhir' => 'Pesanan Terakhir',
         ];
     }
@@ -53,5 +55,9 @@ class MasterPelanggan extends \yii\db\ActiveRecord
     public function getPermintaanPelanggan()
     {
         return $this->hasMany(PermintaanPelanggan::class, ['pelanggan_id' => 'pelanggan_id']);
+    }
+    public function getProdukCustomPelanggan()
+    {
+        return $this->hasMany(ProdukCustomPelanggan::class, ['pelanggan_id' => 'pelanggan_id']);
     }
 }

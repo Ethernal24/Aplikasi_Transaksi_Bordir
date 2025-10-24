@@ -27,9 +27,16 @@ $this->params['breadcrumbs'][] = $this->title;
                     ['class' => 'yii\grid\SerialColumn'],
 
                     // 'pelanggan_id',
+                    'kode',
                     'nama_pelanggan',
                     'instansi',
-                    'pesenan_terakhir',
+                    [
+                        'attribute' => 'pesenan_terakhir',
+                        'value' => function ($model) {
+                            return $model->pesenan_terakhir ? Yii::$app->formatter->asDate($model->pesenan_terakhir, 'php:d-mm-Y') : '-';
+                        },
+                        'label' => 'Pesanan Terakhir',
+                    ],
                     [
                         'class' => ActionColumn::className(),
                         'urlCreator' => function ($action, MasterPelanggan $model, $key, $index, $column) {
@@ -41,5 +48,6 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
     </div>
 
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+    <?php // echo $this->render('_search', ['model' => $searchModel]); 
+    ?>
 </div>
