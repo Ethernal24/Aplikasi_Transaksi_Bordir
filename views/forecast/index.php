@@ -59,14 +59,9 @@ $this->params['breadcrumbs'][] = $this->title;
                     ],
                     'tahun',
                     'metode',
-                    'mse',
                     'hasil_forecast',
-                    [
-                        'class' => ActionColumn::className(),
-                        'urlCreator' => function ($action, Forecast $model, $key, $index, $column) {
-                            return Url::toRoute([$action, 'forecast_id' => $model->forecast_id]);
-                        }
-                    ],
+                    'order_aktual',
+                    'mse',
                 ],
             ]); ?>
         </div>

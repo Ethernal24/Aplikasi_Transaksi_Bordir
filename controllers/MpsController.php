@@ -6,6 +6,7 @@ use app\models\Bom;
 use app\models\BomCustom;
 use app\models\MasterMrp;
 use app\models\Mps;
+use app\models\MpsDetail;
 use app\models\MpsSearch;
 use app\models\MrpDetail;
 use yii\web\Controller;
@@ -59,8 +60,14 @@ class MpsController extends Controller
      */
     public function actionView($mps_id)
     {
+        $detail = MpsDetail::find()
+            ->where(['mps_id' => $mps_id])
+            ->all();
+
+        $model = $this->findModel($mps_id);
         return $this->render('view', [
-            'model' => $this->findModel($mps_id),
+            'model' => $model,
+            'detail' => $detail
         ]);
     }
 

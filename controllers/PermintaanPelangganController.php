@@ -6,6 +6,7 @@ use app\helpers\ModelHelper;
 use app\models\BomCustom;
 use app\models\MasterPelanggan;
 use app\models\Mps;
+use app\models\MpsDetail;
 use app\models\PermintaanDetail;
 use app\models\PermintaanPelanggan;
 use app\models\PermintaanPelangganSearch;

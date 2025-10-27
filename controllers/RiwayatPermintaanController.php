@@ -6,6 +6,7 @@ use app\models\Barang;
 use app\models\Forecast;
 use app\models\ForecastForm;
 use app\models\Mps;
+use app\models\MpsDetail;
 use app\models\RiwayatPermintaan;
 use app\models\RiwayatPermintaanSearch;
 use DateTime;
@@ -124,6 +125,24 @@ class RiwayatPermintaanController extends Controller
 
                     if (! $riwayat->save(false)) {
                         throw new \Exception('Gagal menyimpan data riwayat permintaan.');
+                    }
+
+                    $forecast = Forecast::find()
+                        ->where([
+                            'barang_id' => $barangId,
+                            'bulan' => $bulans[$i],
+                            'tahun' => $tahuns[$i],
+                        ])
+                        ->one();
+                    if ($forecast) {
+                        $forecast->order_aktual = $jumlahs[$i];
+                        if ($forecast->hasil_forecast !== null) {
+                            $forecast->mse = pow($forecast->hasil_forecast - $forecast->order_aktual, 2);
+                        }
+
+                        if (! $forecast->save(false)) {
+                            throw new \Exception('Gagal memperbarui data forecasting.');
+                        }
                     }
                 }
 
@@ -263,7 +282,9 @@ class RiwayatPermintaanController extends Controller
                     $forecast->bulan = $bulan;
                     $forecast->tahun = $tahun;
                     $forecast->metode = 'Single Moving Average';
-                    $forecast->hasil_forecast = $prediksi;
+                    $forecast->hasil_forecast = (float) $prediksi;
+                    $forecast->order_aktual = 0;
+                    $forecast->mse = 0;
                     $forecast->save(false);
                     $stockAwal = 0;
                     $rencanaproduksi = $prediksi - $stockAwal;
@@ -325,5 +346,29 @@ class RiwayatPermintaanController extends Controller
         $mps->dibuat_pada = date('Y-m-d H:i:s');
         $mps->diupdate_pada = date('Y-m-d H:i:s');
         $mps->save(false);
+        $this->createMpsDetail($mps);
+    }
+    public function createMpsDetail($mps)
+    {
+        $forecastBulanan = $mps->qty ?? 0;
+        $forecastMingguan = $forecastBulanan / 4;
+
+        $barang = $mps->barang;
+        $stokAwal = $barang ? $barang->stok : 0;
+        $pabSebelumnya = $stokAwal;
+
+        for ($i = 1; $i <= 4; $i++) {
+            $detail = new MpsDetail();
+            $detail->mps_id = $mps->mps_id;
+            $detail->minggu_ke = $i;
+            $detail->forecast = $forecastMingguan;
+            $detail->order_aktual = 0;
+            $rencana_produksi = max($detail->forecast, $detail->order_aktual) + max($detail->forecast, $detail->order_aktual) / 2;
+            $detail->stok = $pabSebelumnya + $rencana_produksi - max($detail->forecast, $detail->order_aktual);
+            $detail->rencana_produksi = $rencana_produksi;
+            if (!$detail->save(false)) {
+                Yii::info('Gagal simpan MPS Detail minggu ke ' . $i . ' untuk MPS ' . $mps->mps_id, __METHOD__);
+            }
+        }
     }
 }

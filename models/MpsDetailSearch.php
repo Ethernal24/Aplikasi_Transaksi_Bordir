@@ -4,12 +4,12 @@ namespace app\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\Forecast;
+use app\models\MpsDetail;
 
 /**
- * ForecastSearch represents the model behind the search form of `app\models\Forecast`.
+ * MpsDetailSearch represents the model behind the search form of `app\models\MpsDetail`.
  */
-class ForecastSearch extends Forecast
+class MpsDetailSearch extends MpsDetail
 {
     /**
      * {@inheritdoc}
@@ -17,8 +17,7 @@ class ForecastSearch extends Forecast
     public function rules()
     {
         return [
-            [['forecast_id', 'barang_id', 'mse', 'hasil_forecast', 'order_aktual'], 'integer'],
-            [['metode'], 'safe'],
+            [['mps_detail_id', 'mps_id', 'minggu_ke', 'forecast', 'order_aktual', 'stok', 'rencana_produksi'], 'integer'],
         ];
     }
 
@@ -40,7 +39,7 @@ class ForecastSearch extends Forecast
      */
     public function search($params)
     {
-        $query = Forecast::find();
+        $query = MpsDetail::find();
 
         // add conditions that should always apply here
 
@@ -58,14 +57,14 @@ class ForecastSearch extends Forecast
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'forecast_id' => $this->forecast_id,
-            'barang_id' => $this->barang_id,
-            'mse' => $this->mse,
-            'hasil_forecast' => $this->hasil_forecast,
+            'mps_detail_id' => $this->mps_detail_id,
+            'mps_id' => $this->mps_id,
+            'minggu_ke' => $this->minggu_ke,
+            'forecast' => $this->forecast,
             'order_aktual' => $this->order_aktual,
+            'stok' => $this->stok,
+            'rencana_produksi' => $this->rencana_produksi,
         ]);
-
-        $query->andFilterWhere(['like', 'metode', $this->metode]);
 
         return $dataProvider;
     }

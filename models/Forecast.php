@@ -14,6 +14,7 @@ use Yii;
  * @property int $hasil_forecast
  * @property int $bulan
  * @property int $tahun
+ * @property int $order_aktual
  */
 class Forecast extends \yii\db\ActiveRecord
 {
@@ -32,9 +33,10 @@ class Forecast extends \yii\db\ActiveRecord
     {
         return [
             [['barang_id', 'metode', 'hasil_forecast', 'bulan', 'tahun'], 'required'],
-            [['barang_id', 'mse', 'hasil_forecast', 'bulan', 'tahun'], 'integer'],
+            [['barang_id', 'mse', 'bulan', 'tahun'], 'integer'],
             [['metode'], 'string', 'max' => 255],
-            [['mse'], 'safe'],
+            [['mse', 'order_aktual'], 'safe'],
+            [['order_aktual', 'hasil_forecast'], 'number'],
         ];
     }
 
@@ -51,6 +53,7 @@ class Forecast extends \yii\db\ActiveRecord
             'metode' => 'Metode',
             'mse' => 'Mse',
             'hasil_forecast' => 'Hasil Forecast',
+            'order_aktual' => 'Order Aktual',
         ];
     }
 
