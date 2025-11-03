@@ -4,6 +4,8 @@ namespace app\controllers;
 
 use app\models\MasterMrp;
 use app\models\MasterMrpSearch;
+use app\models\MrpDetail;
+use app\models\MrpDetailSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -55,8 +57,12 @@ class MasterMrpController extends Controller
      */
     public function actionView($mrp_id)
     {
+        $searchModel = new MrpDetailSearch();
+        $model = $this->findModel($mrp_id);
+        $details = $model->mrpDetails;
         return $this->render('view', [
-            'model' => $this->findModel($mrp_id),
+            'model' => $model,
+            'details' => $details,
         ]);
     }
 

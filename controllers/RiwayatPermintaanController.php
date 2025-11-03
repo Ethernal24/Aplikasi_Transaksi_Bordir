@@ -366,6 +366,13 @@ class RiwayatPermintaanController extends Controller
             $rencana_produksi = max($detail->forecast, $detail->order_aktual) + max($detail->forecast, $detail->order_aktual) / 2;
             $detail->stok = $pabSebelumnya + $rencana_produksi - max($detail->forecast, $detail->order_aktual);
             $detail->rencana_produksi = $rencana_produksi;
+            if ($i === 1) {
+                $detail->stok = $stokAwal;
+            } else {
+                $detail->stok = $pabSebelumnya + $rencana_produksi - max($detail->forecast, $detail->order_aktual);
+            }
+            $pabSebelumnya = $detail->stok;
+
             if (!$detail->save(false)) {
                 Yii::info('Gagal simpan MPS Detail minggu ke ' . $i . ' untuk MPS ' . $mps->mps_id, __METHOD__);
             }

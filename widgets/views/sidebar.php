@@ -100,7 +100,7 @@ $samplePageUrl = Url::to(['site/sample-page']);
                         <ul class="pc-submenu">
                             <li class="pc-item"><a class="pc-link" href="<?= $MpsUrl ?>">MPS</a></li>
                             <li class="pc-item"><a class="pc-link" href="<?= $MrpUrl ?>">MRP</a></li>
-                            <li class="pc-item"><a class="pc-link" href="<?= $MrpDetailUrl ?>">MRP Detail</a></li>
+                            <!-- <li class="pc-item"><a class="pc-link" href="<?= $MrpDetailUrl ?>">MRP Detail</a></li> -->
 
                         </ul>
                     </li>

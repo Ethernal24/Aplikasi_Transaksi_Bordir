@@ -73,7 +73,6 @@ $this->params['breadcrumbs'][] = $this->title;
                             return $model->sumber ? $model->permintaan->kode_permintaan : "Forecast";
                         },
                         "label" => 'Sumber'
-
                     ],
                     'status_mps' => [
                         'attribute' => 'status_mps',
@@ -85,12 +84,10 @@ $this->params['breadcrumbs'][] = $this->title;
                             return $list[$model->status_mps] ?? null;
                         },
                         "label" => 'Status MPS'
-
                     ],
-
                     [
                         'class' => ActionColumn::className(),
-                        'template' => '{view} {update}',
+                        'template' => '{view}',
                         'urlCreator' => function ($action, Mps $model, $key, $index, $column) {
                             return Url::toRoute([$action, 'mps_id' => $model->mps_id]);
                         }

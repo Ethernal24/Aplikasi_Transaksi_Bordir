@@ -20,6 +20,35 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="card-header">
             <h1><?= Html::encode($this->title) ?></h1>
         </div>
+        <div class="row mx-3">
+            <div class="col">
+                <div><strong>
+                        Nama Produk :
+                    </strong> <?= $model->barangName ?>
+                </div>
+                <div><strong>
+                        Periode :
+                    </strong> <?= Yii::$app->formatter->asDatetime($model->periode, 'php: F Y') ?>
+                </div>
+            </div>
+            <div class="col">
+                <div><strong>
+                        Tipe :
+                    </strong> <?= $model->tipeLabel ?>
+                </div>
+                <div><strong>
+                        Status Approved :
+                    </strong>
+                    <span class="<?= $model->getStatusLabel()['class'] ?>"><?= $model->getStatusLabel()['label'] ?></span>
+                </div>
+            </div>
+            <div class="col">
+                <div><strong>
+                        Stok On Hand :
+                    </strong> <?= $model->barang->stok ?>
+                </div>
+            </div>
+        </div>
         <div class="card-body">
             <div class="table-responsive">
                 <?= GridView::widget([
@@ -28,13 +57,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'pagination' => false, // tidak perlu pagination
                     ]),
                     'columns' => [
-                        ['class' => 'yii\grid\SerialColumn', 'header' => 'No'],
 
-                        [
-                            'attribute' => 'mps_id',
-                            'label' => 'MPS ID',
-                            'value' => 'mps_id',
-                        ],
                         [
                             'attribute' => 'minggu_ke',
                             'value' => 'minggu_ke',
@@ -60,25 +83,14 @@ $this->params['breadcrumbs'][] = $this->title;
                             'value' => 'rencana_produksi',
                             'label' => 'Rencana Produksi',
                         ],
-                        [
-                            'class' => ActionColumn::className(),
-                            'template' => '{update}',
-                            'urlCreator' => function ($action, MpsDetail $detail, $key, $index, $column) {
-                                return Url::toRoute([$action, 'mps_id' => $detail->mps_id]);
-                            }
-                        ]
                     ],
                 ]);
                 ?>
             </div>
-            <?= Html::a('Update', ['update', 'mps_id' => $model->mps_id], ['class' => 'btn btn-primary']) ?>
-            <?= Html::a('Delete', ['delete', 'mps_id' => $model->mps_id], [
-                'class' => 'btn btn-danger',
-                'data' => [
-                    'confirm' => 'Are you sure you want to delete this item?',
-                    'method' => 'post',
-                ],
-            ]) ?>
+            <?php if ($model->status_mps === 0): ?>
+                <?= Html::a('Update', ['update', 'mps_id' => $model->mps_id], ['class' => 'btn btn-primary']) ?>
+                <?= Html::a('Verify', [''], ['class' => 'btn btn-warning']) ?>
+            <?php endif; ?>
             <?= Html::a('Back', ['index'], ['class' => 'btn btn-secondary']) ?>
         </div>
     </div>

@@ -45,7 +45,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     [
                         'attribute' => 'dateline',
                         'value' => function ($model) {
-                            return date('d-M-Y', strtotime($model->mps->tanggal_awal));
+                            return date('d-M-Y', strtotime($model->mps->dateline));
                         },
                         'label' => 'dateline',
                     ],

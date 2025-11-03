@@ -51,4 +51,9 @@ class MpsDetail extends \yii\db\ActiveRecord
             'rencana_produksi' => 'Rencana Produksi',
         ];
     }
+
+    public function getMps()
+    {
+        return $this->hasOne(mps::class, ['mps_id' => 'mps_id']);
+    }
 }

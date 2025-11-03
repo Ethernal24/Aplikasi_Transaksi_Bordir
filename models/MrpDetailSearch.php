@@ -17,9 +17,7 @@ class MrpDetailSearch extends MrpDetail
     public function rules()
     {
         return [
-            [['mrp_detail_id', 'mrp_id', 'bahan_id', 'stock_tersedia', 'kebutuhan_bersih', 'leadtime'], 'integer'],
-            [['kebutuhan_kotor'], 'number'],
-            [['planned_order_release', 'planned_order_receipt'], 'safe'],
+            [['mrp_detail_id', 'kebutuhan_kotor', 'minggu_ke', 'mrp_id', 'barang_id', 'stock_tersedia', 'kebutuhan_bersih', 'leadtime', 'planned_order_release', 'planned_order_receipt'], 'integer'],
         ];
     }
 
@@ -61,7 +59,8 @@ class MrpDetailSearch extends MrpDetail
         $query->andFilterWhere([
             'mrp_detail_id' => $this->mrp_detail_id,
             'mrp_id' => $this->mrp_id,
-            'bahan_id' => $this->bahan_id,
+            'barang_id' => $this->barang_id,
+            'minggu_ke' => $this->minggu_ke,
             'kebutuhan_kotor' => $this->kebutuhan_kotor,
             'stock_tersedia' => $this->stock_tersedia,
             'kebutuhan_bersih' => $this->kebutuhan_bersih,

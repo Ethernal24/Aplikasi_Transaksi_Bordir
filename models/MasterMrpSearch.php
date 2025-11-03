@@ -18,6 +18,7 @@ class MasterMrpSearch extends MasterMrp
     {
         return [
             [['mrp_id', 'mps_id', 'status'], 'integer'],
+            [['kode_mrp'], 'string'],
         ];
     }
 
@@ -60,6 +61,7 @@ class MasterMrpSearch extends MasterMrp
             'mrp_id' => $this->mrp_id,
             'mps_id' => $this->mps_id,
             'status' => $this->status,
+            'kode_mrp' => $this->kode_mrp,
         ]);
 
         return $dataProvider;

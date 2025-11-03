@@ -9,13 +9,14 @@ use Yii;
  *
  * @property int $mrp_detail_id
  * @property int $mrp_id
- * @property int $bahan_id
- * @property float $kebutuhan_kotor
+ * @property int $barang_id
+ * @property int $minggu_ke
+ * @property int $kebutuhan_kotor
  * @property int $stock_tersedia
  * @property int $kebutuhan_bersih
  * @property int $leadtime
- * @property string $planned_order_release
- * @property string $planned_order_receipt
+ * @property int $planned_order_release
+ * @property int $planned_order_receipt
  */
 class MrpDetail extends \yii\db\ActiveRecord
 {
@@ -33,8 +34,8 @@ class MrpDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['mrp_id', 'bahan_id', 'kebutuhan_kotor', 'stock_tersedia', 'kebutuhan_bersih', 'leadtime', 'planned_order_release', 'planned_order_receipt'], 'required'],
-            [['mrp_id', 'bahan_id', 'stock_tersedia', 'kebutuhan_bersih', 'leadtime'], 'integer'],
+            [['mrp_id', 'barang_id', 'minggu_ke', 'kebutuhan_kotor', 'stock_tersedia', 'kebutuhan_bersih', 'leadtime', 'planned_order_release', 'planned_order_receipt'], 'required'],
+            [['mrp_id', 'barang_id', 'stock_tersedia', 'kebutuhan_bersih', 'leadtime', 'minggu_ke'], 'integer'],
             [['kebutuhan_kotor'], 'number'],
             [['planned_order_release', 'planned_order_receipt'], 'safe'],
         ];
@@ -48,7 +49,8 @@ class MrpDetail extends \yii\db\ActiveRecord
         return [
             'mrp_detail_id' => 'Mrp Detail ID',
             'mrp_id' => 'Mrp ID',
-            'bahan_id' => 'Bahan ID',
+            'barang_id' => 'Bahan ID',
+            'minggu_ke' => 'Minggu Ke',
             'kebutuhan_kotor' => 'Kebutuhan Kotor',
             'stock_tersedia' => 'Stock Tersedia',
             'kebutuhan_bersih' => 'Kebutuhan Bersih',
@@ -56,5 +58,14 @@ class MrpDetail extends \yii\db\ActiveRecord
             'planned_order_release' => 'Planned Order Release',
             'planned_order_receipt' => 'Planned Order Receipt',
         ];
+    }
+
+    public function getBarang()
+    {
+        return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
+    }
+    public function getMrp()
+    {
+        return $this->hasOne(MasterMrp::class, ['mrp_id' => 'mrp_id']);
     }
 }

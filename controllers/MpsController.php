@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\helpers\ModelHelper;
 use app\models\Bom;
 use app\models\BomCustom;
 use app\models\MasterMrp;
@@ -9,9 +10,12 @@ use app\models\Mps;
 use app\models\MpsDetail;
 use app\models\MpsSearch;
 use app\models\MrpDetail;
+use Yii;
+use yii\base\Model;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\helpers\ArrayHelper;
 
 /**
  * MpsController implements the CRUD actions for Mps model.
@@ -102,47 +106,99 @@ class MpsController extends Controller
      */
     public function actionUpdate($mps_id)
     {
+        $last = MasterMrp::find()
+            ->select('kode_mrp')
+            ->orderBy(['mrp_id' => SORT_DESC])
+            ->one();
+        if ($last) {
+            $lastnumber = (int) str_replace('MRP-', '', $last->kode_mrp);
+            $nextNumber = $lastnumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
         $model = $this->findModel($mps_id);
-
-        if ($this->request->isPost && $model->load($this->request->post())) {
-            $isApproved = $model->status_mps == 1;
-            if ($model->save()) {
-                if ($isApproved) {
-                    $existingMrp = MasterMrp::find()->where(['mps_id' => $model->mps_id])->one();
-                    if (!$existingMrp) {
-                        $mrp = new MasterMrp();
-                        $mrp->mps_id = $model->mps_id;
-                        $mrp->status = 0;
-                        $mrp->save(false);
-
-                        if ($model->tipe == 0) {
-                            // MTS → ambil dari tabel BOM tetap
-                            $boms = Bom::find()->where(['produk_id' => $model->barang_id])->all();
-                        } else {
-                            // MTO → ambil dari BOM custom pelanggan
-                            $boms = BomCustom::find()->where(['produk_custom_pelanggan_id' => $model->barang_id])->all();
-                        }
-
-                        foreach ($boms as $bom) {
-                            $detail = new MrpDetail;
-                            $detail->mrp_id = $mrp->mrp_id;
-                            $detail->bahan_id = $bom->bahan_id;
-                            $detail->kebutuhan_kotor = $bom->qty_per_unit * $model->qty;
-                            $detail->stock_tersedia = $model->barang->stok;
-                            $detail->kebutuhan_bersih = $detail->kebutuhan_kotor - $detail->stock_tersedia;
-                            $detail->leadtime = $model->barang->leadtime;
-                            $detail->planned_order_receipt = $model->dateline;
-                            $detail->planned_order_release = date('Y-m-d', strtotime($detail->planned_order_receipt . "-" . $detail->leadtime));
-                            $detail->save(false);
-                        }
-                    }
+        $details = $model->mpsDetails;
+        if (Yii::$app->request->isPost && $model->load(Yii::$app->request->post())) {
+            $oldIDs = ArrayHelper::map($details, 'mps_detail_id', 'mps_detail_id');
+            $details = ModelHelper::createMultiple(MpsDetail::class, $details);
+            Model::loadMultiple($details, Yii::$app->request->post());
+            $deleteIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($details, 'mps_detail_id', 'mps_detail_id')));
+            $valid = $model->validate();
+            $valid = Model::validateMultiple($details) && $valid;
+            if (!$valid) {
+                Yii::error("Validasi gagal MPS: " . json_encode($model->getErrors()), __METHOD__);
+                foreach ($details as $d) {
+                    Yii::error("Validasi gagal Detail: " . json_encode($d->getErrors()), __METHOD__);
                 }
             }
-            return $this->redirect(['view', 'mps_id' => $model->mps_id]);
+            if ($valid) {
+                $transaction = Yii::$app->db->beginTransaction();
+                try {
+                    $isApproved = $model->status_mps == 1;
+                    if ($model->save(false)) {
+                        if (!empty($deleteIDs)) {
+                            MpsDetail::deleteAll(['mps_detail_id' => $deleteIDs]);
+                        }
+                        foreach ($details as $detail) {
+                            $detail->mps_id = $model->mps_id;
+                            $detail->save(false);
+                        }
+                        if ($isApproved) {
+                            $existingMrp = MasterMrp::find()->where(['mps_id' => $model->mps_id])->one();
+                            if (!$existingMrp) {
+                                $mrp = new MasterMrp();
+                                $mrp->mps_id = $model->mps_id;
+                                $mrp->kode_mrp = 'MRP' . '' . str_pad($nextNumber, 3, 0, STR_PAD_LEFT);
+                                $mrp->status = 0;
+                                $mrp->save(false);
+                                foreach ($details as $detail) {
+                                    $d = new MrpDetail;
+                                    $d->minggu_ke = $detail->minggu_ke;
+                                    $d->mrp_id = $mrp->mrp_id;
+                                    $d->barang_id = $model->barang->barang_id;
+                                    $d->kebutuhan_kotor = $detail->rencana_produksi;
+                                    $d->stock_tersedia = $model->barang->stok;
+                                    $d->kebutuhan_bersih = $d->kebutuhan_kotor - $d->stock_tersedia;
+                                    $d->leadtime = $model->barang->leadtime;
+                                    $d->planned_order_receipt = 0;
+                                    $d->planned_order_release = 0;
+                                    $d->save(false);
+                                    if ($model->tipe == 0) {
+                                        // MTS → ambil dari tabel BOM tetap
+                                        $boms = Bom::find()->where(['produk_id' => $model->barang_id])->all();
+                                    } else {
+                                        // MTO → ambil dari BOM custom pelanggan
+                                        $boms = BomCustom::find()->where(['produk_custom_pelanggan_id' => $model->barang_id])->all();
+                                    }
+                                    foreach ($boms as $bom) {
+                                        $b = new MrpDetail;
+                                        $b->mrp_id = $mrp->mrp_id;
+                                        $b->minggu_ke = $detail->minggu_ke;
+                                        $b->barang_id = $bom->bahan->barang_id;
+                                        $b->kebutuhan_kotor = $bom->qty_per_unit * $detail->rencana_produksi;
+                                        $b->stock_tersedia = $bom->bahan->stok;
+                                        $b->kebutuhan_bersih = $b->kebutuhan_kotor - $b->stock_tersedia;
+                                        $b->leadtime = $bom->bahan->leadtime;
+                                        $b->planned_order_receipt = 0;
+                                        $b->planned_order_release = 0;
+                                        $b->save(false);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    $transaction->commit();
+                    return $this->redirect(['view', 'mps_id' => $model->mps_id]);
+                } catch (\Exception $e) {
+                    Yii::error("Terjadi Kesalahan : " . $e->getMessage(), __METHOD__);
+                    $transaction->rollBack();
+                    throw $e;
+                }
+            }
         }
-
         return $this->render('update', [
             'model' => $model,
+            'details' => $details
         ]);
     }
 

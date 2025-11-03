@@ -13,6 +13,8 @@ use yii\db\Expression;
  * @property int $mrp_id
  * @property int $mps_id
  * @property int $status
+ * @property string $kode_mrp
+ * @property MrpDetail[] $MrpDetails
  */
 class MasterMrp extends \yii\db\ActiveRecord
 {
@@ -46,6 +48,7 @@ class MasterMrp extends \yii\db\ActiveRecord
         return [
             [['mps_id', 'status'], 'required'],
             [['mps_id', 'status'], 'integer'],
+            [['kode_mrp'], 'string']
         ];
     }
 
@@ -57,6 +60,7 @@ class MasterMrp extends \yii\db\ActiveRecord
         return [
             'mrp_id' => 'Mrp ID',
             'mps_id' => 'Mps ID',
+            'kode_mrp' => 'Kode MRP',
             'status' => 'Status',
         ];
     }
@@ -83,5 +87,10 @@ class MasterMrp extends \yii\db\ActiveRecord
             ],
         ];
         return isset($status[$this->status]) ? $status[$this->status] : ['label' => 'unknown', 'class' => 'badge bg-secondary'];
+    }
+
+    public function getMrpDetails()
+    {
+        return $this->hasMany(MrpDetail::class, ['mrp_id' => 'mrp_id']);
     }
 }

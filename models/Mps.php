@@ -18,6 +18,7 @@ use yii\db\Expression;
  * @property int $status_mps
  * @property string $dateline
  * @property int $tanggal_awal
+ * @property MpsDetail[] $mpsDetails
  */
 class Mps extends \yii\db\ActiveRecord
 {
@@ -105,5 +106,23 @@ class Mps extends \yii\db\ActiveRecord
             '1' => 'MTO',
         ];
         return isset($tipe[$this->tipe]) ? $tipe[$this->tipe] : 'Unknown';;
+    }
+
+    public function getStatusLabel()
+    {
+        $status = [
+            '0' => ['label' => 'Draft', 'class' => 'badge bg-info'],
+            '1' => ['label' => 'Approve', 'class' => 'badge bg-success'],
+        ];
+        return isset($status[$this->status_mps]) ? $status[$this->status_mps] : ['label' => 'unknow', 'class' => 'badge bg-secondary'];
+    }
+
+    public function getMpsDetails()
+    {
+        return $this->hasMany(MpsDetail::class, ['mps_id' => 'mps_id']);
+    }
+    public function getMrp()
+    {
+        return $this->hasOne(MasterMrp::class, ['mps_id' => 'mps_id']);
     }
 }
