@@ -29,6 +29,24 @@ $this->params['breadcrumbs'][] = $this->title;
                     <?= $model->mps->tipeLabel ?>
                 </div>
             </div>
+            <div class="col">
+                <div>
+                    <strong>tanggal awal : </strong>
+                    <?= Yii::$app->formatter->asDateTime($model->mps->tanggal_awal, 'php: d F Y') ?>
+                </div>
+                <div>
+                    <strong>tanggal Jatuh Tempo : </strong>
+                    <?= Yii::$app->formatter->asDateTime($model->mps->dateline, 'php: d F Y') ?>
+                </div>
+            </div>
+            <div class="col">
+                <div>
+                    <strong>Status : </strong>
+                    <span class="<?= $model->getlabel()['class'] ?>">
+                        <?= $model->getlabel()['label'] ?>
+                    </span>
+                </div>
+            </div>
         </div>
 
 
@@ -103,14 +121,15 @@ $this->params['breadcrumbs'][] = $this->title;
                 ]); ?>
 
             </div>
-            <?= Html::a('Update', ['update', 'mrp_id' => $model->mrp_id], ['class' => 'btn btn-primary']) ?>
-            <?= Html::a('Delete', ['delete', 'mrp_id' => $model->mrp_id], [
-                'class' => 'btn btn-danger',
-                'data' => [
-                    'confirm' => 'Are you sure you want to delete this item?',
-                    'method' => 'post',
-                ],
-            ]) ?>
+            <!-- <?= Html::a('Update', ['update', 'mrp_id' => $model->mrp_id], ['class' => 'btn btn-primary']) ?> -->
+            <?php if ($model->status === 0): ?>
+                <?= Html::a('Validasi', ['validasi', 'mrp_id' => $model->mrp_id], [
+                    'class' => 'btn btn-warning',
+                    'data' => [
+                        'confirm' => 'Yakin ingin memvalidasi MRP ini?'
+                    ]
+                ]) ?>
+            <?php endif; ?>
             <?= Html::a('Back', ['index'], ['class' => 'btn btn-secondary']) ?>
         </div>
     </div>

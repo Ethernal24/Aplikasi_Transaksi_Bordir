@@ -6,6 +6,8 @@ use app\models\MasterMrp;
 use app\models\MasterMrpSearch;
 use app\models\MrpDetail;
 use app\models\MrpDetailSearch;
+use app\models\WoHeader;
+use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -136,5 +138,49 @@ class MasterMrpController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    public function actionValidasi($mrp_id)
+    {
+        $model = $this->findModel($mrp_id);
+
+
+
+
+        if (!$model) {
+            Yii::$app->session->setFlash('error', 'Data Mrp tidak ditemukan');
+            return $this->redirect(['index']);
+        }
+
+        $model->status = 1;
+
+        if ($model->save(false)) {
+            $model_wo = new WoHeader();
+            $last = WoHeader::find()
+                ->select('kode_wo')
+                ->orderBy(['wo_id' => SORT_DESC])
+                ->one();
+
+            if ($last) {
+                $lastnumber = (int) str_replace('WO-', '', $last->kode_wo);
+                $nextnumber = $lastnumber + 1;
+            } else {
+                $nextnumber = 1;
+            }
+            $model_wo->kode_wo = 'WO -' . '' . str_pad($nextnumber, 3, '0', STR_PAD_LEFT);
+            $model_wo->produk_id = $model->mps->barang_id;
+            $model_wo->tanggal_selesai = $model->mps->dateline;
+            if ($model_wo->save(false)) {
+                Yii::$app->session->setFlash('success', 'Work Order Telah dibuat');
+            } else {
+                Yii::$app->session->setFlash('error', 'Work Order gagal dibuat');
+            }
+            Yii::$app->session->setFlash('success', 'Status MRP sudah diganti ');
+        } else {
+            Yii::$app->session->setFlash('error', 'Status MRP tidak gagal di ganti');
+        }
+
+
+        return $this->redirect(['index']);
     }
 }

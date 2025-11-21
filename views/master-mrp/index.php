@@ -60,6 +60,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     ],
                     [
                         'class' => ActionColumn::className(),
+                        'template' => '{view}',
                         'urlCreator' => function ($action, MasterMrp $model, $key, $index, $column) {
                             return Url::toRoute([$action, 'mrp_id' => $model->mrp_id]);
                         }

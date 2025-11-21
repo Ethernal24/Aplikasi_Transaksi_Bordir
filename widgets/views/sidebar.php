@@ -41,6 +41,7 @@ $JenisUrl = Url::to(['/jenis/index']);
 $BarangProUrl = Url::to(['/barangproduksi/index']);
 $NotaUrl = Url::to(['/nota/index']);
 $ForecastUrl = Url::to(['/riwayat-permintaan/index']);
+$WorkOrderUrl = Url::to(['/wo-header/index']);
 
 
 
@@ -118,9 +119,16 @@ $samplePageUrl = Url::to(['site/sample-page']);
                     <li class="pc-item">
                         <a href="<?= $RoutingUrl ?>" class="pc-link">
                             <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
-                            <span class="pc-mtext">Master Routing</span>
+                            <span class="pc-mtext">Routing</span>
                         </a>
                     </li>
+                    <li class="pc-item">
+                        <a href="<?= $WorkOrderUrl ?>" class="pc-link">
+                            <span class="pc-micon"><i class="fi fi-ts-box-alt"></i></i></span>
+                            <span class="pc-mtext">WorkOrder</span>
+                        </a>
+                    </li>
+
 
                     <li class="pc-item pc-hasmenu">
                         <a href="#!" class="pc-link"><span class="pc-micon">
