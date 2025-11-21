@@ -61,7 +61,11 @@ $this->params['breadcrumbs'][] = $this->title;
                     'metode',
                     'hasil_forecast',
                     'order_aktual',
-                    'mse',
+                    [
+                        'attribute' => 'mse',
+                        'label' => 'Error',
+
+                    ],
                 ],
             ]); ?>
         </div>

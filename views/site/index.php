@@ -27,8 +27,19 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.mi
             <div class="card bg-grd-primary order-card">
                 <div class="card-body">
                     <h5 class="text-white"><span>Stock Gudang</span></h5>
-                    <h6 class="text-start text-white"><span><?= $randomItem['kode_barang'] ?> - <?= $randomItem['nama_barang'] ?></span></h6>
-                    <h2 class="text-end text-white"><i class="fi fi-ts-box-alt float-start g-3"></i><?= $randomItem['quantity_akhir'] ?></span>
+                    <h6 class="text-start text-white">
+                        <span>
+
+                            <?php if (!empty($randomItem['kode_barang']) && !empty($randomItem['nama_barang'])): ?>
+                                <?= $randomItem['kode_barang'] ?> - <?= $randomItem['nama_barang'] ?>
+                            <?php else: ?>
+                                Data barang tidak tersedia
+                            <?php endif; ?>
+
+                        </span>
+                    </h6>
+                    <h2 class="text-end text-white"><i class="fi fi-ts-box-alt float-start g-3"></i>
+                        <?= $randomItem['quantity_akhir'] ?? '-' ?>
                     </h2>
                     <!-- <p class="m-b-0">Completed Orders<span class="float-end">351</span></p> -->
                 </div>
@@ -38,8 +49,16 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.mi
             <div class="card bg-grd-success order-card">
                 <div class="card-body">
                     <h5 class="text-white">Stock Produksi</h5>
-                    <h6 class="text-start text-white"><span><?= $randomItemProduksi['kode_barang'] ?> - <?= $randomItemProduksi['nama_barang'] ?></span></h6>
-                    <h2 class="text-end text-white"><i class="fi fi-ts-box-alt float-start g-3"></i><?= $randomItemProduksi['quantity_akhir'] ?></span>
+                    <h6 class="text-start text-white">
+                        <span>
+                            <?php if (!empty($randomItemProduksi['kode_barang']) && !empty($randomItemProduksi['nama_barang'])): ?>
+                                <?= $randomItem['kode_barang'] ?> - <?= $randomItem['nama_barang'] ?>
+                            <?php else: ?>
+                                Data barang tidak tersedia
+                            <?php endif; ?> </span>
+                    </h6>
+                    <h2 class="text-end text-white"><i class="fi fi-ts-box-alt float-start g-3"></i>
+                        <?= $randomItemProduksi['quantity_akhir'] ?? '-' ?>
                     </h2>
                     <!-- <p class="m-b-0">This Month<span class="float-end">213</span></p> -->
                 </div>
@@ -433,12 +452,12 @@ $this->registerJs($script, View::POS_END);
 ?>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const cells = document.querySelectorAll('td, th');
-    cells.forEach(cell => {
-        if (cell.textContent.trim() === '(not set)') {
-            cell.textContent = 'kosong';
-        }
+    document.addEventListener("DOMContentLoaded", function() {
+        const cells = document.querySelectorAll('td, th');
+        cells.forEach(cell => {
+            if (cell.textContent.trim() === '(not set)') {
+                cell.textContent = 'kosong';
+            }
+        });
     });
-});
 </script>

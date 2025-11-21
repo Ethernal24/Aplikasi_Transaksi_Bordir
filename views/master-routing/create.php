@@ -11,10 +11,13 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="master-routing-create">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+
 
     <?= $this->render('_form', [
         'model' => $model,
+        'modelDetails' => $modelDetails,
+        'dataMesin' => $dataMesin,
+        'dataTK' => $dataTK
     ]) ?>
 
 </div>
