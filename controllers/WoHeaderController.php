@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\WoDetailMat;
 use app\models\WoDetailOpr;
 use app\models\WoHeader;
 use app\models\WoHeaderSearch;
@@ -59,10 +60,14 @@ class WoHeaderController extends Controller
         $detailOpr = WoDetailOpr::find()
             ->where(['wo_id' => $wo_id])
             ->all();
+        $detailMat = WoDetailMat::find()
+            ->where(['wo_id' => $wo_id])
+            ->all();
         $model = $this->findModel($wo_id);
         return $this->render('view', [
             'model' => $model,
-            'detailOpr' => $detailOpr
+            'detailOpr' => $detailOpr,
+            'detailMat' => $detailMat,
         ]);
     }
 

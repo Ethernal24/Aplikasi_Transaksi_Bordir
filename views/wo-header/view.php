@@ -76,9 +76,42 @@ $this->params['breadcrumbs'][] = $this->title;
                 ]);
                 ?>
             </div>
+            <br>
+            <div class="table-responsive">
+                <?= GridView::widget([
+                    'dataProvider' => new \yii\data\ArrayDataProvider([
+                        'allModels' => $detailMat,
+                        'pagination' => false, // tidak perlu pagination
+                    ]),
+                    'columns' => [
+                        [
+                            'attribute' => 'urutan_operasi',
+                            'value' => 'urutan_operasi',
+                            'label' => 'Urutan Operasi',
+                        ],
+                        [
+                            'attribute' => 'mesin_id',
+                            'value' => 'mesin_id',
+                            'label' => 'Mesin ID',
+                        ],
+                        [
+                            'attribute' => 'shift_id',
+                            'value' => 'shift_id',
+                            'label' => 'Shift ID',
+                        ],
+                        [
+                            'attribute' => 'waktu_standar_menit',
+                            'value' => 'waktu_standar_menit',
+                            'label' => 'Waktu Standar',
+                        ],
+                    ],
+                ]);
+                ?>
+            </div>
+
+
             <?= Html::a('Update', ['update', 'wo_id' => $model->wo_id], ['class' => 'btn btn-primary']) ?>
             <?= Html::a('Back', ['index'], ['class' => 'btn btn-secondary']) ?>
-
         </div>
     </div>
 
