@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\WoDetailOpr;
 use app\models\WoHeader;
 use app\models\WoHeaderSearch;
 use yii\web\Controller;
@@ -55,8 +56,13 @@ class WoHeaderController extends Controller
      */
     public function actionView($wo_id)
     {
+        $detailOpr = WoDetailOpr::find()
+            ->where(['wo_id' => $wo_id])
+            ->all();
+        $model = $this->findModel($wo_id);
         return $this->render('view', [
-            'model' => $this->findModel($wo_id),
+            'model' => $model,
+            'detailOpr' => $detailOpr
         ]);
     }
 

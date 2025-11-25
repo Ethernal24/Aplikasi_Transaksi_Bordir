@@ -57,4 +57,16 @@ class WoDetailOpr extends \yii\db\ActiveRecord
             'catatan_serah_terima' => 'Catatan Serah Terima',
         ];
     }
+    public function getWoHeader()
+    {
+        return $this->hasOne(WoHeader::class, ['wo_id' => 'wo_id']);
+    }
+    public function getMesin()
+    {
+        return $this->hasOne(Mesin::class, ['mesin_id' => 'mesin_id']);
+    }
+    public function getShift()
+    {
+        return $this->hasOne(Shift::class, ['shift_id' => 'shift_id']);
+    }
 }

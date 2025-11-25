@@ -47,4 +47,9 @@ class WoDetailMat extends \yii\db\ActiveRecord
             'qty_dikeluarkan_aktual' => 'Qty Dikeluarkan Aktual',
         ];
     }
+
+    public function getWoHeader()
+    {
+        return $this->hasOne(WoHeader::class, ['wo_id' => 'wo_id']);
+    }
 }
