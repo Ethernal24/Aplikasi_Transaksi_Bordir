@@ -1,7 +1,10 @@
 <?php
 
+use app\models\Barang;
+use app\models\Workcenter;
 use kartik\select2\Select2;
 use wbraganca\dynamicform\DynamicFormWidget;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -24,7 +27,16 @@ use yii\widgets\ActiveForm;
                     <?= $form->field($model, 'nama_routing')->textInput(['maxlength' => true]) ?>
                 </div>
                 <div class="col">
-                    <?= $form->field($model, 'deskripsi')->textInput(['maxlength' => true]) ?>
+                    <?= $form->field($model, 'produk_id')->widget(Select2::className(), [
+                        'data' => ArrayHelper::map(Barang::find()->where(['tipe_barang' => 2])->all(), 'barang_id', 'nama_barang'),
+                        // 'size' => Select2::LARGE,
+                        'options' => [
+                            'placeholder' => 'Pilih Barang...',
+                        ],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ]
+                    ]) ?>
                 </div>
             </div>
             <?php DynamicFormWidget::begin([
@@ -37,17 +49,17 @@ use yii\widgets\ActiveForm;
                 'deleteButton' => '.remove-item',
                 'model' => $modelDetails[0],
                 'formId' => 'dynamic-form',
-                'formFields' => ['routing_detail_id', 'routing_id', 'urutan', 'nama_proses', 'mesin_id', 'tenaga_kerja_id', 'waktu_setup_menit', 'waktu_pengerjaan_menit'],
+                'formFields' => ['routing_detail_id', 'routing_id', 'urutan', 'workcenter_id',  'standard_time_menit', 'waktu_setup_menit', 'output_jam'],
             ]); ?>
             <table class="table table-bordered">
                 <thead>
                     <tr>
                         <th>Urutan</th>
-                        <th>Nama Proses</th>
-                        <th>Mesin</th>
-                        <th>Tenaga Kerja</th>
-                        <th>Waktu Setup</th>
-                        <th>Waktu Pengerjaan</th>
+                        <th>Workcenter ID</th>
+                        <th>Waktu Setup (Menit)</th>
+                        <th>Waktu Standard (Menit/pcs)</th>
+                        <th>Output (pcs/jam)</th>
+                        <th>Deskripsi Kerja</th>
                         <th style>Aksi</th>
                     </tr>
                 </thead>
@@ -59,28 +71,15 @@ use yii\widgets\ActiveForm;
                                 <?= $form->field($detail, "[{$i}]urutan", ['template' => "{input}\n{error}"])
                                     ->textInput(['type' => 'text']) ?>
                             </td>
+
                             <td>
-                                <?= $form->field($detail, "[{$i}]nama_proses", ['template' => "{input}\n{error}"])
-                                    ->textInput(['type' => 'text']) ?>
-                            </td>
-                            <td>
-                                <?= $form->field($detail, "[{$i}]mesin_id", ['template' => "{input}\n{error}"])
+                                <?= $form->field($detail, "[{$i}]workcenter_id", ['template' => "{input}\n{error}"])
                                     ->dropDownList(
-                                        $dataMesin,
+                                        ArrayHelper::map(Workcenter::find()->all(), 'workcenter_id', 'nama_workcenter'),
                                         [
-                                            'prompt' => 'Pilih Mesin',
-                                            'class' => 'form-control tipe-field'
-                                        ]
-                                    ) ?>
-                            </td>
-                            <td>
-                                <?= $form->field($detail, "[{$i}]tenaga_kerja_id", ['template' => "{input}\n{error}"])
-                                    ->dropDownList(
-                                        $dataTK,
-                                        [
-                                            'prompt' => 'Pilih Mesin',
-                                            'class' => 'form-control tipe-field'
-                                        ]
+                                            'prompt' => 'Pilih Nama Workcenter...',
+                                            'class' => 'form-control',
+                                        ],
                                     ) ?>
                             </td>
                             <td>
@@ -88,7 +87,22 @@ use yii\widgets\ActiveForm;
                                     ->textInput(['type' => 'text']) ?>
                             </td>
                             <td>
-                                <?= $form->field($detail, "[{$i}]waktu_pengerjaan_menit", ['template' => "{input}\n{error}"])
+                                <?= $form->field($detail, "[{$i}]standard_time_menit", ['template' => "{input}\n{error}"])
+                                    ->textInput([
+                                        'type' => 'text',
+                                        'class' => 'form-control hitung-standard',
+                                    ]) ?>
+                            </td>
+                            <td>
+                                <?= $form->field($detail, "[{$i}]output_jam", ['template' => "{input}\n{error}"])
+                                    ->textInput([
+                                        'type' => 'text',
+                                        'class' => 'form-control hasil-output',
+                                        'readonly' => true,
+                                    ]) ?>
+                            </td>
+                            <td>
+                                <?= $form->field($detail, "[{$i}]deskripsi_kerja", ['template' => "{input}\n{error}"])
                                     ->textInput(['type' => 'text']) ?>
                             </td>
                             <td style="text-align:center;">
@@ -116,3 +130,25 @@ use yii\widgets\ActiveForm;
     </div>
 
 </div>
+
+<?php
+$script = <<< JS
+$(document).on('input', '.hitung-standard', function() {
+    // Ambil baris (row) tempat input ini berada
+    let row = $(this).closest('tr');
+    
+    // Ambil nilai standard
+    let std = parseFloat($(this).val());
+    
+    // Logika Hitung: 60 / Standard
+    if (std > 0) {
+        let hasil = 60 / std;
+        // Set hasil ke input output_jam di baris yang sama, batasi 2 angka di belakang koma
+        row.find('.hasil-output').val(hasil);
+    } else {
+        row.find('.hasil-output').val(0);
+    }
+});
+JS;
+$this->registerJs($script);
+?>

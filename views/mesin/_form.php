@@ -1,7 +1,9 @@
 <?php
 
+use app\models\Workcenter;
 use yii\data\ArrayDataProvider;
 use yii\grid\GridView;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -17,118 +19,30 @@ use yii\widgets\ActiveForm;
         </div>
         <div class="card-body mx-4">
             <?php $form = ActiveForm::begin(); ?>
-            <div id="mesin-gridview">
-                <?= GridView::widget([
-                    'dataProvider' => new ArrayDataProvider([
-                        'allModels' => $modelMesins,
-                        'pagination' => false,
-                    ]),
-                    'columns' => [
-                        ['class' => 'yii\grid\SerialColumn'],
-                        [
-                            'attribute' => 'nama',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form
-                                    ->field($model, "[$index]nama")
-                                    ->textInput(['maxlength' => true])
-                                    ->label(false);
-                            }
-                        ],
-                        [
-                            'attribute' => 'kode_mesin',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form
-                                    ->field($model, "[$index]kode_mesin")
-                                    ->textInput(['maxlength' => true])
-                                    ->label(false);
-                            }
-                        ],
-                        [
-                            'attribute' => 'kapasitas_per_jam',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form
-                                    ->field($model, "[$index]kapasitas_per_jam")
-                                    ->textInput(['maxlength' => true])
-                                    ->label(false);
-                            }
-                        ],
-                        [
-                            'attribute' => 'status_mesin',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form
-                                    ->field($model, "[$index]status_mesin")
-                                    ->textInput(['maxlength' => true])
-                                    ->label(false);
-                            }
-                        ],
-                        [
-                            'attribute' => 'waktu_setup',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form
-                                    ->field($model, "[$index]waktu_setup")
-                                    ->textInput(['maxlength' => true])
-                                    ->label(false);
-                            }
-                        ],
-                        [
-                            'attribute' => 'waktu_operasi',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form
-                                    ->field($model, "[$index]waktu_operasi")
-                                    ->textInput(['maxlength' => true])
-                                    ->label(false);
-                            }
-                        ],
-                        [
-                            'attribute' => 'kategori',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form
-                                    ->field($model, "[$index]kategori")
-                                    ->textInput(['maxlength' => true])
-                                    ->label(false);
-                            }
-                        ],
-                        [
-                            'attribute' => 'deskripsi',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form
-                                    ->field($model, "[$index]deskripsi")
-                                    ->textInput(['maxlength' => true])
-                                    ->label(false);
-                            }
-                        ],
-                        [
-                            'class' => 'yii\grid\ActionColumn',
-                            'template' => '{actions}',
-                            'buttons' => [
-                                'actions' => function ($url, $model) {
-                                    return Html::tag(
-                                        'div',
-                                        Html::a(Html::tag('i', '', ['class' => 'fas fa-plus fa-xs']), '#', [
-                                            'class' => 'btn btn-success btn-xs pb-1 px-2 add-row ',
-                                            'onclick' => 'return false;',
-                                        ]) .
-                                            Html::a(Html::tag('i', '', ['class' => 'fas fa-trash fa-xs']), '#', [
-                                                'class' => 'btn btn-danger btn-xs pb-1 px-2 delete-row ',
-                                                'onclick' => 'return false;',
-                                            ]),
-                                        ['class' => 'd-flex justify-content-between align-content-center align-items-center']
-                                    );
-                                },
-                            ],
-                        ],
 
-                    ],
-                ]); ?>
-            </div>
+            <?= $form->field($model, 'nama_mesin')->textInput(['maxlength' => true]) ?>
+
+            <?= $form->field($model, 'workcenter_id')
+                ->dropDownList(
+                    ArrayHelper::map(Workcenter::find()->all(), 'workcenter_id', 'nama_workcenter'),
+                    [
+                        'prompt' => 'Pilih Workcenter',
+                        'clas' => 'form-control',
+                    ]
+                ) ?>
+            <?= $form->field($model, 'kode_mesin')->textInput(['maxlength' => true]) ?>
+            <?= $form->field($model, 'status_mesin')
+                ->dropDownList([
+                    '0' => 'Available',
+                    '1' => 'On-Work',
+                    '2' => 'Maintenance',
+                ], [
+                    'prompt' => 'Pilih ketersedian mesin...',
+                    'class' => 'form-control'
+                ]) ?>
+            <?= $form->field($model, 'max_waktu_operasi_menit')->textInput(['maxlength' => true]) ?>
+            <?= $form->field($model, 'tipe_mesin')->textInput(['maxlength' => true]) ?>
+            <?= $form->field($model, 'deskripsi')->textInput(['maxlength' => true]) ?>
             <div class="form-group">
                 <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
                 <?= Html::a('Back', ['mesin/index'], ['class' => 'btn btn-secondary']) ?>

@@ -60,4 +60,9 @@ class TenagaKerja extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Shift::class, ['shift_id' => 'shift_id']);
     }
+
+    public function getWorkCenter()
+    {
+        return $this->hasOne(Workcenter::class, ['workcenter_id' => 'workcenter_id']);
+    }
 }

@@ -9,8 +9,9 @@ use Yii;
  *
  * @property int $permintaan_detail_id
  * @property int $permintaan_id
- * @property int $produk_custom_pelanggan_id
+ * @property int $produk_id
  * @property int $jumlah
+ * @property string $deskripsi
  */
 class PermintaanDetail extends \yii\db\ActiveRecord
 {
@@ -28,8 +29,8 @@ class PermintaanDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['produk_custom_pelanggan_id', 'jumlah'], 'required'],
-            [['permintaan_id', 'produk_custom_pelanggan_id', 'jumlah'], 'integer'],
+            [['produk_id', 'jumlah'], 'required'],
+            [['permintaan_id', 'produk_id', 'jumlah'], 'integer'],
             [['permintaan_id', 'deskripsi'], 'safe'],
             [['deskripsi'], 'string'],
         ];
@@ -43,7 +44,7 @@ class PermintaanDetail extends \yii\db\ActiveRecord
         return [
             'permintaan_detail_id' => 'Permintaan Detail ID',
             'permintaan_id' => 'Permintaan ID',
-            'produk_custom_pelanggan_id' => 'Produk Custom Pelanggan ID',
+            'produk_id' => 'Produk ID',
             'jumlah' => 'Jumlah',
             'deskripsi' => 'Deskripsi',
         ];
@@ -52,9 +53,9 @@ class PermintaanDetail extends \yii\db\ActiveRecord
     {
         return $this->hasOne(PermintaanPelanggan::class, ['permintaan_id' => 'permintaan_id']);
     }
-    public function getProdukCustom()
+    public function getProduk()
     {
-        return $this->hasOne(ProdukCustomPelanggan::class, ['produk_custom_pelanggan_id' => 'produk_custom_pelanggan_id']);
+        return $this->hasOne(Barang::class, ['barang_id' => 'produk_id']);
     }
 
     public function getBomCustom()

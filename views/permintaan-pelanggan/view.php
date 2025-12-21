@@ -52,10 +52,8 @@ $this->params['breadcrumbs'][] = $this->title;
                         ['class' => 'yii\grid\SerialColumn', 'header' => 'No'],
 
                         [
-                            'attribute' => 'produk_custom_pelanggan_id',
-                            'value' => function ($detail) {
-                                return $detail->produkCustom ? $detail->produkCustom->nama_barang_custom : '-';
-                            },
+                            'attribute' => 'produk_id',
+                            'value' => 'produk.nama_barang',
                             'label' => 'Nama Barang',
                         ],
                         [

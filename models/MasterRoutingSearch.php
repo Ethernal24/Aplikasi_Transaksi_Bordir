@@ -17,8 +17,8 @@ class MasterRoutingSearch extends MasterRouting
     public function rules()
     {
         return [
-            [['routing_id'], 'integer'],
-            [['nama_routing', 'deskripsi'], 'safe'],
+            [['routing_id', 'produk_id'], 'integer'],
+            [['nama_routing', 'produk_id'], 'safe'],
         ];
     }
 
@@ -63,7 +63,7 @@ class MasterRoutingSearch extends MasterRouting
         ]);
 
         $query->andFilterWhere(['like', 'nama_routing', $this->nama_routing])
-            ->andFilterWhere(['like', 'deskripsi', $this->deskripsi]);
+            ->andFilterWhere(['like', 'produk_id', $this->produk_id]);
 
         return $dataProvider;
     }

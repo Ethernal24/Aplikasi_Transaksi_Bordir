@@ -126,13 +126,9 @@ class SiteController extends BaseController
             ->orderBy(['created_at' => SORT_DESC])
             ->limit(5)
             ->all();
-        $laporanProduksi = laporanproduksi::find()
-            ->orderBy(['tanggal_kerja' => SORT_DESC])
-            ->limit(5)
-            ->all();
+
         return $this->render('index', [
             'pesanDetails' => $pesanDetails,
-            'laporanProduksi' => $laporanProduksi,
             'randomItem' => $randomItem,
             'randomItemProduksi' => $randomItemProduksi,
         ]);

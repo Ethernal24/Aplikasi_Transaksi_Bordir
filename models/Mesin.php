@@ -30,11 +30,11 @@ class Mesin extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['nama', 'deskripsi', 'kode_mesin', 'kapasitas_per_jam', 'status_mesin', 'waktu_setup', 'waktu_operasi', 'kategori'], 'required'],
-            [['deskripsi', 'kode_mesin'], 'string'],
-            [['status_mesin', 'kategori'], 'integer'],
-            [['waktu_setup', 'waktu_operasi'], 'time', 'format' => 'php:H:i:s'],
-            [['nama'], 'string', 'max' => 200],
+            [['nama_mesin', 'workcenter_id', 'kode_mesin', 'status_mesin', 'max_waktu_operasi_menit', 'tipe_mesin'], 'required'],
+            [['deskripsi', 'kode_mesin', 'tipe_mesin'], 'string'],
+            [['deskripsi'], 'safe'],
+            [['status_mesin', 'workcenter_id', 'max_waktu_operasi_menit'], 'integer'],
+            [['nama_mesin'], 'string', 'max' => 200],
         ];
     }
 
@@ -45,14 +45,13 @@ class Mesin extends \yii\db\ActiveRecord
     {
         return [
             'mesin_id' => 'Mesin ID',
+            'workcenter_id' => 'workcenter ID',
             'kode_mesin' => 'Kode Mesin',
-            'nama' => 'Nama',
-            'kategori' => 'Kategori',
+            'nama_mesin' => 'Nama Mesin',
+            'tipe_mesin' => 'Tipe Mesin',
             'deskripsi' => 'Deskripsi',
-            'kapasitas_per_jam' => 'Kapasitas Per Jam',
             'status_mesin' => 'Status Mesin',
-            'waktu_setup' => 'Waktu Setup',
-            'waktu_operasi' => 'Waktu Operasi',
+            'max_waktu_operasi_menit' => 'Maksimal Waktu Operasi (menit)',
         ];
     }
 
@@ -79,5 +78,27 @@ class Mesin extends \yii\db\ActiveRecord
     public function getLaporan()
     {
         return $this->hasMany(LaporanProduksi::class, ['nama_mesin' => 'nama_mesin']);
+    }
+    public function getWorkCenter()
+    {
+        return $this->hasOne(Workcenter::class, ['workcenter_id' => 'workcenter_id']);
+    }
+    public function getLabel()
+    {
+        $status = [
+            '0' => [
+                'label' => 'Available',
+                'class' => 'badge bg-success'
+            ],
+            '1' => [
+                'label' => 'On-Work',
+                'class' => 'badge bg-info'
+            ],
+            '2' => [
+                'label' => 'Maintenance',
+                'class' => 'badge bg-warning'
+            ],
+        ];
+        return isset($status[$this->status_mesin]) ? $status[$this->status_mesin] : ['label' => 'unknown', 'class' => 'badge bg-secondary'];
     }
 }

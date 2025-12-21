@@ -31,32 +31,30 @@ $this->params['breadcrumbs'][] = $this->title;
                             'label' => 'urutan',
                         ],
                         [
-                            'attribute' => 'nama_proses',
-                            'value' => 'nama_proses',
-                            'label' => 'Nama Proses',
-                        ],
-                        [
-                            'attribute' => 'mesin_id',
-                            'value' => function ($model) {
-                                return $model->mesin ? $model->mesin->nama : '-';
-                            },
-                            'label' => 'Mesin',
-                        ],
-                        [
-                            'attribute' => 'tenaga_kerja_id',
-                            'value' => 'tenagaKerja.nama',
-                            'label' => 'Tenaga Kerja',
+                            'attribute' => 'workcenter_id',
+                            'value' => 'workCenter.nama_workcenter',
+                            'label' => 'WorkCenter ID',
                         ],
                         [
                             'attribute' => 'waktu_setup_menit',
                             'value' => 'waktu_setup_menit',
-                            'label' => 'Waktu setup (menit)',
+                            'label' => 'Waktu Setup / Menit',
                         ],
                         [
-                            'attribute' => 'waktu_pengerjaan_menit',
-                            'value' => 'waktu_pengerjaan_menit',
-                            'label' => 'Waktu Pengerjaan (menit)',
+                            'attribute' => 'standard_time_menit',
+                            'value' => 'standard_time_menit',
+                            'label' => 'Waktu Standard (menit/pcs)',
                         ],
+                        [
+                            'attribute' => 'output_jam',
+                            'value' => 'output_jam',
+                            'label' => 'Output /Jam',
+                        ],
+                        [
+                            'attribute' => 'deskripsi_kerja',
+                            'value' => 'deskripsi_kerja',
+                            'label' => 'Deskripsi Kerja',
+                        ]
                     ]
                 ]) ?>
                 <div class="form-group">

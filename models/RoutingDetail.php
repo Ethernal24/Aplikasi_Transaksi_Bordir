@@ -32,10 +32,11 @@ class RoutingDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['urutan', 'nama_proses', 'tenaga_kerja_id', 'waktu_setup_menit', 'waktu_pengerjaan_menit'], 'required'],
-            [['routing_id', 'urutan', 'mesin_id', 'tenaga_kerja_id', 'waktu_setup_menit', 'waktu_pengerjaan_menit'], 'integer'],
-            [['mesin_id', 'routing_id'], 'safe'],
-            [['nama_proses'], 'string', 'max' => 255],
+            [['urutan', 'standard_time_menit', 'workcenter_id', 'waktu_setup_menit', 'output_jam'], 'required'],
+            [['routing_id', 'urutan', 'standard_time_menit', 'waktu_setup_menit', 'workcenter_id'], 'integer'],
+            [['output_jam'], 'number'],
+            [['routing_id', 'deskripsi_kerja'], 'safe'],
+            [['deskripsi_kerja'], 'string', 'max' => 255],
         ];
     }
 
@@ -48,11 +49,11 @@ class RoutingDetail extends \yii\db\ActiveRecord
             'routing_detail_id' => 'Routing Detail ID',
             'routing_id' => 'Routing ID',
             'urutan' => 'Urutan',
-            'nama_proses' => 'Nama Proses',
-            'mesin_id' => 'Mesin ID',
-            'tenaga_kerja_id' => 'Tenaga Kerja ID',
-            'waktu_setup_menit' => 'Waktu Setup Menit',
-            'waktu_pengerjaan_menit' => 'Waktu Pengerjaan',
+            'workcenter_id' => 'Workcenter ID',
+            'waktu_setup_menit' => 'Waktu Setup',
+            'standard_time_menit' => 'Standard Time',
+            'output_jam' => 'Output',
+            'deskripsi_kerja' => 'Deskripsi Kerja',
         ];
     }
 
@@ -63,5 +64,10 @@ class RoutingDetail extends \yii\db\ActiveRecord
     public function getMesin()
     {
         return $this->hasOne(Mesin::class, ['mesin_id' => 'mesin_id']);
+    }
+
+    public function getWorkCenter()
+    {
+        return $this->hasOne(Workcenter::class, ['workcenter_id' => 'workcenter_id']);
     }
 }

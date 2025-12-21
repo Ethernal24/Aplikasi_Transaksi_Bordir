@@ -13,7 +13,7 @@ use yii\bootstrap5\Alert;
 /** @var app\models\StockSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Stocks';
+$this->title = 'Stock Produksi';
 $this->params['breadcrumbs'][] = $this->title;
 if (Yii::$app->session->hasFlash('success')) {
     echo Alert::widget([

@@ -152,4 +152,8 @@ class Barang extends \yii\db\ActiveRecord
             4 => 'Template',
         ][$this->tipe_barang] ?? '-';
     }
+    public function getRouting()
+    {
+        return $this->hasOne(MasterRouting::class, ['barang_id' => 'produk_id']);
+    }
 }

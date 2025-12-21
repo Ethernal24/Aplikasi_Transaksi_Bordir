@@ -80,34 +80,18 @@ class MesinController extends BaseController
      */
     public function actionCreate()
     {
-        $modelMesins = [new Mesin()];
+        $model = new Mesin();
 
-        if (Yii::$app->request->isPost) {
-            $modelMesins = ModelHelper::createMultiple(Mesin::className());
-            Model::loadMultiple($modelMesins, Yii::$app->request->post());
-
-            if (Model::validateMultiple($modelMesins)) {
-                $transaction = Yii::$app->db->beginTransaction();
-                try {
-                    foreach ($modelMesins as $index => $modelMesin) {
-                        if (!$modelMesin->save(false)) {
-                            throw new \yii\db\Exception('Gagal simpan data mesin #' . $index);
-                        }
-                    }
-                    $transaction->commit();
-                    Yii::$app->session->setFlash('success', 'Data berhasil disimpan.');
-                    return $this->redirect(['index']);
-                } catch (\Exception $e) {
-                    $transaction->rollBack();
-                    Yii::$app->session->setFlash('error', 'Error: ' . $e->getMessage());
-                }
-            } else {
-                Yii::$app->session->setFlash('error', 'Validasi gagal.');
+        if ($this->request->isPost) {
+            if ($model->load($this->request->post()) && $model->save()) {
+                return $this->redirect(['index']);
             }
+        } else {
+            $model->loadDefaultValues();
         }
 
         return $this->render('create', [
-            'modelMesins' => $modelMesins,
+            'model' => $model,
         ]);
     }
 

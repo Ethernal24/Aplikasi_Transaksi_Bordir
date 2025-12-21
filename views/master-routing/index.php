@@ -26,9 +26,13 @@ $this->params['breadcrumbs'][] = $this->title;
                 'columns' => [
                     ['class' => 'yii\grid\SerialColumn'],
 
-                    'routing_id',
+                    // 'routing_id',
                     'nama_routing',
-                    'deskripsi',
+                    [
+                        'attribute' => 'produk_id',
+                        'label' => 'Nama Produk',
+                        'value' => 'produk.nama_barang',
+                    ],
                     [
                         'class' => ActionColumn::className(),
                         'urlCreator' => function ($action, MasterRouting $model, $key, $index, $column) {
@@ -40,7 +44,7 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
     </div>
 
-    
+
 
 
 </div>

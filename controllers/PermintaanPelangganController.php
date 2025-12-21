@@ -86,22 +86,20 @@ class PermintaanPelangganController extends Controller
         $model = new PermintaanPelanggan();
         $modelDetails = [new PermintaanDetail()];
 
+        // Generate kode (Saran: pindahkan ke model jika ingin lebih rapi)
         $last = PermintaanPelanggan::find()
             ->select('kode_permintaan')
             ->orderBy(['permintaan_id' => SORT_DESC])
             ->one();
 
-        if ($last) {
-            $lastnumber = (int) str_replace('PO-', '', $last->kode_permintaan);
-            $nextnumber = $lastnumber + 1;
-        } else {
-            $nextnumber = 1;
-        }
-        $model->kode_permintaan = 'PO-' . '' . str_pad($nextnumber, 3, '0', STR_PAD_LEFT);
+        $nextnumber = $last ? ((int) str_replace('SO-', '', $last->kode_permintaan) + 1) : 1;
+        $model->kode_permintaan = 'SO-' . str_pad($nextnumber, 3, '0', STR_PAD_LEFT);
 
         if ($model->load($this->request->post())) {
             $modelDetails = ModelHelper::createMultiple(PermintaanDetail::class);
             Model::loadMultiple($modelDetails, $this->request->post());
+
+            // Validasi Header & Detail
             $valid = $model->validate();
             $valid = Model::validateMultiple($modelDetails) && $valid;
 
@@ -109,32 +107,42 @@ class PermintaanPelangganController extends Controller
                 $transaction = Yii::$app->db->beginTransaction();
                 try {
                     if ($model->save(false)) {
-                        foreach ($modelDetails as $detail) {
+                        foreach ($modelDetails as $i => $detail) {
                             $detail->permintaan_id = $model->permintaan_id;
-                            if (! $detail->save(false)) {
+                            if (!$detail->save(false)) {
                                 $transaction->rollBack();
+                                Yii::$app->session->setFlash('error', "Gagal simpan detail ke-" . ($i + 1));;
                                 break;
                             }
                         }
+
+                        // Update tanggal pesanan terakhir pelanggan
                         $pelanggan = MasterPelanggan::findOne($model->pelanggan_id);
                         if ($pelanggan) {
                             $pelanggan->pesenan_terakhir = $model->tanggal_permintaan;
                             $pelanggan->save(false);
                         }
+
+                        // Jalankan fungsi tambahan (MPS)
+                        // $this->createMps($model);
+
+                        $transaction->commit();
+                        Yii::$app->session->setFlash('success', "Permintaan berhasil disimpan.");
+                        return $this->redirect(['view', 'permintaan_id' => $model->permintaan_id]);
                     }
-                    $this->createMps($model);
-                    $transaction->commit();
-                    return $this->redirect(['view', 'permintaan_id' => $model->permintaan_id]);
                 } catch (\Exception $e) {
                     $transaction->rollBack();
-                    throw $e;
+                    Yii::$app->session->setFlash('error', "Error: " . $e->getMessage());
                 }
+            } else {
+                // Jika validasi gagal, tampilkan pesan ke user
+                Yii::$app->session->setFlash('error', "Data tidak valid. Periksa kembali inputan Anda.");
             }
         }
 
         return $this->render('create', [
             'model' => $model,
-            'modelDetails' => $modelDetails
+            'modelDetails' => (empty($modelDetails)) ? [new PermintaanDetail()] : $modelDetails
         ]);
     }
 

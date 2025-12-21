@@ -42,27 +42,28 @@ $user = Yii::$app->user->identity->role;
                     'dataProvider' => $dataProvider,
                     'columns' => [
                         ['class' => 'yii\grid\SerialColumn'],
-
-                        'nama',
-                        'kode_mesin',
                         [
-                            'attribute' => 'kategori',
-                            'value' => function ($model) {
-                                return $model->kategori == 0 ? 'Bordir' : ($model->kategori == 1 ? 'Kaos Kaki' : 'Tidak diketahui');
-                            },
-                            'filter' => [
-                                0 => 'Bordir',
-                                1 => 'Kaos Kaki',
-                            ],
+                            'attribute' => 'workcenter_id',
+                            'value' => 'workCenter.nama_workcenter',
+                            'label' => 'WorkCenter',
                         ],
-                        'kapasitas_per_jam',
-                        'status_mesin',
-                        'waktu_setup',
-                        'waktu_operasi',
+                        'nama_mesin',
+                        'kode_mesin',
+                        'tipe_mesin',
+                        [
+                            'attribute' => 'status_mesin',
+                            'format' => 'raw',
+                            'value' => function ($model) {
+                                $label = $model->label;
+                                return "<span class='{$label['class']}'>{$label['label']}</span>";;
+                            },
+                            'label' => 'Status Mesin',
+                        ],
+                        'max_waktu_operasi_menit',
                         'deskripsi',
                         [
                             'class' => ActionColumn::className(),
-                            'template' => '{view}',  // Hanya tampilkan tombol 'view' saja
+                            'template' => '{view} {delete} {update}',  // Hanya tampilkan tombol 'view' saja
                             'urlCreator' => function ($action, Mesin $model, $key, $index, $column) {
                                 if (Yii::$app->user->identity->role === 'Operator') {
                                     // Jika Operator, hanya izinkan akses ke view

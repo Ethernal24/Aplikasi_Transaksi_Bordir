@@ -23,22 +23,12 @@ $this->params['breadcrumbs'][] = $this->title;
         'model' => $model,
         'attributes' => [
             'mesin_id',
-            'nama',
+            'workcenter_id',
+            'nama_mesin',
             'kode_mesin',
-            'kapasitas_per_jam',
             'status_mesin',
-            'waktu_setup',
-            'waktu_operasi',
-            [
-                'attribute' => 'kategori',
-                'value' => function ($model) {
-                    return $model->kategori == 0 ? 'Bordir' : ($model->kategori == 1 ? 'Kaos Kaki' : 'Tidak diketahui');
-                },
-                'filter' => [
-                    1 => 'Bordir',
-                    2 => 'Kaos Kaki',
-                ],
-            ],
+            'max_waktu_operasi_menit',
+            'tipe_mesin',
             'deskripsi:ntext',
         ],
     ]) ?>

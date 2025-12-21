@@ -17,9 +17,8 @@ class Shiftsearch extends Shift
     public function rules()
     {
         return [
-            [['shift_id', 'user_id', 'ganti_benang', 'ganti_kain'], 'integer'],
-            [['tanggal', 'shift', 'nama_operator', 'mulai_istirahat', 'selesai_istirahat', 'kendala'], 'safe'],
-            [['waktu_kerja'], 'number'],
+            [['jam_efektif',], 'integer'],
+            [['jam_mulai', 'jam_selesai', 'nama_shift'], 'safe'],
         ];
     }
 
@@ -59,19 +58,11 @@ class Shiftsearch extends Shift
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'shift_id' => $this->shift_id,
-            'user_id' => $this->user_id,
-            'tanggal' => $this->tanggal,
-            'waktu_kerja' => $this->waktu_kerja,
-            'mulai_istirahat' => $this->mulai_istirahat,
-            'selesai_istirahat' => $this->selesai_istirahat,
-            'ganti_benang' => $this->ganti_benang,
-            'ganti_kain' => $this->ganti_kain,
+            'nama_shift' => $this->nama_shift,
+            'jam_mulai' => $this->jam_mulai,
+            'jam_selesai' => $this->jam_selesai,
+            'jam_efektif' => $this->jam_efektif,
         ]);
-
-        $query->andFilterWhere(['like', 'shift', $this->shift])
-            ->andFilterWhere(['like', 'nama_operator', $this->nama_operator])
-            ->andFilterWhere(['like', 'kendala', $this->kendala]);
 
         return $dataProvider;
     }

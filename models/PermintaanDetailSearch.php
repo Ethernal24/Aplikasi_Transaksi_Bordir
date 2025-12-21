@@ -17,7 +17,7 @@ class PermintaanDetailSearch extends PermintaanDetail
     public function rules()
     {
         return [
-            [['permintaan_detail_id', 'permintaan_id', 'barang_id', 'jumlah'], 'integer'],
+            [['permintaan_detail_id', 'permintaan_id', 'produk_id', 'jumlah'], 'integer'],
         ];
     }
 
@@ -59,7 +59,7 @@ class PermintaanDetailSearch extends PermintaanDetail
         $query->andFilterWhere([
             'permintaan_detail_id' => $this->permintaan_detail_id,
             'permintaan_id' => $this->permintaan_id,
-            'barang_id' => $this->barang_id,
+            'produk_id' => $this->produk_id,
             'jumlah' => $this->jumlah,
         ]);
 

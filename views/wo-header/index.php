@@ -10,7 +10,7 @@ use yii\grid\GridView;
 /** @var app\models\WoHeaderSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Wo Headers';
+$this->title = 'Work Order';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="pc-content">

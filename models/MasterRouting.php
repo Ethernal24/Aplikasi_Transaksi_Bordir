@@ -30,8 +30,8 @@ class MasterRouting extends \yii\db\ActiveRecord
     {
         return [
             [['nama_routing'], 'required'],
-            [['deskripsi'], 'safe'],
-            [['nama_routing', 'deskripsi'], 'string', 'max' => 255],
+            [['produk_id'], 'integer'],
+            [['nama_routing'], 'string', 'max' => 255],
         ];
     }
 
@@ -43,12 +43,16 @@ class MasterRouting extends \yii\db\ActiveRecord
         return [
             'routing_id' => 'Routing ID',
             'nama_routing' => 'Nama Routing',
-            'deskripsi' => 'Deskripsi',
         ];
     }
 
     public function getDetails()
     {
         return $this->hasMany(RoutingDetail::class, ['routing_id' => 'routing_id']);
+    }
+
+    public function getProduk()
+    {
+        return $this->hasOne(Barang::class, ['barang_id' => 'produk_id']);
     }
 }

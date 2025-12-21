@@ -81,24 +81,6 @@ class MasterRoutingController extends Controller
      */
     public function actionCreate()
     {
-        $dataMesin = ArrayHelper::map(
-            Mesin::find()
-                ->select(['mesin_id', 'kode_mesin', 'nama'])
-                ->orderBy(['nama' => SORT_ASC])
-                ->asArray()
-                ->all(),
-            'mesin_id',
-            'nama',
-        );
-        $dataTK = ArrayHelper::map(
-            TenagaKerja::find()
-                ->select(['tk_id', 'nama'])
-                ->orderBy(['nama' => SORT_ASC])
-                ->asArray()
-                ->all(),
-            'tk_id',
-            'nama',
-        );
         $model = new MasterRouting();
         $modelDetails = [new RoutingDetail()];
 
@@ -142,8 +124,6 @@ class MasterRoutingController extends Controller
         return $this->render('create', [
             'model' => $model,
             'modelDetails' => $modelDetails,
-            'dataMesin' => $dataMesin,
-            'dataTK' => $dataTK,
         ]);
     }
 

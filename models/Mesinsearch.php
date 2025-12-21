@@ -17,8 +17,8 @@ class Mesinsearch extends Mesin
     public function rules()
     {
         return [
-            [['mesin_id'], 'integer'],
-            [['nama', 'deskripsi'.'kategori'], 'safe'],
+            [['mesin_id', 'workcenter_id', 'max_waktu_operasi_menit', 'status_mesin'], 'integer'],
+            [['nama_mesin', 'deskripsi' . 'tipe_mesin', 'kode_mesin'], 'safe'],
         ];
     }
 
@@ -61,7 +61,7 @@ class Mesinsearch extends Mesin
             'mesin_id' => $this->mesin_id,
         ]);
 
-        $query->andFilterWhere(['like', 'nama', $this->nama])
+        $query->andFilterWhere(['like', 'nama_mesin', $this->nama_mesin])
             ->andFilterWhere(['like', 'deskripsi', $this->deskripsi]);
 
         return $dataProvider;
