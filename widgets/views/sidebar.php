@@ -129,15 +129,15 @@ $samplePageUrl = Url::to(['site/sample-page']);
 
 
 
-                    <li class="pc-item pc-hasmenu">
+                    <!-- <li class="pc-item pc-hasmenu">
                         <a href="#!" class="pc-link"><span class="pc-micon">
                                 <i class="fi fi-ts-dolly-flatbed-alt"></i> </span><span class="pc-mtext">Pembelian</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
                         <ul class="pc-submenu">
                             <li class="pc-item"><a class="pc-link" href="<?= $PembelianUrl ?>">Riwayat Pembelian Bahan Produksi</a></li>
-                            <!-- <li class="pc-item"><a class="pc-link" href="<?= $InvoiceUrl ?>">Detail Pembelian Bahan Produksi</a></li> -->
-                            <!-- <li class="pc-item"><a class="pc-link" href="">Report Barang</a></li> -->
+                            <li class="pc-item"><a class="pc-link" href="<?= $InvoiceUrl ?>">Detail Pembelian Bahan Produksi</a></li>
+                            <li class="pc-item"><a class="pc-link" href="">Report Barang</a></li>
                         </ul>
-                    </li>
+                    </li> -->
 
                     <li class="pc-item pc-hasmenu">
                         <a href="#!" class="pc-link">
@@ -193,12 +193,12 @@ $samplePageUrl = Url::to(['site/sample-page']);
                         </a>
                     </li> -->
 
-                    <li class="pc-item">
+                    <!-- <li class="pc-item">
                         <a href="<?= $SupplierUrl ?>" class="pc-link">
                             <span class="pc-micon"><i class="fi fi-ts-supplier-alt"></i></i></span>
                             <span class="pc-mtext">Supplier</span>
                         </a>
-                    </li>
+                    </li> -->
 
                     <!-- <li class="pc-item">
                         <a href="<?= $UnitUrl ?>" class="pc-link">
@@ -213,15 +213,15 @@ $samplePageUrl = Url::to(['site/sample-page']);
                             <span class="pc-mtext">Mesin</span>
                         </a>
                     </li>
-                    <li class="pc-item">
+                    <!-- <li class="pc-item">
                         <a href="<?= $ShifttUrl ?>" class="pc-link">
                             <span class="pc-micon"><i class="fi fi-ts-calendar-shift-swap"></i></span>
                             <span class="pc-mtext">Shift</span>
                         </a>
-                    </li>
+                    </li> -->
 
 
-                    <li class="pc-item pc-hasmenu">
+                    <!-- <li class="pc-item pc-hasmenu">
                         <a href="#!" class="pc-link"><span class="pc-micon">
                                 <i class="fi fi-ts-ballot-check"></i> </span><span class="pc-mtext">Report</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
                         <ul class="pc-submenu">
@@ -232,7 +232,7 @@ $samplePageUrl = Url::to(['site/sample-page']);
                             <li class="pc-item"><a class="pc-link" href="<?= $BarangProUrl ?>">Barang Produksi</a></li>
                             <li class="pc-item"><a class="pc-link" href="<?= $NotaUrl ?>">Nota</a></li>
                         </ul>
-                    </li>
+                    </li> -->
 
                     <li class="pc-item">
                         <a href="<?= $PanduanUrl ?>" class="pc-link">

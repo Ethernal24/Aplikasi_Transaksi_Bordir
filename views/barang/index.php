@@ -14,7 +14,7 @@ use yii\widgets\LinkPager;
 
 $pagination = $dataProvider->getPagination();
 
-$this->title = 'List Bahan Baku';
+$this->title = 'Daftar Bahan Baku';
 $this->params['breadcrumbs'][] = $this->title;
 
 if (Yii::$app->session->hasFlash('success')) {
@@ -82,12 +82,13 @@ if (Yii::$app->session->hasFlash('success')) {
                                 'prompt' => 'Pilih Jenis'
                             ]
                         ],
-                        [
-                            'attribute' => 'stok',
-                            'value' => function ($model) {
-                                return $model->stocks ? $model->stocks->quantity_akhir : '-';
-                            },
-                        ],
+                        // Untuk tampilan di daftar stock != dimaster barang
+                        // [
+                        //     'attribute' => 'stok',
+                        //     'value' => function ($model) {
+                        //         return $model->stocks ? $model->stocks->quantity_akhir : '-';
+                        //     },
+                        // ],
 
                         'unit.satuan' => [
                             'attribute' => 'satuan',
