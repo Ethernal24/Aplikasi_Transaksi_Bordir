@@ -29,9 +29,9 @@ class MasterRouting extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['nama_routing'], 'required'],
+            [['nama_routing', 'kode_routing'], 'required'],
             [['produk_id'], 'integer'],
-            [['nama_routing'], 'string', 'max' => 255],
+            [['nama_routing', 'kode_routing'], 'string', 'max' => 255],
         ];
     }
 
@@ -42,6 +42,8 @@ class MasterRouting extends \yii\db\ActiveRecord
     {
         return [
             'routing_id' => 'Routing ID',
+            'kode_routing' => 'Kode Routing',
+            'produk_id' => 'produk ID',
             'nama_routing' => 'Nama Routing',
         ];
     }

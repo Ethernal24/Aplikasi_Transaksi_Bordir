@@ -1,7 +1,7 @@
 <?php
 
 use app\models\MpsDetail;
-use kartik\grid\GridView;
+use yii\grid\GridView;
 use yii\grid\ActionColumn;
 use yii\helpers\Html;
 use yii\helpers\Url;
@@ -22,30 +22,29 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
         <div class="row mx-3">
             <div class="col">
-                <div><strong>
-                        Nama Produk :
-                    </strong> <?= $model->barangName ?>
-                </div>
-                <div><strong>
+                <div>
+                    <strong>
                         Periode :
                     </strong> <?= Yii::$app->formatter->asDatetime($model->periode, 'php: F Y') ?>
                 </div>
+                <div>
+                    <strong>
+                        Tanggal Awal :
+                    </strong> <?= Yii::$app->formatter->asDatetime($model->tanggal_awal, 'php: d F Y ') ?>
+                </div>
             </div>
             <div class="col">
-                <div><strong>
-                        Tipe :
-                    </strong> <?= $model->tipeLabel ?>
-                </div>
-                <div><strong>
+                <div>
+                    <strong>
                         Status Approved :
                     </strong>
                     <span class="<?= $model->getStatusLabel()['class'] ?>"><?= $model->getStatusLabel()['label'] ?></span>
                 </div>
-            </div>
-            <div class="col">
-                <div><strong>
-                        Stok On Hand :
-                    </strong> <?= $model->barang->stok ?>
+                <div>
+                    <strong>
+                        Tanggal Akhir :
+                    </strong>
+                    <?= Yii::$app->formatter->asDatetime($model->tanggal_akhir, 'php: d F Y ') ?>
                 </div>
             </div>
         </div>
@@ -57,31 +56,25 @@ $this->params['breadcrumbs'][] = $this->title;
                         'pagination' => false, // tidak perlu pagination
                     ]),
                     'columns' => [
-
                         [
-                            'attribute' => 'minggu_ke',
-                            'value' => 'minggu_ke',
-                            'label' => 'Minggu Ke',
+                            'attribute' => 'mps_id',
+                            'value' => 'mps.kode_mps',
+                            'label' => 'MPS ID',
                         ],
                         [
-                            'attribute' => 'forecast',
-                            'value' => 'forecast',
-                            'label' => 'Forecast',
+                            'attribute' => 'permintaan_id',
+                            'value' => 'permintaan.kode_permintaan',
+                            'label' => 'Permintaan ID',
                         ],
                         [
-                            'attribute' => 'order_aktual',
-                            'value' => 'order_aktual',
-                            'label' => 'Order Aktual',
+                            'attribute' => 'produk_id',
+                            'value' => 'produk.nama_barang',
+                            'label' => 'Produk ID',
                         ],
                         [
-                            'attribute' => 'stok',
-                            'value' => 'stok',
-                            'label' => 'Stok',
-                        ],
-                        [
-                            'attribute' => 'rencana_produksi',
-                            'value' => 'rencana_produksi',
-                            'label' => 'Rencana Produksi',
+                            'attribute' => 'qty_plan',
+                            'value' => 'qty_plan',
+                            'label' => 'Qty Plan',
                         ],
                     ],
                 ]);

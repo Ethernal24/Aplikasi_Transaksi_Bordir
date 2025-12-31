@@ -27,6 +27,9 @@ use yii\widgets\ActiveForm;
                     <?= $form->field($model, 'nama_routing')->textInput(['maxlength' => true]) ?>
                 </div>
                 <div class="col">
+                    <?= $form->field($model, 'kode_routing')->textInput(['maxlength' => true]) ?>
+                </div>
+                <div class="col">
                     <?= $form->field($model, 'produk_id')->widget(Select2::className(), [
                         'data' => ArrayHelper::map(Barang::find()->where(['tipe_barang' => 2])->all(), 'barang_id', 'nama_barang'),
                         // 'size' => Select2::LARGE,

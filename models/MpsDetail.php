@@ -31,8 +31,8 @@ class MpsDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['mps_id', 'minggu_ke', 'forecast', 'order_aktual', 'stok', 'rencana_produksi'], 'required'],
-            [['mps_id', 'minggu_ke', 'forecast', 'order_aktual', 'stok', 'rencana_produksi'], 'integer'],
+            [['permintaan_id', 'produk_id', 'qty_plan'], 'required'],
+            [['mps_id', 'permintaan_id', 'produk_id', 'qty_plan'], 'integer'],
         ];
     }
 
@@ -44,16 +44,22 @@ class MpsDetail extends \yii\db\ActiveRecord
         return [
             'mps_detail_id' => 'Mps Detail ID',
             'mps_id' => 'Mps ID',
-            'minggu_ke' => 'Minggu Ke',
-            'forecast' => 'Forecast',
-            'order_aktual' => 'Order Aktual',
-            'stok' => 'Stok',
-            'rencana_produksi' => 'Rencana Produksi',
+            'permintaan_id' => 'Permintaan ID',
+            'produk_id' => 'produk ID',
+            'qty_plan' => 'Qty Plan',
         ];
     }
 
     public function getMps()
     {
         return $this->hasOne(mps::class, ['mps_id' => 'mps_id']);
+    }
+    public function getPermintaan()
+    {
+        return $this->hasOne(PermintaanPelanggan::class, ['permintaan_id' => 'permintaan_id']);
+    }
+    public function getProduk()
+    {
+        return $this->hasOne(Barang::class, ['barang_id' => 'produk_id']);
     }
 }

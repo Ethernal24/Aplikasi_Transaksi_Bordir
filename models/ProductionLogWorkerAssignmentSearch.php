@@ -4,12 +4,12 @@ namespace app\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\Mps;
+use app\models\ProductionLogWorkerAssignment;
 
 /**
- * MpsSearch represents the model behind the search form of `app\models\Mps`.
+ * ProductionLogWorkerAssignmentSearch represents the model behind the search form of `app\models\ProductionLogWorkerAssignment`.
  */
-class MpsSearch extends Mps
+class ProductionLogWorkerAssignmentSearch extends ProductionLogWorkerAssignment
 {
     /**
      * {@inheritdoc}
@@ -17,10 +17,8 @@ class MpsSearch extends Mps
     public function rules()
     {
         return [
-            [['mps_id', 'periode', 'tanggal_akhir', 'status_mps', 'tanggal_awal'], 'integer'],
-            [['tanggal_akhir'], 'safe']
-
-
+            [['id_assignment', 'id_tk', 'id_workcenter', 'id_shift', 'id_wo'], 'integer'],
+            [['tanggal_assignment'], 'safe'],
         ];
     }
 
@@ -42,7 +40,7 @@ class MpsSearch extends Mps
      */
     public function search($params)
     {
-        $query = Mps::find();
+        $query = ProductionLogWorkerAssignment::find();
 
         // add conditions that should always apply here
 
@@ -60,11 +58,12 @@ class MpsSearch extends Mps
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'mps_id' => $this->mps_id,
-            'periode' => $this->periode,
-            'tanggal_akhir' => $this->tanggal_akhir,
-            'status_mps' => $this->status_mps,
-            'tanggal_awal' => $this->tanggal_awal,
+            'id_assignment' => $this->id_assignment,
+            'tanggal_assignment' => $this->tanggal_assignment,
+            'id_tk' => $this->id_tk,
+            'id_workcenter' => $this->id_workcenter,
+            'id_shift' => $this->id_shift,
+            'id_wo' => $this->id_wo,
         ]);
 
         return $dataProvider;

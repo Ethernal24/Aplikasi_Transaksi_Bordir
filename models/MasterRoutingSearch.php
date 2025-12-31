@@ -60,6 +60,7 @@ class MasterRoutingSearch extends MasterRouting
         // grid filtering conditions
         $query->andFilterWhere([
             'routing_id' => $this->routing_id,
+            'kode_routing' => $this->kode_routing,
         ]);
 
         $query->andFilterWhere(['like', 'nama_routing', $this->nama_routing])

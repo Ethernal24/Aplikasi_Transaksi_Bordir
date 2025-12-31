@@ -4,12 +4,12 @@ namespace app\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\Mps;
+use app\models\WorkOrder;
 
 /**
- * MpsSearch represents the model behind the search form of `app\models\Mps`.
+ * WorkOrderSearch represents the model behind the search form of `app\models\WorkOrder`.
  */
-class MpsSearch extends Mps
+class WorkOrderSearch extends WorkOrder
 {
     /**
      * {@inheritdoc}
@@ -17,10 +17,8 @@ class MpsSearch extends Mps
     public function rules()
     {
         return [
-            [['mps_id', 'periode', 'tanggal_akhir', 'status_mps', 'tanggal_awal'], 'integer'],
-            [['tanggal_akhir'], 'safe']
-
-
+            [['id_wo', 'permintaan_detail_id', 'id_routing', 'qty_target', 'qty_aktual', 'status_wo', 'prioritas'], 'integer'],
+            [['kode_wo', 'tanggal_wo', 'due_date', 'created_at', 'updated_at'], 'safe'],
         ];
     }
 
@@ -42,7 +40,7 @@ class MpsSearch extends Mps
      */
     public function search($params)
     {
-        $query = Mps::find();
+        $query = WorkOrder::find();
 
         // add conditions that should always apply here
 
@@ -60,12 +58,20 @@ class MpsSearch extends Mps
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'mps_id' => $this->mps_id,
-            'periode' => $this->periode,
-            'tanggal_akhir' => $this->tanggal_akhir,
-            'status_mps' => $this->status_mps,
-            'tanggal_awal' => $this->tanggal_awal,
+            'id_wo' => $this->id_wo,
+            'permintaan_detail_id' => $this->permintaan_detail_id,
+            'id_routing' => $this->id_routing,
+            'qty_target' => $this->qty_target,
+            'qty_aktual' => $this->qty_aktual,
+            'tanggal_wo' => $this->tanggal_wo,
+            'due_date' => $this->due_date,
+            'status_wo' => $this->status_wo,
+            'prioritas' => $this->prioritas,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ]);
+
+        $query->andFilterWhere(['like', 'kode_wo', $this->kode_wo]);
 
         return $dataProvider;
     }

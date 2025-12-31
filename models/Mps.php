@@ -12,11 +12,8 @@ use yii\db\Expression;
  * @property int $mps_id
  * @property int $barang_id
  * @property int $periode
- * @property int $qty
- * @property int $tipe
- * @property int $sumber
  * @property int $status_mps
- * @property string $dateline
+ * @property string $tanggal_akhir
  * @property int $tanggal_awal
  * @property MpsDetail[] $mpsDetails
  */
@@ -36,7 +33,7 @@ class Mps extends \yii\db\ActiveRecord
             [
                 'class' => TimestampBehavior::class,
                 'createdAtAttribute' => 'dibuat_pada',
-                'updatedAtAttribute' => 'diupdate_pada',
+                'updatedAtAttribute' => 'diperbarui_pada',
                 'value' => new Expression('NOW()'), // gunakan CURRENT_TIMESTAMP di DB
             ],
         ];
@@ -48,10 +45,9 @@ class Mps extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['barang_id', 'periode', 'qty', 'tipe', 'dateline', 'sumber', 'status_mps'], 'required'],
-            [['barang_id', 'tipe', 'status_mps', 'sumber'], 'integer'],
-            [['qty'], 'number'],
-            [['tanggal_awal'], 'safe'],
+            [['kode_mps', 'periode', 'tanggal_awal', 'tanggal_akhir', 'status_mps'], 'required'],
+            [['status_mps'], 'integer'],
+            [['kode_mps'], 'string'],
         ];
     }
 
@@ -62,33 +58,14 @@ class Mps extends \yii\db\ActiveRecord
     {
         return [
             'mps_id' => 'Mps ID',
-            'barang_id' => "Barang ID",
-            'periode' => "Periode",
-            'qty' => "Qty",
-            'tipe' => "Tipe",
-            'dateline' => "Dateline",
-            'sumber' => "Sumber",
-            'status_mps' => "Status MPS",
+            'kode_mps' => 'Kode MPS',
+            'periode' => 'Periode',
+            'tanggal_akhir' => 'Tanggal Akhir',
             'tanggal_awal' => 'Tanggal Awal',
+            'status_mps' => "Status MPS",
         ];
     }
 
-    public function getBarangRelasi()
-    {
-        if ($this->tipe === 0) {
-            return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
-        } elseif ($this->tipe === 1) {
-
-            return $this->hasOne(ProdukCustomPelanggan::class, ['produk_custom_pelanggan_id' => 'barang_id']);
-        }
-    }
-    public function getBarangName()
-    {
-        if (!$this->barangRelasi) return '-';
-        return $this->tipe === 0
-            ? $this->barangRelasi->nama_barang
-            : $this->barangRelasi->nama_barang_custom;
-    }
     public function getPermintaan()
     {
         return $this->hasOne(PermintaanPelanggan::class, ['permintaan_id' => 'sumber']);
@@ -97,15 +74,6 @@ class Mps extends \yii\db\ActiveRecord
     public function getBarang()
     {
         return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
-    }
-
-    public function getTipeLabel()
-    {
-        $tipe = [
-            '0' => 'MTS',
-            '1' => 'MTO',
-        ];
-        return isset($tipe[$this->tipe]) ? $tipe[$this->tipe] : 'Unknown';;
     }
 
     public function getStatusLabel()
@@ -124,5 +92,26 @@ class Mps extends \yii\db\ActiveRecord
     public function getMrp()
     {
         return $this->hasOne(MasterMrp::class, ['mps_id' => 'mps_id']);
+    }
+    public static function getActualCapacity($startDate, $endDate)
+    {
+        // 1. Hitung jumlah hari kerja (exclude hari libur jika ada)
+        $start = new \DateTime($startDate);
+        $end = new \DateTime($endDate);
+        $days = $end->diff($start)->days + 1;
+
+        // 2. Ambil jumlah karyawan aktif dari Master_Employee
+        $employeeCount = TenagaKerja::find()->where(['status_kerja' => 0])->count();
+
+        // 3. Ambil jumlah mesin aktif dari Master_Machine
+        $machineCount = Mesin::find()->where(['status_mesin' => 0])->count();
+
+        // Asumsi standar: 8 jam kerja = 480 menit
+        $dailyMinutes = 480;
+
+        return [
+            'manpower_total' => $employeeCount * $dailyMinutes * $days,
+            'machine_total' => $machineCount * $dailyMinutes * $days,
+        ];
     }
 }
