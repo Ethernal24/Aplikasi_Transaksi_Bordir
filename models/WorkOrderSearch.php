@@ -17,7 +17,7 @@ class WorkOrderSearch extends WorkOrder
     public function rules()
     {
         return [
-            [['id_wo', 'permintaan_detail_id', 'id_routing', 'qty_target', 'qty_aktual', 'status_wo', 'prioritas'], 'integer'],
+            [['id_wo', 'permintaan_id', 'id_routing', 'qty_target', 'status_wo', 'prioritas'], 'integer'],
             [['kode_wo', 'tanggal_wo', 'due_date', 'created_at', 'updated_at'], 'safe'],
         ];
     }
@@ -59,10 +59,9 @@ class WorkOrderSearch extends WorkOrder
         // grid filtering conditions
         $query->andFilterWhere([
             'id_wo' => $this->id_wo,
-            'permintaan_detail_id' => $this->permintaan_detail_id,
+            'permintaan_id' => $this->permintaan_id,
             'id_routing' => $this->id_routing,
             'qty_target' => $this->qty_target,
-            'qty_aktual' => $this->qty_aktual,
             'tanggal_wo' => $this->tanggal_wo,
             'due_date' => $this->due_date,
             'status_wo' => $this->status_wo,

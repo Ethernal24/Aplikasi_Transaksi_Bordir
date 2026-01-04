@@ -95,9 +95,9 @@ $samplePageUrl = Url::to(['site/sample-page']);
                         </a>
                         <ul class="pc-submenu">
                             <li class="pc-item"><a href="<?= $KaryawanUrl ?>" class="pc-link">Daftar Karyawan</a></li>
-                            <li class="pc-item"><a href="<?= $ShifttUrl ?>" class="pc-link">Shift Karyawan</a></li>
+                            <li class="pc-item"><a href="<?= $ShifttUrl ?>" class="pc-link">Daftar Shift</a></li>
                             <li class="pc-item"><a href="<?= $KehadiranUrl ?>" class="pc-link">Absensi Karyawan</a></li>
-                            <li class="pc-item"><a href="<?= $JadwalHarianUrl ?>" class="pc-link">Jadwal Shift</a></li>
+                            <li class="pc-item"><a href="<?= $JadwalHarianUrl ?>" class="pc-link">Jadwal Shift Karyawan</a></li>
                         </ul>
                     </li>
 
@@ -173,7 +173,17 @@ $samplePageUrl = Url::to(['site/sample-page']);
                                 </ul>
                             </li>
                             <li class="pc-item"><a class="pc-link" href="<?= $WorkOrderUrl ?>">Work Order</a></li>
-                            <li class="pc-item"><a class="pc-link" href="<?= $ProductionLogUrl ?>">Laporan Produksi</a></li>
+                            <li class="pc-item"><a class="pc-link" href="<?= $ProductionLogUrl ?>">Log Produksi</a></li>
+                            <li class="pc-item pc-hasmenu">
+                                <a href="#!" class="pc-link">
+                                    <span class="pc-mtext">Laporan Produksi</span>
+                                    <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+                                </a>
+                                <ul class="pc-submenu">
+                                    <li class="pc-item"><a class="pc-link" href="#">Laporan Besar</a></li>
+                                    <li class="pc-item"><a class="pc-link" href="#">Laporan Workcenter</a></li>
+                                </ul>
+                            </li>
                         </ul>
                     </li>
                     <li class="pc-item pc-hasmenu">

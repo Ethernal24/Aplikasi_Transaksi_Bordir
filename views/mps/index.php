@@ -62,7 +62,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             ];
                             return $list[$model->status_mps] ?? null;
                         },
-                        "label" => 'Status MPS'
+                        'label' => 'Status MPS'
                     ],
                     [
                         'class' => ActionColumn::className(),

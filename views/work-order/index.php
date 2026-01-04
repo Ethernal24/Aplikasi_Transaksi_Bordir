@@ -32,16 +32,10 @@ $this->params['breadcrumbs'][] = $this->title;
                     [
                         'attribute' => 'permintaan_id',
                         'value' => 'permintaan.kode_permintaan',
-                        'label' => 'Kode Permintaan'
-                    ],
-                    [
-                        'attribute' => 'permintaan_detail_id',
-                        'value' => 'permintaanDetail.produk.nama_barang',
-                        'label' => 'Nama Produk',
+                        'label' => 'Kode Permintaan',
                     ],
                     // 'id_routing',
-                    'qty_target',
-                    // 'qty_aktual',
+                    // 'qty_target',
                     'tanggal_wo',
                     'due_date',
                     [
@@ -66,7 +60,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     // 'updated_at',
                     [
                         'class' => ActionColumn::className(),
-                        'template' => '{update} {delete}',
+                        'template' => '{update} {delete} {view}',
                         'urlCreator' => function ($action, WorkOrder $model, $key, $index, $column) {
                             return Url::toRoute([$action, 'id_wo' => $model->id_wo]);
                         }

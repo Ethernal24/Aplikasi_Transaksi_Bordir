@@ -6,11 +6,18 @@ use app\helpers\ModelHelper;
 use app\models\Bom;
 use app\models\BomCustom;
 use app\models\MasterMrp;
+use app\models\Mesin;
 use app\models\Mps;
 use app\models\MpsDetail;
 use app\models\MpsSearch;
 use app\models\MrpDetail;
 use app\models\PermintaanPelanggan;
+use app\models\Shift;
+use app\models\TenagaKerja;
+use app\models\Workcenter;
+use app\models\Workorder;
+use app\models\WorkorderMaterial;
+use DateTime;
 use Yii;
 use yii\base\Model;
 use yii\db\Exception;
@@ -68,17 +75,18 @@ class MpsController extends Controller
      */
     public function actionView($mps_id)
     {
-        $detail = MpsDetail::find()
-            ->where(['mps_id' => $mps_id])
-            ->all();
-
         $model = $this->findModel($mps_id);
+        $detail = MpsDetail::find()->where(['mps_id' => $mps_id])->all();
+
+        // Panggil fungsi internal (bukan actionGetCapacity)
+        $capacityData = $this->calculateCapacityData($model->tanggal_awal, $model->tanggal_akhir, $model->shift_id);
+
         return $this->render('view', [
             'model' => $model,
-            'detail' => $detail
+            'detail' => $detail,
+            'capacityData' => $capacityData,
         ]);
     }
-
     /**
      * Creates a new Mps model.
      * If creation is successful, the browser will be redirected to the 'view' page.
@@ -88,6 +96,21 @@ class MpsController extends Controller
     {
         $model = new Mps();
         $modelsDetail = [new MpsDetail()];
+        $prefix = 'MPS-' . date('Ym') . '-';
+        $lastMps = Mps::find()
+            ->where(['like', 'kode_mps', $prefix])
+            ->orderBy(['mps_id' => SORT_DESC])
+            ->one();
+
+        if ($lastMps) {
+            // Ambil 4 angka terakhir, lalu tambah 1
+            $lastNumber = (int) substr($lastMps->kode_mps, -4);
+            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $newNumber = '0001';
+        }
+
+        $model->kode_mps = $prefix . $newNumber;
 
         if ($this->request->isPost) {
             $model->load($this->request->post());
@@ -246,11 +269,227 @@ class MpsController extends Controller
                     'barang_id'   => $d->produk_id, // Dari model PermintaanDetail
                     'nama_barang' => $d->produk ? $d->produk->nama_barang : 'Tanpa Nama', // Dari relasi getProduk()
                     'qty'         => $d->jumlah, // Sesuaikan jika nama kolomnya 'jumlah' atau 'qty'
+                    'smv'         => $d->produk->routing ? $d->produk->routing->total_menit : 25,
                 ];
             }
             return ['items' => $items];
         }
 
         return ['items' => []]; // Kembalikan array kosong jika tidak ada
+    }
+
+    public static function getManPowerCapacity($startDate, $endDate, $shiftId, $workcenterId = null)
+    {
+        $days = (new DateTime($endDate))->diff(new DateTime($startDate))->days + 1;
+        $shift = Shift::findOne($shiftId);
+        $dailyMinutes = $shift ? ($shift->jam_efektif * 60) : 480;
+
+        $tk = TenagaKerja::find()->where(['status_kerja' => 0]);
+        if ($workcenterId) {
+            $tk->andWhere(['workcenter_id' => $workcenterId]); // Perbaikan: hapus tanda kutip
+        }
+
+        $hitungPekerja = $tk->count();
+        return $hitungPekerja * $dailyMinutes * $days;
+    }
+
+    public static function getMachineCapacity($startDate, $endDate, $shiftId, $workcenterId = null)
+    {
+        $days = (new DateTime($endDate))->diff(new DateTime($startDate))->days + 1;
+        $shift = Shift::findOne($shiftId);
+        $dailyMinutes = $shift ? ($shift->jam_efektif * 60) : 480;
+
+        $query = Mesin::find()->where(['status_mesin' => 0]);
+        if ($workcenterId) {
+            $query->andWhere(['workcenter_id' => $workcenterId]);
+        }
+
+        // Jika ada kolom power_factor di tabel Mesin, gunakan sum, jika tidak gunakan count
+        // $totalPower = $query->sum('power_factor') ?: $query->count();
+
+        return 1 * $dailyMinutes * $days;
+    }
+    protected function calculateCapacityData($start, $end, $shiftId)
+    {
+        $workcenters = Workcenter::find()->all();
+        $data = [];
+
+        foreach ($workcenters as $wc) {
+            $data[$wc->workcenter_id] = [
+                'nama' => $wc->nama_workcenter,
+                // Memanggil fungsi static yang sudah Anda buat
+                'cap_man' => self::getManPowerCapacity($start, $end, $shiftId, $wc->workcenter_id),
+                'cap_machine' => self::getMachineCapacity($start, $end, $shiftId, $wc->workcenter_id),
+            ];
+        }
+        return $data;
+    }
+
+    // --- Update Action AJAX Anda ---
+    public function actionGetCapacity($start, $end, $shiftId)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        return $this->calculateCapacityData($start, $end, $shiftId);
+    }
+    protected function generateWoNumber()
+    {
+        $prefix = 'WO-' . date('Ym') . '-';
+        $lastWo = WorkOrder::find()
+            ->where(['like', 'kode_wo', $prefix . '%', false])
+            ->orderBy(['id_wo' => SORT_DESC])
+            ->one();
+
+        if ($lastWo) {
+            $lastNumber = (int) substr($lastWo->kode_wo, -4);
+            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $newNumber = '0001';
+        }
+
+        return $prefix . $newNumber;
+    }
+
+    public function actionVerify($mps_id)
+    {
+        $model = $this->findModel($mps_id);
+        $model->status_mps = 1;
+
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            if (!$model->save(false)) throw new \Exception("Gagal update MPS.");
+
+            foreach ($model->mpsDetails as $detail) {
+                // Logika Penomoran (Sama seperti sebelumnya)
+                $newNumber = $this->generateWoNumber();
+
+                $wo = new WorkOrder();
+                $wo->kode_wo = $newNumber;
+                $wo->id_mps = $mps_id;
+                $wo->permintaan_id = $detail->permintaan->permintaan_id;
+                $wo->id_produk = $detail->produk_id;
+                $wo->qty_target = $detail->qty_plan;
+                $wo->tanggal_wo = date('Y-m-d');
+                $wo->due_date = $detail->estimasi_selesai;
+                $wo->status_wo = 0;
+                $wo->prioritas = $model->prioritas;
+                $wo->id_routing = $detail->routing->routing_id ?? null;
+                $wo->save(false);
+                if ($wo->save()) {
+                    // PANGGIL FUNGSI TERPISAH UNTUK MATERIAL
+                    $this->generateWoMaterials($wo->id_wo, $detail->mps_id, $detail->produk_id);
+                } else {
+                    throw new \Exception("Gagal membuat Header WO.");
+                }
+            }
+
+            $transaction->commit();
+            Yii::$app->session->setFlash('success', "MPS Verified. WO Header & Materials created.");
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            Yii::$app->session->setFlash('error', $e->getMessage());
+        }
+        return $this->redirect(['view', 'mps_id' => $mps_id]);
+    }
+
+    protected function generateWoMaterials($id_wo, $mps_id, $produk_id)
+    {
+        // 1. Cari Header MRP terkait MPS ini
+        $mrp = MasterMrp::findOne(['mps_id' => $mps_id]);
+
+        if (!$mrp) {
+            throw new \Exception("Data MRP tidak ditemukan untuk MPS ini. Silakan generate MRP terlebih dahulu.");
+        }
+
+        // 2. Ambil detail material dari MRP khusus untuk produk ini
+        // Catatan: Pastikan di tabel MRP Detail Anda menyimpan 'product_id' 
+        // atau bisa memfilternya melalui relasi BOM.
+        $mrpDetails = MrpDetail::find()
+            ->where(['mrp_id' => $mrp->mrp_id])
+            ->all();
+
+        foreach ($mrpDetails as $mrpItem) {
+            // Cek apakah material ini memang bagian dari BOM produk yang sedang diproses
+            // Ini penting jika 1 MPS punya banyak produk agar material tidak tertukar
+            $isRelated = Bom::find()->where([
+                'produk_id' => $produk_id,
+                'bahan_id' => $mrpItem->bahan_id
+            ])->exists();
+
+            if ($isRelated) {
+                $woMat = new WorkorderMaterial();
+                $woMat->wo_id = $id_wo;
+                $woMat->bahan_id = $mrpItem->bahan_id;
+
+                // Mengambil Qty dari hasil kalkulasi MRP
+                $woMat->qty_plan = $mrpItem->kebutuhan_kotor;
+                $woMat->qty_aktual = 0;
+                $woMat->status_pengambilan_bahan = 0;
+
+                if (!$woMat->save()) {
+                    throw new \Exception("Gagal menyalin data MRP ke Material WO ID: $id_wo");
+                }
+            }
+        }
+        return true;
+    }
+    public function actionGenerateMrp($mps_id)
+    {
+        $model = $this->findModel($mps_id);
+        $oldMrp = MasterMrp::findOne(['mps_id' => $mps_id]);
+
+        $mrp = new MasterMrp();
+        $prefix = 'MRP-' . date('Ym') . '-';
+        $lastMrp = $mrp::find()
+            ->where(['like', 'kode_mrp', $prefix])
+            ->orderBy(['mrp_id' => SORT_DESC])
+            ->one();
+
+        if ($lastMrp) {
+            // Ambil 4 angka terakhir, lalu tambah 1
+            $lastNumber = (int) substr($lastMrp->kode_mrp, -4);
+            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $newNumber = '0001';
+        }
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            if ($oldMrp !== null) {
+                $oldMrp->delete();
+            }
+            $mrp->mps_id = $mps_id;
+            $mrp->kode_mrp = $prefix . $newNumber;
+            $mrp->status = 0;
+            if ($mrp->save()) {
+                foreach ($model->mpsDetails as $mpsDetail) {
+                    $boms = Bom::find()->where(['produk_id' => $mpsDetail->produk_id])->all();
+
+                    foreach ($boms as $bom) {
+                        // Kalkulasi Kebutuhan
+                        $totalNeeded = $mpsDetail->qty_plan * $bom->qty_per_unit;
+
+                        // Ambil Stok Saat Ini (Asumsi ada kolom stock di MasterProduct/Material)
+                        $material = $bom->bahan; // Relasi ke MasterProduct
+
+                        $mrpDetail = new MrpDetail();
+                        $mrpDetail->mrp_id = $mrp->mrp_id;
+                        $mrpDetail->bahan_id = $bom->bahan_id;
+                        $mrpDetail->kebutuhan_kotor = $totalNeeded;
+                        $mrpDetail->stock_tersedia = $material->stock ?? 0;
+                        $mrpDetail->kebutuhan_bersih = max(0, $totalNeeded - ($material->stock ?? 0));
+
+                        if (!$mrpDetail->save()) {
+                            throw new \Exception("Gagal menyimpan detail MRP untuk material: " . $bom->material_id);
+                        }
+                    }
+                }
+                $transaction->commit();
+                Yii::$app->session->setFlash('success', "MRP Berhasil dibuat untuk MPS: " . $model->kode_mps);
+                return $this->redirect(['/master-mrp/view', 'mrp_id' => $mrp->mrp_id]);
+            }
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            Yii::$app->session->setFlash('error', "Gagal Generate MRP: " . $e->getMessage());
+            return $this->redirect(['view', 'mps_id' => $mps_id]);
+        }
     }
 }

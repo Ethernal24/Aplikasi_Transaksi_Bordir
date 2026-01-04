@@ -30,9 +30,8 @@ class ProductionLogActivity extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['log_id', 'durasi_menit'], 'required'],
-            [['log_id', 'ganti_benang', 'ganti_kain', 'durasi_menit'], 'integer'],
-            [['kendala'], 'string', 'max' => 255],
+            [['id_log', 'id_routing_detail', 'qty_output_total', 'durasi_menit'], 'required'],
+            [['id_log', 'durasi_menit', 'id_routing_detail', 'qty_output_total'], 'integer'],
         ];
     }
 
@@ -43,11 +42,19 @@ class ProductionLogActivity extends \yii\db\ActiveRecord
     {
         return [
             'activity_id' => 'Activity ID',
-            'log_id' => 'Log ID',
-            'ganti_benang' => 'Ganti Benang',
-            'ganti_kain' => 'Ganti Kain',
-            'kendala' => 'Kendala',
+            'id_log' => 'ID Log',
+            'id_routing_detail' => 'ID Routing Detail',
+            'qty_output_total' => 'Qty Output Total',
             'durasi_menit' => 'Durasi Menit',
         ];
+    }
+
+    public function getLog()
+    {
+        return $this->hasOne(ProductionLog::class, ['id_log' => 'id_log']);
+    }
+    public function getDetailRouting()
+    {
+        return $this->hasOne(RoutingDetail::class, ['routing_detail_id' => 'id_routing_detail']);
     }
 }

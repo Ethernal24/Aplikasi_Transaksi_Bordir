@@ -4,8 +4,11 @@ namespace app\controllers;
 
 use app\models\PermintaanDetail;
 use app\models\PermintaanPelanggan;
+use app\models\ProductionLog;
+use app\models\RoutingDetail;
 use app\models\WorkOrder;
 use app\models\WorkOrderSearch;
+use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -171,5 +174,63 @@ class WorkOrderController extends Controller
             'html' => $options,
             'katalog' => $dataKatalog
         ]);
+    }
+    protected function generateLogNumber()
+    {
+        $prefix = 'Log-' . date('Ym') . '-';
+        $lastWo = ProductionLog::find()
+            ->where(['like', 'kode_log', $prefix . '%', false])
+            ->orderBy(['id_log' => SORT_DESC])
+            ->one();
+
+        if ($lastWo) {
+            $lastNumber = (int) substr($lastWo->kode_log, -4);
+            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $newNumber = '0001';
+        }
+
+        return $prefix . $newNumber;
+    }
+    public function actionStartProduction($id_wo)
+    {
+        $wo = $this->findModel($id_wo);
+        $currentRouting = RoutingDetail::find()
+            ->where(['routing_id' => $wo->id_routing])
+            ->orderBy(['urutan' => SORT_ASC])
+            ->one();
+
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $newNumber = $this->generateLogNumber();
+            // 1. Buat Header Log Baru (Production_Log)
+            $logHeader = new ProductionLog();
+            $logHeader->kode_log = $newNumber;
+            $logHeader->tanggal = date('Y-m-d');
+            $logHeader->id_workcenter = $currentRouting ? $currentRouting->workcenter_id : null;
+            $logHeader->id_wo = $wo->id_wo;
+            $logHeader->status = 0; // Status sesi kerja aktif
+            $logHeader->id_shift = $wo->mps->shift->shift_id; // Status sesi kerja aktif
+
+            if (!$logHeader->save()) {
+                throw new \Exception("Gagal membuat Log Header.");
+            }
+
+            // 2. Update Status Work Order menjadi In-Progress
+            $wo->status_wo = 1;
+            if (!$wo->save(false)) {
+                throw new \Exception("Gagal mengupdate status Work Order.");
+            }
+
+            $transaction->commit();
+            Yii::$app->session->setFlash('success', "Produksi dimulai. Sesi Log Header berhasil dibuat.");
+
+            // 3. Arahkan langsung ke halaman pengisian aktivitas (Log Activity)
+            return $this->redirect(['production-log/view', 'id' => $logHeader->production_log_id]);
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            Yii::$app->session->setFlash('error', "Error: " . $e->getMessage());
+            return $this->redirect(['view', 'id_wo' => $id_wo]);
+        }
     }
 }

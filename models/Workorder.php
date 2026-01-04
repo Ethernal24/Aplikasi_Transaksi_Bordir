@@ -36,9 +36,9 @@ class Workorder extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['kode_wo', 'permintaan_detail_id',  'id_routing', 'qty_target', 'tanggal_wo', 'due_date', 'status_wo', 'prioritas', 'permintaan_id'], 'required'],
-            [['id_routing', 'qty_target', 'status_wo', 'prioritas', 'permintaan_id'], 'integer'],
-            [['tanggal_wo', 'due_date', 'created_at', 'updated_at', 'qty_aktual'], 'safe'],
+            [['kode_wo', 'permintaan_id',  'id_routing', 'qty_target', 'tanggal_wo', 'due_date', 'status_wo', 'prioritas', 'id_mps', 'id_produk'], 'required'],
+            [['id_routing', 'qty_target', 'status_wo', 'prioritas', 'id_mps', 'id_produk'], 'integer'],
+            [['tanggal_wo', 'due_date', 'created_at', 'updated_at'], 'safe'],
             [['kode_wo'], 'string', 'max' => 255],
         ];
     }
@@ -51,11 +51,11 @@ class Workorder extends \yii\db\ActiveRecord
         return [
             'id_wo' => 'Id Wo',
             'kode_wo' => 'Kode Wo',
+            'id_mps' => 'ID MPS',
             'permintaan_id' => 'Permintaan ID',
-            'permintaan_detail_id' => 'Permintaan Detail ID',
-            'id_routing' => 'Id Routing',
+            'id_routing' => 'ID Routing',
             'qty_target' => 'Qty Target',
-            'qty_aktual' => 'Qty Aktual',
+            'id_produk' => 'ID Produk',
             'tanggal_wo' => 'Tanggal Wo',
             'due_date' => 'Due Date',
             'status_wo' => 'Status Wo',
@@ -65,39 +65,42 @@ class Workorder extends \yii\db\ActiveRecord
         ];
     }
 
+    public function getProduk()
+    {
+        return $this->hasOne(Barang::class, ['barang_id' => 'id_produk'])->alias('Produk');
+    }
+    public function getMps()
+    {
+        return $this->hasOne(Mps::class, ['mps_id' => 'id_mps']);
+    }
     public function getRouting()
     {
         return $this->hasOne(MasterRouting::class, ['routing_id' => 'id_routing']);
-    }
-    public function getPermintaanDetail()
-    {
-        return $this->hasOne(PermintaanDetail::class, ['permintaan_detail_id' => 'permintaan_detail_id']);
     }
     public function getPermintaan()
     {
         return $this->hasOne(PermintaanPelanggan::class, ['permintaan_id' => 'permintaan_id']);
     }
-
+    public function getWoMat()
+    {
+        return $this->hasMany(WorkorderMaterial::class, ['wo_id' => 'id_wo']);
+    }
     public function getLabelStatus()
     {
         $status = [
             '0' => [
-                'label' => 'Draft',
-                'class' => 'badge bg-secondary'
-            ],
-            '1' => [
                 'label' => 'Rilis',
                 'class' => 'badge bg-primary'
             ],
-            '2' => [
+            '1' => [
                 'label' => 'Berjalan',
                 'class' => 'badge bg-warning'
             ],
-            '3' => [
+            '2' => [
                 'label' => 'Selesai',
                 'class' => 'badge bg-success'
             ],
-            '4' => [
+            '3' => [
                 'label' => 'Batal',
                 'class' => 'badge bg-danger'
             ],
@@ -124,6 +127,6 @@ class Workorder extends \yii\db\ActiveRecord
                 'class' => 'badge bg-danger'
             ],
         ];
-        return isset($status[$this->status_wo]) ? $status[$this->status_wo] : ['label' => 'unknown', 'class' => 'badge bg-secondary'];
+        return isset($status[$this->prioritas]) ? $status[$this->prioritas] : ['label' => 'unknown', 'class' => 'badge bg-secondary'];
     }
 }

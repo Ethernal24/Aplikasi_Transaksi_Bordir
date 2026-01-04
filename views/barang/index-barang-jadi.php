@@ -64,31 +64,31 @@ if (Yii::$app->session->hasFlash('success')) {
                                 'placeholder' => 'Cari Nama Barang',
                             ],
                         ],
-                        [
-                            'attribute' => 'jenis',
-                            'label' => 'Jenis',
-                            'value' => function ($model) {
-                                $list = [
-                                    0 => 'Beli',
-                                    1 => 'Produksi',
-                                ];
-                                return $list[$model->jenis] ?? null;
-                            },
-                            'filter' => [
-                                '0' => 'Beli',
-                                '1' => 'Produksi',
-                            ],
-                            'filterInputOptions' => [
-                                'class' => 'form-control',
-                                'prompt' => 'Pilih Jenis'
-                            ]
-                        ],
-                        [
-                            'attribute' => 'stok',
-                            'value' => function ($model) {
-                                return $model->stocks ? $model->stocks->quantity_akhir : '-';
-                            },
-                        ],
+                        // [
+                        //     'attribute' => 'jenis',
+                        //     'label' => 'Jenis',
+                        //     'value' => function ($model) {
+                        //         $list = [
+                        //             0 => 'Beli',
+                        //             1 => 'Produksi',
+                        //         ];
+                        //         return $list[$model->jenis] ?? null;
+                        //     },
+                        //     'filter' => [
+                        //         '0' => 'Beli',
+                        //         '1' => 'Produksi',
+                        //     ],
+                        //     'filterInputOptions' => [
+                        //         'class' => 'form-control',
+                        //         'prompt' => 'Pilih Jenis'
+                        //     ]
+                        // ],
+                        // [
+                        //     'attribute' => 'stok',
+                        //     'value' => function ($model) {
+                        //         return $model->stocks ? $model->stocks->quantity_akhir : '-';
+                        //     },
+                        // ],
 
                         'unit.satuan' => [
                             'attribute' => 'satuan',
@@ -100,27 +100,27 @@ if (Yii::$app->session->hasFlash('success')) {
                             ],
                         ],
                         'leadtime',
-                        [
-                            'attribute' => 'tipe_barang',
-                            'value' => function ($model) {
-                                $list = [
-                                    0 => 'Bahan Baku',
-                                    1 => 'Setengah Jadi',
-                                    2 => 'Barang Jadi',
-                                    3 => 'Non Consumable',
-                                    4 => 'Template',
-                                ];
-                                return $list[$model->tipe_barang] ?? null;
-                            },
-                            'filter' => [
-                                '2' => 'Barang Jadi',
-                                '4' => 'Template',
-                            ],
-                            'filterInputOptions' => [
-                                'class' => 'form-control',
-                                'prompt' => 'Pilih Tipe',
-                            ],
-                        ],
+                        // [
+                        //     'attribute' => 'tipe_barang',
+                        //     'value' => function ($model) {
+                        //         $list = [
+                        //             0 => 'Bahan Baku',
+                        //             1 => 'Setengah Jadi',
+                        //             2 => 'Barang Jadi',
+                        //             3 => 'Non Consumable',
+                        //             4 => 'Template',
+                        //         ];
+                        //         return $list[$model->tipe_barang] ?? null;
+                        //     },
+                        //     'filter' => [
+                        //         '2' => 'Barang Jadi',
+                        //         '4' => 'Template',
+                        //     ],
+                        //     'filterInputOptions' => [
+                        //         'class' => 'form-control',
+                        //         'prompt' => 'Pilih Tipe',
+                        //     ],
+                        // ],
                         [
                             'class' => ActionColumn::className(),
                             'template' => '{update} {view}',

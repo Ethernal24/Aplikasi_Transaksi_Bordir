@@ -30,6 +30,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     'kode',
                     'nama_pelanggan',
                     'instansi',
+                    'email',
                     'no_telp',
                     [
                         'attribute' => 'pesenan_terakhir',

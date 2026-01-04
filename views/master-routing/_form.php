@@ -52,7 +52,16 @@ use yii\widgets\ActiveForm;
                 'deleteButton' => '.remove-item',
                 'model' => $modelDetails[0],
                 'formId' => 'dynamic-form',
-                'formFields' => ['routing_detail_id', 'routing_id', 'urutan', 'workcenter_id',  'standard_time_menit', 'waktu_setup_menit', 'output_jam'],
+                'formFields' => [
+                    'routing_detail_id',
+                    'routing_id',
+                    'urutan',
+                    'workcenter_id',
+                    'standard_time_menit',
+                    'waktu_setup_menit',
+                    'output_jam',
+                    'deskripsi_kerja'
+                ],
             ]); ?>
             <table class="table table-bordered">
                 <thead>
@@ -69,8 +78,8 @@ use yii\widgets\ActiveForm;
                 <tbody class="container-items">
                     <?php foreach ($modelDetails as $i => $detail): ?>
                         <tr class="item">
-                            <?= $form->field($detail, "[{$i}]routing_detail_id")->hiddenInput()->label(false) ?>
                             <td>
+                                <?= $form->field($detail, "[{$i}]routing_detail_id")->hiddenInput()->label(false) ?>
                                 <?= $form->field($detail, "[{$i}]urutan", ['template' => "{input}\n{error}"])
                                     ->textInput(['type' => 'text']) ?>
                             </td>

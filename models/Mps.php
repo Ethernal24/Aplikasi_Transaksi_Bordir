@@ -45,9 +45,10 @@ class Mps extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['kode_mps', 'periode', 'tanggal_awal', 'tanggal_akhir', 'status_mps'], 'required'],
-            [['status_mps'], 'integer'],
+            [['kode_mps', 'periode', 'tanggal_awal', 'tanggal_akhir', 'status_mps', 'buffer_time', 'target_efisiensi', 'prioritas'], 'required'],
+            [['status_mps', 'prioritas', 'shift_id', 'total_pekerja'], 'integer'],
             [['kode_mps'], 'string'],
+            [['target_efisiensi', 'buffer_time'], 'number'],
         ];
     }
 
@@ -63,6 +64,11 @@ class Mps extends \yii\db\ActiveRecord
             'tanggal_akhir' => 'Tanggal Akhir',
             'tanggal_awal' => 'Tanggal Awal',
             'status_mps' => "Status MPS",
+            'buffer_time' => "Buffer Time (%)",
+            'target_efisiensi' => "Target Efisiens (%)",
+            'prioritas' => "Prioritas",
+            'shift_id' => "Shift ID",
+            'total_pekerja' => "Total Pekerja",
         ];
     }
 
@@ -84,6 +90,16 @@ class Mps extends \yii\db\ActiveRecord
         ];
         return isset($status[$this->status_mps]) ? $status[$this->status_mps] : ['label' => 'unknow', 'class' => 'badge bg-secondary'];
     }
+    public function getPrioritasLabel()
+    {
+        $status = [
+            0 => ['label' => 'Low', 'class' => 'badge bg-info'],
+            1 => ['label' => 'Normal', 'class' => 'badge bg-primary'],
+            2 => ['label' => 'High', 'class' => 'badge bg-warning'],
+            3 => ['label' => 'Urgent', 'class' => 'badge bg-danger'],
+        ];
+        return isset($status[$this->prioritas]) ? $status[$this->prioritas] : ['label' => 'unknow', 'class' => 'badge bg-secondary'];
+    }
 
     public function getMpsDetails()
     {
@@ -93,25 +109,13 @@ class Mps extends \yii\db\ActiveRecord
     {
         return $this->hasOne(MasterMrp::class, ['mps_id' => 'mps_id']);
     }
-    public static function getActualCapacity($startDate, $endDate)
+    public function getRouting()
     {
-        // 1. Hitung jumlah hari kerja (exclude hari libur jika ada)
-        $start = new \DateTime($startDate);
-        $end = new \DateTime($endDate);
-        $days = $end->diff($start)->days + 1;
+        return $this->hasOne(MasterRouting::class, ['routing_id' => 'routing_id']);
+    }
 
-        // 2. Ambil jumlah karyawan aktif dari Master_Employee
-        $employeeCount = TenagaKerja::find()->where(['status_kerja' => 0])->count();
-
-        // 3. Ambil jumlah mesin aktif dari Master_Machine
-        $machineCount = Mesin::find()->where(['status_mesin' => 0])->count();
-
-        // Asumsi standar: 8 jam kerja = 480 menit
-        $dailyMinutes = 480;
-
-        return [
-            'manpower_total' => $employeeCount * $dailyMinutes * $days,
-            'machine_total' => $machineCount * $dailyMinutes * $days,
-        ];
+    public function getShift()
+    {
+        return $this->hasOne(Shift::class, ['shift_id' => 'shift_id']);
     }
 }

@@ -26,6 +26,13 @@ $this->params['breadcrumbs'][] = $this->title;
                 'columns' => [
                     ['class' => 'yii\grid\SerialColumn'],
                     'nama',
+                    [
+                        'attribute' => 'workcenter_id',
+                        'label' => 'Workcenter',
+                        'value' => function ($model) {
+                            return $model->workCenter->nama_workcenter ?? "-";
+                        }
+                    ],
                     'jabatan',
                     'kemampuan',
                     'status_kerja' => [

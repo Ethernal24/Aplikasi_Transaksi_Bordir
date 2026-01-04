@@ -9,9 +9,9 @@ $this->title = 'Tambahkan Karyawan';
 $this->params['breadcrumbs'][] = ['label' => 'Tenaga Kerjas', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="pc-content">
+<div class="">
     <?= $this->render('_form', [
-        'modelTenagas' => $modelTenagas,
+        'model' => $model,
     ]) ?>
 
 </div>

@@ -10,7 +10,7 @@ use yii\grid\GridView;
 /** @var app\models\ProductionLogWorkerAssignmentSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Jadwal Shift';
+$this->title = 'Jadwal Shift Karyawan';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="pc-content">
@@ -63,6 +63,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     ],
                     [
                         'class' => ActionColumn::className(),
+                        'template' => '{update} {delete} ',
                         'urlCreator' => function ($action, ProductionLogWorkerAssignment $model, $key, $index, $column) {
                             return Url::toRoute([$action, 'id_assignment' => $model->id_assignment]);
                         }

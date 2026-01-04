@@ -60,4 +60,8 @@ class Shift extends \yii\db\ActiveRecord
 
         ];
     }
+    public function getMps()
+    {
+        return $this->hasOne(Mps::class, ['shift_id' => 'shift_id']);
+    }
 }

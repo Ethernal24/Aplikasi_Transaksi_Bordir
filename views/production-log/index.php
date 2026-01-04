@@ -10,7 +10,7 @@ use yii\grid\GridView;
 /** @var app\models\ProductionLogSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Laporan Produksi';
+$this->title = 'Log Produksi';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="pc-content">
@@ -25,34 +25,45 @@ $this->params['breadcrumbs'][] = $this->title;
                 'filterModel' => $searchModel,
                 'columns' => [
                     ['class' => 'yii\grid\SerialColumn'],
-                    // 'production_log_id',
                     [
                         'attribute' => 'tanggal',
                         'label' => 'Tanggal Kerja',
                         'format' => ['date', 'php: d-M-y'],
                     ],
                     [
-                        'attribute' => 'mesin_id',
-                        'label' => 'Nama Mesin',
-                        'value' => 'mesin.nama_mesin',
+                        'attribute' => 'kode_log',
+                        'label' => 'Kode Log',
+                        'value' => 'kode_log',
                     ],
                     [
-                        'attribute' => 'tk_id',
-                        'label' => 'Tenaga Kerja',
-                        'value' => 'tenagaKerja.nama',
+                        'attribute' => 'id_wo',
+                        'label' => 'Kode WO',
+                        'value' => 'wo.kode_wo',
                     ],
                     [
-                        'attribute' => 'shift_id',
-                        'value' => 'shift.nama_shift',
+                        'attribute' => 'id_workcenter',
+                        'label' => 'Workcenter',
+                        'value' => 'workcenter.nama_workcenter',
+                    ],
+                    [
+                        'attribute' => 'id_shift',
                         'label' => 'Shift',
+                        'value' => 'shift.nama_shift',
                     ],
-                    'waktu_kerja',
-                    'mulai_istirahat',
-                    'selesai_istirahat',
+                    [
+                        'attribute' => 'status',
+                        'label' => 'Status',
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            $label = $model->labelStatus;
+                            return "<span class= '{$label['class']}'>{$label['label']}</span>";
+                        },
+                    ],
+
                     [
                         'class' => ActionColumn::className(),
                         'urlCreator' => function ($action, ProductionLog $model, $key, $index, $column) {
-                            return Url::toRoute([$action, 'production_log_id' => $model->production_log_id]);
+                            return Url::toRoute([$action, 'id_log' => $model->id_log]);
                         }
                     ],
                 ],

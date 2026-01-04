@@ -4,28 +4,28 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /** @var yii\web\View $this */
-/** @var app\models\WoHeaderSearch $model */
+/** @var app\models\WorkorderMaterialSearch $model */
 /** @var yii\widgets\ActiveForm $form */
 ?>
 
-<div class="wo-header-search">
+<div class="workorder-material-search">
 
     <?php $form = ActiveForm::begin([
         'action' => ['index'],
         'method' => 'get',
     ]); ?>
 
+    <?= $form->field($model, 'wo_mat_id') ?>
+
     <?= $form->field($model, 'wo_id') ?>
 
-    <?= $form->field($model, 'kode_wo') ?>
+    <?= $form->field($model, 'bahan_id') ?>
 
-    <?= $form->field($model, 'produk_id') ?>
+    <?= $form->field($model, 'qty_plan') ?>
 
-    <?= $form->field($model, 'tanggal_dibuat') ?>
+    <?= $form->field($model, 'qty_aktual') ?>
 
-    <?= $form->field($model, 'tanggal_selesai') ?>
-
-    <?php // echo $form->field($model, 'status_wo') ?>
+    <?php // echo $form->field($model, 'status_pengambilan_bahan') ?>
 
     <div class="form-group">
         <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>

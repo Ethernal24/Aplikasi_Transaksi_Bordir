@@ -10,7 +10,7 @@ use yii\grid\GridView;
 /** @var app\models\Shiftsearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Shifts';
+$this->title = 'Daftar Shift';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="pc-content">

@@ -74,15 +74,11 @@ class MasterMrp extends \yii\db\ActiveRecord
     {
         $status = [
             '0' => [
-                'label' => 'Pending',
-                'class' => 'badge bg-warning'
-            ],
-            '1' => [
-                'label' => 'In progress',
+                'label' => 'Draft',
                 'class' => 'badge bg-info'
             ],
-            '2' => [
-                'label' => 'Done',
+            '1' => [
+                'label' => 'Approved',
                 'class' => 'badge bg-success'
             ],
         ];

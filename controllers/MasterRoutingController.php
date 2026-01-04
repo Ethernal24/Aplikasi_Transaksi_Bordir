@@ -137,13 +137,55 @@ class MasterRoutingController extends Controller
     public function actionUpdate($routing_id)
     {
         $model = $this->findModel($routing_id);
+        // 1. Ambil data lama
+        $modelDetails = $model->details;
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'routing_id' => $model->routing_id]);
+        if ($model->load(Yii::$app->request->post())) {
+
+            $oldIDs = ArrayHelper::map($modelDetails, 'routing_detail_id', 'routing_detail_id');
+
+            // 2. KUNCI PERBAIKAN: Pastikan parameter kedua ($modelDetails) dikirimkan
+            // agar ModelHelper mencocokkan ID dari POST dengan objek yang sudah ada.
+            $modelDetails = ModelHelper::createMultiple(RoutingDetail::class, $modelDetails, 'routing_detail_id');
+
+            Model::loadMultiple($modelDetails, Yii::$app->request->post());
+
+            $currIDs = ArrayHelper::map($modelDetails, 'routing_detail_id', 'routing_detail_id');
+            $deletedIDs = array_diff($oldIDs, $currIDs);
+
+            $valid = $model->validate();
+            $valid = Model::validateMultiple($modelDetails) && $valid;
+
+            if ($valid) {
+                $transaction = Yii::$app->db->beginTransaction();
+                try {
+                    if ($model->save(false)) {
+                        // Hapus yang dibuang di form
+                        if (!empty($deletedIDs)) {
+                            RoutingDetail::deleteAll(['routing_detail_id' => $deletedIDs]);
+                        }
+
+                        foreach ($modelDetails as $detail) {
+                            $detail->routing_id = $model->routing_id;
+                            // Yii akan otomatis menjalankan UPDATE jika $detail->isNewRecord adalah false
+                            if (!($detail->save(false))) {
+                                $transaction->rollBack();
+                                break;
+                            }
+                        }
+                    }
+                    $transaction->commit();
+                    return $this->redirect(['view', 'routing_id' => $model->routing_id]);
+                } catch (\Exception $e) {
+                    $transaction->rollBack();
+                    throw $e;
+                }
+            }
         }
 
         return $this->render('update', [
             'model' => $model,
+            'modelDetails' => (empty($modelDetails)) ? [new RoutingDetail()] : $modelDetails
         ]);
     }
 

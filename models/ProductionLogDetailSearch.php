@@ -17,7 +17,7 @@ class ProductionLogDetailSearch extends ProductionLogDetail
     public function rules()
     {
         return [
-            [['detail_id', 'log_id', 'wo_id', 'vs', 'stitch', 'kuantitas', 'bs'], 'integer'],
+            [['detail_id', 'log_id', 'activity_id', 'vs', 'stitch', 'kuantitas', 'bs'], 'integer'],
             [['berat'], 'safe'],
         ];
     }
@@ -60,7 +60,7 @@ class ProductionLogDetailSearch extends ProductionLogDetail
         $query->andFilterWhere([
             'detail_id' => $this->detail_id,
             'log_id' => $this->log_id,
-            'wo_id' => $this->wo_id,
+            'activity_id' => $this->activity_id,
             'vs' => $this->vs,
             'stitch' => $this->stitch,
             'kuantitas' => $this->kuantitas,

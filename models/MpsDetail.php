@@ -31,8 +31,9 @@ class MpsDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['permintaan_id', 'produk_id', 'qty_plan'], 'required'],
-            [['mps_id', 'permintaan_id', 'produk_id', 'qty_plan'], 'integer'],
+            [['permintaan_id', 'produk_id', 'qty_plan', 'routing_id'], 'required'],
+            [['mps_id', 'permintaan_id', 'produk_id', 'qty_plan', 'routing_id'], 'integer'],
+            [['estimasi_selesai'], 'safe'],
         ];
     }
 
@@ -43,10 +44,12 @@ class MpsDetail extends \yii\db\ActiveRecord
     {
         return [
             'mps_detail_id' => 'Mps Detail ID',
+            'routing_id' => 'Routing ID',
             'mps_id' => 'Mps ID',
             'permintaan_id' => 'Permintaan ID',
             'produk_id' => 'produk ID',
             'qty_plan' => 'Qty Plan',
+            'estimasi_selesai' => 'estimasi_selesai',
         ];
     }
 
@@ -61,5 +64,9 @@ class MpsDetail extends \yii\db\ActiveRecord
     public function getProduk()
     {
         return $this->hasOne(Barang::class, ['barang_id' => 'produk_id']);
+    }
+    public function getRouting()
+    {
+        return $this->hasOne(MasterRouting::class, ['routing_id' => 'routing_id']);
     }
 }
