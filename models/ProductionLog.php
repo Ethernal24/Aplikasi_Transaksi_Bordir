@@ -36,7 +36,7 @@ class ProductionLog extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id_log', 'kode_log', 'id_wo', 'id_workcenter', 'id_shift', 'tanggal', 'status'], 'required'],
+            [['kode_log', 'id_wo', 'id_workcenter', 'id_shift', 'tanggal', 'status'], 'required'],
             [['id_wo', 'id_workcenter', 'id_shift', 'status'], 'integer'],
             [['kode_log'], 'string'],
             [['tanggal'], 'safe'],

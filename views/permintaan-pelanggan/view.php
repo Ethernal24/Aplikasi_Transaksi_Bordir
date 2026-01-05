@@ -27,8 +27,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 <div><strong>Nama Pelanggan : </strong> <?= $model->pelanggan->nama_pelanggan ?></div>
             </div>
             <div class="col">
-                <div><strong>Tanggal Permintaan : </strong> <?= Yii::$app->formatter->asDate($model->tanggal_permintaan, 'php: d-mm-yy') ?></div>
-                <div><strong>Tenggat Waktu : </strong> <?= Yii::$app->formatter->asDate($model->tenggat_waktu, 'php: d-mm-yy') ?></div>
+                <div><strong>Tanggal Permintaan : </strong> <?= Yii::$app->formatter->asDate($model->tanggal_permintaan, 'php: d-M-Y') ?></div>
+                <div><strong>Tenggat Waktu : </strong> <?= Yii::$app->formatter->asDate($model->tenggat_waktu, 'php: d-M-Y') ?></div>
             </div>
             <div class="col">
                 <div>

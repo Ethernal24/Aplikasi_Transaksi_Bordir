@@ -213,7 +213,10 @@ class WorkOrderController extends Controller
             $logHeader->id_shift = $wo->mps->shift->shift_id; // Status sesi kerja aktif
 
             if (!$logHeader->save()) {
-                throw new \Exception("Gagal membuat Log Header.");
+                $errors = $logHeader->getErrors(); 
+                // Ubah jadi string agar bisa dibaca di throw exception
+                $errorMessage = json_encode($errors);
+                throw new \Exception("Gagal membuat Log Header.". $errorMessage);
             }
 
             // 2. Update Status Work Order menjadi In-Progress

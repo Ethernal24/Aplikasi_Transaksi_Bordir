@@ -56,7 +56,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             ],
                         ]) ?> -->
             <?php endif; ?>
-            <?= Html::a('Update', ['update', 'id_wo' => $model->id_wo], ['class' => 'btn btn-primary']) ?>
+            <!-- <?= Html::a('Update', ['update', 'id_wo' => $model->id_wo], ['class' => 'btn btn-primary']) ?> -->
             <?= Html::a('Back', 'index', ['class' => 'btn btn-secondary']) ?>
         </div>
     </div>
