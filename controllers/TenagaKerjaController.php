@@ -70,51 +70,26 @@ class TenagaKerjaController extends Controller
      */
     public function actionCreate()
     {
-        $modelTenagas = [new TenagaKerja()];
+        $model = new TenagaKerja();
 
-        if (Yii::$app->request->isPost) {
-            $modelTenagas = ModelHelper::createMultiple(TenagaKerja::className());
-            if (Model::loadMultiple($modelTenagas, Yii::$app->request->post())) {
-                foreach ($modelTenagas as $index => $modelTenaga) {
-                    Yii::info("Loaded ModelTenaga #$index: " . json_encode($modelTenaga->attributes), 'modelData');
+        if ($this->request->isPost) {
+            if ($model->load($this->request->post())) {
+
+                // Set timestamp manual jika tidak menggunakan Behaviors
+                $model->dibuat_pada = date('Y-m-d H:i:s');
+                $model->diupdate_pada = date('Y-m-d H:i:s');
+
+                if ($model->save()) {
+                    Yii::$app->session->setFlash('success', 'Data tenaga kerja berhasil ditambahkan.');
+                    return $this->redirect(['index']); // Sesuaikan primary key
+                } else {
+                    Yii::$app->session->setFlash('error', 'Gagal menyimpan data. Periksa kembali inputan Anda.');
                 }
-            } else {
-                Yii::info("Data failed to load into modelTenagas.", 'loadError');
-            }
-
-            if (Model::validateMultiple($modelTenagas)) {
-                $transaction = Yii::$app->db->beginTransaction();
-                try {
-                    foreach ($modelTenagas as $index => $modelTenaga) {
-                        $modelTenaga->dibuat_pada = date('Y-m-d H:i:s');
-                        $modelTenaga->diupdate_pada = date('Y-m-d H:i:s');
-
-                        if (!$modelTenaga->save(false)) {
-                            throw new \yii\db\Exception("Gagal menyimpan item #{$index}");
-                        }
-                    }
-
-                    $transaction->commit();
-                    Yii::$app->session->setFlash('success', 'Data berhasil disimpan.');
-
-                    return $this->redirect(['index']);
-                } catch (\Exception $e) {
-                    $transaction->rollBack();
-                    Yii::$app->session->setFlash('error', 'Error: ' . $e->getMessage());
-                }
-            } else {
-                $allErrors = [];
-                foreach ($modelTenagas as $index => $modelTenaga) {
-                    if (!empty($modelTenaga->getErrors())) {
-                        $allErrors[] = "Item #{$index} errors: " . json_encode($modelTenaga->getErrors());
-                    }
-                }
-                Yii::$app->session->setFlash('error', 'Validation failed: ' . implode(' | ', $allErrors));
             }
         }
 
         return $this->render('create', [
-            'modelTenagas' => $modelTenagas,
+            'model' => $model,
         ]);
     }
 
@@ -131,7 +106,7 @@ class TenagaKerjaController extends Controller
         $model = $this->findModel($tk_id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'tk_id' => $model->tk_id]);
+            return $this->redirect(['index']);
         }
 
         return $this->render('update', [

@@ -156,40 +156,35 @@ class PermintaanPelangganController extends Controller
     public function actionUpdate($permintaan_id)
     {
         $model = $this->findModel($permintaan_id);
-        $modelDetails = $model->details;
+        $modelDetails = $model->details; // Existing data dari DB
 
-        // Simpan nilai lama master
-        $oldTanggal = $model->tanggal_permintaan;
-        $oldTenggat = $model->tenggat_waktu;
+        // 1. PERBAIKAN: Ambil PRIMARY KEY detail lama
+        $oldIDs = ArrayHelper::getColumn($modelDetails, 'permintaan_detail_id');
 
         $post = Yii::$app->request->post();
         if ($model->load($post)) {
-            // Pertahankan tanggal lama jika input kosong
-            $model->tanggal_permintaan = $model->tanggal_permintaan ?: $oldTanggal;
-            $model->tenggat_waktu = $model->tenggat_waktu ?: $oldTenggat;
 
-            // Ambil ID detail lama
-            $oldIDs = ArrayHelper::getColumn($modelDetails, 'id');
-
-            // Ambil data POST detail
             $detailPost = isset($post['PermintaanDetail']) ? $post['PermintaanDetail'] : [];
             $modelDetailsNew = [];
 
             foreach ($detailPost as $i => $detailData) {
-                if (!empty($detailData['id'])) {
-                    // ambil model existing
-                    $detailModel = PermintaanDetail::findOne($detailData['id']);
+                if (!empty($detailData['permintaan_detail_id'])) {
+                    // Cari model yang sudah ada
+                    $detailModel = PermintaanDetail::findOne($detailData['permintaan_detail_id']);
                     if (!$detailModel) $detailModel = new PermintaanDetail();
                 } else {
+                    // Item baru dari tombol "Add"
                     $detailModel = new PermintaanDetail();
                 }
+
                 $detailModel->load(['PermintaanDetail' => $detailData]);
                 $modelDetailsNew[] = $detailModel;
             }
 
-            $deletedIDs = array_diff($oldIDs, ArrayHelper::getColumn($modelDetailsNew, 'id'));
+            // 2. PERBAIKAN: Diff antara ID lama di DB dan ID yang ada di Form
+            $newIDs = ArrayHelper::getColumn($modelDetailsNew, 'permintaan_detail_id');
+            $deletedIDs = array_diff($oldIDs, array_filter($newIDs));
 
-            // Validasi
             $valid = $model->validate() && Model::validateMultiple($modelDetailsNew);
 
             if ($valid) {
@@ -197,8 +192,9 @@ class PermintaanPelangganController extends Controller
                 try {
                     $model->save(false);
 
+                    // 3. PROSES HAPUS: Jalankan jika ada ID yang hilang dari Form
                     if (!empty($deletedIDs)) {
-                        PermintaanDetail::deleteAll(['id' => $deletedIDs]);
+                        PermintaanDetail::deleteAll(['permintaan_detail_id' => $deletedIDs]);
                     }
 
                     foreach ($modelDetailsNew as $detail) {
@@ -212,11 +208,7 @@ class PermintaanPelangganController extends Controller
                     $transaction->rollBack();
                     Yii::$app->session->setFlash('error', 'Terjadi kesalahan: ' . $e->getMessage());
                 }
-            } else {
-                Yii::$app->session->setFlash('error', 'Validasi gagal.');
             }
-
-            $modelDetails = $modelDetailsNew;
         }
 
         return $this->render('update', [

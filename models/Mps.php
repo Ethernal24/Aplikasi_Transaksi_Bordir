@@ -12,11 +12,8 @@ use yii\db\Expression;
  * @property int $mps_id
  * @property int $barang_id
  * @property int $periode
- * @property int $qty
- * @property int $tipe
- * @property int $sumber
  * @property int $status_mps
- * @property string $dateline
+ * @property string $tanggal_akhir
  * @property int $tanggal_awal
  * @property MpsDetail[] $mpsDetails
  */
@@ -36,7 +33,7 @@ class Mps extends \yii\db\ActiveRecord
             [
                 'class' => TimestampBehavior::class,
                 'createdAtAttribute' => 'dibuat_pada',
-                'updatedAtAttribute' => 'diupdate_pada',
+                'updatedAtAttribute' => 'diperbarui_pada',
                 'value' => new Expression('NOW()'), // gunakan CURRENT_TIMESTAMP di DB
             ],
         ];
@@ -48,10 +45,10 @@ class Mps extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['barang_id', 'periode', 'qty', 'tipe', 'dateline', 'sumber', 'status_mps'], 'required'],
-            [['barang_id', 'tipe', 'status_mps', 'sumber'], 'integer'],
-            [['qty'], 'number'],
-            [['tanggal_awal'], 'safe'],
+            [['kode_mps', 'periode', 'tanggal_awal', 'tanggal_akhir', 'status_mps', 'buffer_time', 'target_efisiensi', 'prioritas'], 'required'],
+            [['status_mps', 'prioritas', 'shift_id', 'total_pekerja'], 'integer'],
+            [['kode_mps'], 'string'],
+            [['target_efisiensi', 'buffer_time'], 'number'],
         ];
     }
 
@@ -62,33 +59,19 @@ class Mps extends \yii\db\ActiveRecord
     {
         return [
             'mps_id' => 'Mps ID',
-            'barang_id' => "Barang ID",
-            'periode' => "Periode",
-            'qty' => "Qty",
-            'tipe' => "Tipe",
-            'dateline' => "Dateline",
-            'sumber' => "Sumber",
-            'status_mps' => "Status MPS",
+            'kode_mps' => 'Kode MPS',
+            'periode' => 'Periode',
+            'tanggal_akhir' => 'Tanggal Akhir',
             'tanggal_awal' => 'Tanggal Awal',
+            'status_mps' => "Status MPS",
+            'buffer_time' => "Buffer Time (%)",
+            'target_efisiensi' => "Target Efisiens (%)",
+            'prioritas' => "Prioritas",
+            'shift_id' => "Shift ID",
+            'total_pekerja' => "Total Pekerja",
         ];
     }
 
-    public function getBarangRelasi()
-    {
-        if ($this->tipe === 0) {
-            return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
-        } elseif ($this->tipe === 1) {
-
-            return $this->hasOne(ProdukCustomPelanggan::class, ['produk_custom_pelanggan_id' => 'barang_id']);
-        }
-    }
-    public function getBarangName()
-    {
-        if (!$this->barangRelasi) return '-';
-        return $this->tipe === 0
-            ? $this->barangRelasi->nama_barang
-            : $this->barangRelasi->nama_barang_custom;
-    }
     public function getPermintaan()
     {
         return $this->hasOne(PermintaanPelanggan::class, ['permintaan_id' => 'sumber']);
@@ -99,15 +82,6 @@ class Mps extends \yii\db\ActiveRecord
         return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
     }
 
-    public function getTipeLabel()
-    {
-        $tipe = [
-            '0' => 'MTS',
-            '1' => 'MTO',
-        ];
-        return isset($tipe[$this->tipe]) ? $tipe[$this->tipe] : 'Unknown';;
-    }
-
     public function getStatusLabel()
     {
         $status = [
@@ -115,6 +89,16 @@ class Mps extends \yii\db\ActiveRecord
             '1' => ['label' => 'Approve', 'class' => 'badge bg-success'],
         ];
         return isset($status[$this->status_mps]) ? $status[$this->status_mps] : ['label' => 'unknow', 'class' => 'badge bg-secondary'];
+    }
+    public function getPrioritasLabel()
+    {
+        $status = [
+            0 => ['label' => 'Low', 'class' => 'badge bg-info'],
+            1 => ['label' => 'Normal', 'class' => 'badge bg-primary'],
+            2 => ['label' => 'High', 'class' => 'badge bg-warning'],
+            3 => ['label' => 'Urgent', 'class' => 'badge bg-danger'],
+        ];
+        return isset($status[$this->prioritas]) ? $status[$this->prioritas] : ['label' => 'unknow', 'class' => 'badge bg-secondary'];
     }
 
     public function getMpsDetails()
@@ -124,5 +108,14 @@ class Mps extends \yii\db\ActiveRecord
     public function getMrp()
     {
         return $this->hasOne(MasterMrp::class, ['mps_id' => 'mps_id']);
+    }
+    public function getRouting()
+    {
+        return $this->hasOne(MasterRouting::class, ['routing_id' => 'routing_id']);
+    }
+
+    public function getShift()
+    {
+        return $this->hasOne(Shift::class, ['shift_id' => 'shift_id']);
     }
 }

@@ -62,4 +62,8 @@ class PermintaanDetail extends \yii\db\ActiveRecord
     {
         return $this->hasMany(BomCustom::class, ['permintaan_detail_id' => 'permintaan_detail_id']);
     }
+    public function getWorkOrder()
+    {
+        return $this->hasOne(Workorder::class, ['permintaan_detail_id' => 'permintaan_detail_id']);
+    }
 }

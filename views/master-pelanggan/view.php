@@ -31,9 +31,10 @@ $this->params['breadcrumbs'][] = $this->title;
                 <div><strong>Terkahir Pesan : </strong><?= $model->pesenan_terakhir ?></div>
             </div>
         </div>
+        <hr>
         <div class="card-body">
             <div class="table-responsive">
-                <h5>Data Produk</h5>
+                <h5>Data Produk Custom</h5>
                 <div class="produk-grid">
 
                     <?= GridView::widget([

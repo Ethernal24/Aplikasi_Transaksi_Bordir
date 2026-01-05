@@ -32,8 +32,8 @@ class ProductionLogDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['log_id', 'wo_id', 'kuantitas', 'bs'], 'required'],
-            [['log_id', 'wo_id', 'vs', 'stitch', 'kuantitas', 'bs'], 'integer'],
+            [['log_id', 'activity_id', 'kuantitas', 'bs'], 'required'],
+            [['log_id', 'activity_id', 'vs', 'stitch', 'kuantitas', 'bs'], 'integer'],
             [['berat'], 'string', 'max' => 200],
         ];
     }
@@ -46,12 +46,20 @@ class ProductionLogDetail extends \yii\db\ActiveRecord
         return [
             'detail_id' => 'Detail ID',
             'log_id' => 'Log ID',
-            'wo_id' => 'Wo ID',
+            'activity_id' => 'Activity ID',
             'vs' => 'Vs',
             'stitch' => 'Stitch',
             'kuantitas' => 'Kuantitas',
             'bs' => 'Bs',
             'berat' => 'Berat',
         ];
+    }
+    public function getLog()
+    {
+        return $this->hasOne(ProductionLog::class, ['log_id' => 'id_log']);
+    }
+    public function getActivity()
+    {
+        return $this->hasOne(ProductionLogActivity::class, ['id_activity' => 'activity_id']);
     }
 }

@@ -156,4 +156,8 @@ class Barang extends \yii\db\ActiveRecord
     {
         return $this->hasOne(MasterRouting::class, ['barang_id' => 'produk_id']);
     }
+    public function getGudang()
+    {
+        return $this->hasOne(Gudang::class, ['barang_id' => 'barang_id']);
+    }
 }

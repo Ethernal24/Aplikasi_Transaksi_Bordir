@@ -19,6 +19,8 @@ use yii\widgets\ActiveForm;
             <?= $form->field($model, 'nama_pelanggan')->textInput(['maxlength' => true]) ?>
 
             <?= $form->field($model, 'instansi')->textInput(['maxlength' => true]) ?>
+            <?= $form->field($model, 'no_telp')->textInput(['maxlength' => true]) ?>
+            <?= $form->field($model, 'email')->textInput(['maxlength' => true]) ?>
             <?= $form->field($model, 'kode')->textInput(['maxlength' => true]) ?>
 
 

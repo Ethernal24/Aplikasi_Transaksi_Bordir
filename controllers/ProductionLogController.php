@@ -3,7 +3,12 @@
 namespace app\controllers;
 
 use app\models\ProductionLog;
+use app\models\ProductionLogActivity;
+use app\models\ProductionLogAttendance;
+use app\models\ProductionLogDetail;
+use app\models\ProductionLogDowntime;
 use app\models\ProductionLogSearch;
+use yii\data\ActiveDataProvider;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -53,15 +58,38 @@ class ProductionLogController extends Controller
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($production_log_id)
+    public function actionView($id_log)
     {
-        $model = $this->findModel($production_log_id);
-        $detail = $model->detail;
-        $activity = $model->activity;
+        $model = $this->findModel($id_log);
+        $activityProvider = new ActiveDataProvider([
+            'query' => ProductionLogActivity::find()->where(['id_log' => $id_log]),
+            'pagination' => [
+                'pageSize' => 10, // Menampilkan 10 data per halaman di dalam tab
+            ],
+            'sort' => [
+                'defaultOrder' => ['id_activity' => SORT_DESC], // Data terbaru di atas
+            ],
+        ]);
+
+        // 2. Jika Anda sudah buat tabel Detail, siapkan juga provider-nya
+        $detailProvider = new ActiveDataProvider([
+            'query' => ProductionLogDetail::find()->where(['log_id' => $id_log]),
+        ]);
+
+        $attendanceProvider = new ActiveDataProvider([
+            'query' => ProductionLogAttendance::find()->where(['log_id' => $id_log]),
+        ]);
+        $downtimeProvider = new ActiveDataProvider([
+            'query' => ProductionLogDowntime::find()->where(['log_id' => $id_log]),
+        ]);
+
+
         return $this->render('view', [
             'model' => $model,
-            'detail' => $detail,
-            'activity' => $activity,
+            'activityProvider' => $activityProvider, // Kirim ke view
+            'detailProvider' => $detailProvider,
+            'attendanceProvider' => $attendanceProvider,
+            'downtimeProvider' => $downtimeProvider,
         ]);
     }
 
@@ -128,9 +156,9 @@ class ProductionLogController extends Controller
      * @return ProductionLog the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($production_log_id)
+    protected function findModel($id_log)
     {
-        if (($model = ProductionLog::findOne(['production_log_id' => $production_log_id])) !== null) {
+        if (($model = ProductionLog::findOne(['id_log' => $id_log])) !== null) {
             return $model;
         }
 

@@ -7,7 +7,7 @@ use Yii;
 /**
  * This is the model class for table "production_log".
  *
- * @property int $production_log_id
+ * @property int $id_log
  * @property string $tanggal
  * @property int $user_id
  * @property int $shift_id
@@ -36,11 +36,10 @@ class ProductionLog extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['tanggal', 'tk_id', 'shift_id', 'waktu_kerja', 'mulai_istirahat', 'selesai_istirahat', 'mesin_id'], 'required'],
-            [['tanggal', 'mulai_kerja', 'selesai_kerja'], 'safe'],
-            [['tk_id', 'shift_id', 'mesin_id'], 'integer'],
-            [['waktu_kerja'], 'number'],
-            [['tk_id'], 'exist', 'skipOnError' => true, 'targetClass' => TenagaKerja::class, 'targetAttribute' => ['tk_id' => 'tk_id']],
+            [['id_log', 'kode_log', 'id_wo', 'id_workcenter', 'id_shift', 'tanggal', 'status'], 'required'],
+            [['id_wo', 'id_workcenter', 'id_shift', 'status'], 'integer'],
+            [['kode_log'], 'string'],
+            [['tanggal'], 'safe'],
         ];
     }
 
@@ -50,16 +49,12 @@ class ProductionLog extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'production_log_id' => 'Production Log ID',
+            'kode_log' => 'Kode Log',
+            'id_wo' => 'ID WO',
+            'id_workcenter' => 'ID Workcenter',
+            'id_shift' => 'ID Shift',
             'tanggal' => 'Tanggal',
-            'mesin_id' => 'mesin_id',
-            'tk_id' => 'Tenaga Kerja ID',
-            'shift_id' => 'Shift ID',
-            'mulai_kerja' => 'Mulai Kerja',
-            'selesai_kerja' => 'Selesai Kerja',
-            'waktu_kerja' => 'Waktu Kerja',
-            'mulai_istirahat' => 'Mulai Istirahat',
-            'selesai_istirahat' => 'Selesai Istirahat',
+            'status' => 'Status',
         ];
     }
 
@@ -68,24 +63,33 @@ class ProductionLog extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getTenagaKerja()
-    {
-        return $this->hasOne(TenagaKerja::class, ['tk_id' => 'tk_id']);
-    }
+
     public function getShift()
     {
-        return $this->hasOne(Shift::class, ['shift_id' => 'shift_id']);
+        return $this->hasOne(Shift::class, ['shift_id' => 'id_shift']);
     }
-    public function getMesin()
+    public function getWo()
     {
-        return $this->hasOne(Mesin::class, ['mesin_id' => 'mesin_id']);
+        return $this->hasOne(Workorder::class, ['id_wo' => 'id_wo']);
     }
-    public function getDetail()
+    public function getWorkcenter()
     {
-        return $this->hasOne(ProductionLogDetail::class, ['production_log_id' => 'log_id']);
+        return $this->hasOne(Workcenter::class, ['workcenter_id' => 'id_workcenter']);
+    }
+
+    public function getLabelStatus()
+    {
+        $status = [
+            0      => ['label' => 'Sedang Jalan', 'class' => 'badge bg-primary'],
+            1    => ['label' => 'Tertunda', 'class' => 'badge bg-warning'],
+            2    => ['label' => 'Selesai Sesi', 'class' => 'badge bg-dark'],
+            3 => ['label' => 'Terverifikasi', 'class' => 'badge bg-success'],
+        ];
+
+        return $status[$this->status] ?? ['label' => $this->status, 'class' => 'badge badge-secondary'];
     }
     public function getActivity()
     {
-        return $this->hasOne(ProductionLogActivity::class, ['production_log_id' => 'log_id']);
+        return $this->hasMany(ProductionLogActivity::class, ['id_log' => 'id_log']);
     }
 }

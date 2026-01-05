@@ -34,10 +34,9 @@ class MrpDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['mrp_id', 'barang_id', 'minggu_ke', 'kebutuhan_kotor', 'stock_tersedia', 'kebutuhan_bersih', 'leadtime', 'planned_order_release', 'planned_order_receipt'], 'required'],
-            [['mrp_id', 'barang_id', 'stock_tersedia', 'kebutuhan_bersih', 'leadtime', 'minggu_ke'], 'integer'],
+            [['mrp_id', 'bahan_id', 'kebutuhan_kotor', 'stock_tersedia', 'kebutuhan_bersih'], 'required'],
+            [['mrp_id', 'bahan_id', 'stock_tersedia', 'kebutuhan_bersih'], 'integer'],
             [['kebutuhan_kotor'], 'number'],
-            [['planned_order_release', 'planned_order_receipt'], 'safe'],
         ];
     }
 
@@ -49,20 +48,16 @@ class MrpDetail extends \yii\db\ActiveRecord
         return [
             'mrp_detail_id' => 'Mrp Detail ID',
             'mrp_id' => 'Mrp ID',
-            'barang_id' => 'Bahan ID',
-            'minggu_ke' => 'Minggu Ke',
+            'bahan_id' => 'Bahan ID',
             'kebutuhan_kotor' => 'Kebutuhan Kotor',
             'stock_tersedia' => 'Stock Tersedia',
             'kebutuhan_bersih' => 'Kebutuhan Bersih',
-            'leadtime' => 'Leadtime',
-            'planned_order_release' => 'Planned Order Release',
-            'planned_order_receipt' => 'Planned Order Receipt',
         ];
     }
 
-    public function getBarang()
+    public function getBahan()
     {
-        return $this->hasOne(Barang::class, ['barang_id' => 'barang_id']);
+        return $this->hasOne(Barang::class, ['barang_id' => 'bahan_id'])->alias('bahan');
     }
     public function getMrp()
     {

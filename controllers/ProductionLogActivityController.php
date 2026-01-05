@@ -2,8 +2,11 @@
 
 namespace app\controllers;
 
+use app\models\ProductionLog;
 use app\models\ProductionLogActivity;
 use app\models\ProductionLogActivitySearch;
+use app\models\RoutingDetail;
+use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -65,20 +68,35 @@ class ProductionLogActivityController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
      */
-    public function actionCreate()
+    public function actionCreate($id_log)
     {
         $model = new ProductionLogActivity();
+        $model->id_log = $id_log;
 
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'activity_id' => $model->activity_id]);
-            }
-        } else {
-            $model->loadDefaultValues();
+        // Ambil data Header untuk tahu Produk dan Workcenter-nya
+        $header = ProductionLog::findOne($id_log);
+        $wo = $header->wo; // Asumsi relasi ke WO ada
+
+        // Cari Routing Detail yang pas
+        $routingDetail = RoutingDetail::find()
+            ->innerJoin('master_routing', 'master_routing.routing_id = routing_detail.routing_id')
+            ->where([
+                'master_routing.produk_id' => $wo->id_produk,
+                'routing_detail.workcenter_id' => $header->id_workcenter
+            ])
+            ->one();
+
+        if ($routingDetail) {
+            $model->id_routing_detail = $routingDetail->routing_detail_id;
         }
 
-        return $this->render('create', [
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            return $this->redirect(['/production-log/view', 'id_log' => $id_log]);
+        }
+
+        return $this->renderAjax('create', [
             'model' => $model,
+            'routingDetail' => $routingDetail, // Kirim ke view jika ingin ditampilkan namanya
         ]);
     }
 

@@ -8,7 +8,7 @@ use yii\widgets\DetailView;
 /** @var app\models\MasterMrp $model */
 /** @var app\models\MrpDetailSearch $searchModel */
 
-$this->title = 'Detail MRP : ' . $model->mrp_id;
+$this->title = 'Detail MRP : ' . $model->kode_mrp;
 $this->params['breadcrumbs'][] = ['label' => 'Master Mrps', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
@@ -20,32 +20,15 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
         <div class="row mx-3">
             <div class="col">
-                <div>
-                    <strong>Nama Barang : </strong>
-                    <?= $model->mps->barangName ?>
-                </div>
-                <div>
-                    <strong>Tipe : </strong>
-                    <?= $model->mps->tipeLabel ?>
+                <span><strong>Kode MPS :</strong> <?= $model->mps->kode_mps ?></span>
+            </div>
+            <div class="col">
+                <div><strong>Status MRP :</strong>
+                    <span class="<?= $model->getLabel()['class'] ?>"><?= $model->getLabel()['label'] ?></span>
                 </div>
             </div>
             <div class="col">
-                <div>
-                    <strong>tanggal awal : </strong>
-                    <?= Yii::$app->formatter->asDateTime($model->mps->tanggal_awal, 'php: d F Y') ?>
-                </div>
-                <div>
-                    <strong>tanggal Jatuh Tempo : </strong>
-                    <?= Yii::$app->formatter->asDateTime($model->mps->dateline, 'php: d F Y') ?>
-                </div>
-            </div>
-            <div class="col">
-                <div>
-                    <strong>Status : </strong>
-                    <span class="<?= $model->getlabel()['class'] ?>">
-                        <?= $model->getlabel()['label'] ?>
-                    </span>
-                </div>
+
             </div>
         </div>
 
@@ -56,27 +39,14 @@ $this->params['breadcrumbs'][] = $this->title;
                     'dataProvider' => new \yii\data\ArrayDataProvider([
                         'allModels' => $details,
                         'pagination' => false,
-                        'sort' => [
-                            'attributes' => [
-                                'barang_id',
-                                'minggu_ke',
-                            ],
-                            'defaultOrder' => ['barang_id' => SORT_DESC],
-                        ]
                     ]),
                     'columns' => [
                         [
-                            'attribute' => 'barang_id',
+                            'attribute' => 'bahan_id',
+                            'label' => 'Bahan ID',
                             'value' => function ($model) {
-                                return $model->barang->nama_barang;
+                                return $model->bahan->nama_barang;
                             },
-                            'label' => 'Nama Produk',
-
-                        ],
-                        [
-                            'attribute' => 'minggu_ke',
-                            'value' => 'minggu_ke',
-                            'label' => 'Minggu Ke',
                         ],
                         [
                             'attribute' => 'kebutuhan_kotor',
@@ -86,7 +56,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         [
                             'attribute' => 'stok_tersedia',
                             'value' => function ($model) {
-                                return $model->barang->stok;
+                                return $model->stock_tersedia ?? 0;
                             },
                             'label' => 'Stok Tersedia',
                         ],
@@ -95,28 +65,13 @@ $this->params['breadcrumbs'][] = $this->title;
                             'value' => 'kebutuhan_bersih',
                             'label' => 'Kebutuhan Bersih',
                         ],
-                        [
-                            'attribute' => 'leadtime',
-                            'value' => 'leadtime',
-                            'label' => 'Leadtime',
-                        ],
-                        [
-                            'attribute' => 'planned_order_release',
-                            'value' => 'planned_order_release',
-                            'label' => 'Planned Order Release',
-                        ],
-                        [
-                            'attribute' => 'planned_order_receipt',
-                            'value' => 'planned_order_receipt',
-                            'label' => 'Planned Order Receipt',
-                        ],
-                        [
-                            'attribute' => 'unit_id',
-                            'value' => function ($model) {
-                                return $model->barang->unit->satuan;
-                            },
-                            'label' => 'Satuan',
-                        ],
+                        // [
+                        //     'attribute' => 'unit_id',
+                        //     'value' => function ($model) {
+                        //         return $model->barang->unit->satuan;
+                        //     },
+                        //     'label' => 'Satuan',
+                        // ],
                     ],
                 ]); ?>
 

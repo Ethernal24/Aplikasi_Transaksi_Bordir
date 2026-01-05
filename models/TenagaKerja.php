@@ -33,8 +33,8 @@ class TenagaKerja extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['nama', 'jabatan', 'kemampuan', 'status_kerja'], 'required'],
-            [['status_kerja'], 'integer'],
+            [['nama', 'jabatan', 'kemampuan', 'status_kerja', 'workcenter_id'], 'required'],
+            [['status_kerja', 'workcenter_id'], 'integer'],
             [['dibuat_pada', 'diupdate_pada'], 'safe'],
             [['nama', 'jabatan', 'kemampuan'], 'string', 'max' => 255],
         ];
@@ -47,6 +47,7 @@ class TenagaKerja extends \yii\db\ActiveRecord
     {
         return [
             'tk_id' => 'Tk ID',
+            'workcenter_id' => 'Workcenter ID',
             'nama' => 'Nama',
             'jabatan' => 'Jabatan',
             'kemampuan' => 'Kemampuan',

@@ -32,9 +32,12 @@ class MasterPelanggan extends \yii\db\ActiveRecord
     {
         return [
             [['pesenan_terakhir'], 'default', 'value' => null],
-            [['nama_pelanggan', 'instansi'], 'required'],
+            [['nama_pelanggan', 'instansi', 'no_telp', 'email'], 'required'],
             [['pesenan_terakhir', 'kode'], 'safe'],
-            [['nama_pelanggan', 'instansi', 'kode'], 'string', 'max' => 255],
+            [['nama_pelanggan', 'no_telp', 'instansi', 'kode'], 'string', 'max' => 255],
+            ['no_telp', 'match', 'pattern' => '/^[0-9]+$/', 'message' => 'Nomor telepon hanya boleh berisi angka.'],
+            ['email', 'email'],
+            ['email', 'unique', 'message' => 'Email ini sudah terdaftar.'],
         ];
     }
 
@@ -44,6 +47,7 @@ class MasterPelanggan extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
+            'email' => 'Email',
             'pelanggan_id' => 'Pelanggan ID',
             'nama_pelanggan' => 'Nama Pelanggan',
             'instansi' => 'Instansi',

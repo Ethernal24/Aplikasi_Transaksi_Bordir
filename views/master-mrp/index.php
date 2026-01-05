@@ -29,34 +29,25 @@ $this->params['breadcrumbs'][] = $this->title;
                     // 'mrp_id',
                     // 'mps_id',
                     [
-                        'attribute' => 'nama_barang',
-                        'value' => function ($model) {
-                            return $model->mps->barangName;
-                        },
-                        'label' => 'nama barang',
+                        'attribute' => 'mps_id',
+                        'value' => 'mps.kode_mps',
+                        'label' => 'Kode MPS',
                     ],
                     [
-                        'attribute' => 'tanggal_awal',
-                        'value' => function ($model) {
-                            return date('d-M-Y', strtotime($model->mps->tanggal_awal));
-                        },
-                        'label' => 'Tanggal Awal',
-                    ],
-                    [
-                        'attribute' => 'dateline',
-                        'value' => function ($model) {
-                            return date('d-M-Y', strtotime($model->mps->dateline));
-                        },
-                        'label' => 'dateline',
+                        'attribute' => 'kode_mrp',
+                        'value' => 'kode_mrp',
+                        'label' => 'kode MRP',
                     ],
                     [
                         'attribute' => 'status',
-                        'format' => 'raw',
                         'value' => function ($model) {
-                            $label = $model->label;
-                            return "<span class='{$label['class']}'>{$label['label']}</span>";
+                            $list = [
+                                0 => 'Draft',
+                                1 => 'Approved',
+                            ];
+                            return $list[$model->status] ?? null;
                         },
-                        'label' => 'Status',
+                        'label' => 'status',
                     ],
                     [
                         'class' => ActionColumn::className(),

@@ -14,7 +14,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'log_id')->textInput() ?>
 
-    <?= $form->field($model, 'wo_id')->textInput() ?>
+    <?= $form->field($model, 'activity_id')->textInput() ?>
 
     <?= $form->field($model, 'vs')->textInput() ?>
 

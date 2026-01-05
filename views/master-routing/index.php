@@ -27,6 +27,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     ['class' => 'yii\grid\SerialColumn'],
 
                     // 'routing_id',
+                    'kode_routing',
                     'nama_routing',
                     [
                         'attribute' => 'produk_id',

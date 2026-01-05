@@ -86,8 +86,13 @@ class PermintaanPelanggan extends \yii\db\ActiveRecord
         return isset($status[$this->status_pesanan]) ? $status[$this->status_pesanan] : ['label' => 'Unknown', 'class' => 'badge bg-secondary'];
     }
 
-    public function getMps()
+    public function getMpsDetail()
     {
-        return $this->belongsTo(Mps::class, ['sumber' => 'permintaan_id']);
+        return $this->hasMany(MpsDetail::class, ['permintaan_id' => 'permintaan_id']);
+    }
+
+    public function getWorkOrder()
+    {
+        return $this->hasMany(Workorder::class, ['permintaan_id' => 'permintaan_id']);
     }
 }

@@ -17,9 +17,9 @@ class ProductionLogSearch extends ProductionLog
     public function rules()
     {
         return [
-            [['production_log_id', 'tk_id', 'shift_id', 'mesin_id'], 'integer'],
-            [['tanggal', 'mulai_istirahat', 'selesai_istirahat'], 'safe'],
-            [['waktu_kerja'], 'number'],
+            [['id_wo', 'id_workcenter', 'id_shift', 'status'], 'integer'],
+            [['kode_log'], 'string'],
+            [['tanggal'], 'safe'],
         ];
     }
 
@@ -59,14 +59,12 @@ class ProductionLogSearch extends ProductionLog
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'production_log_id' => $this->production_log_id,
+            'kode_log' => $this->kode_log,
+            'id_wo' => $this->id_wo,
+            'id_workcenter' => $this->id_workcenter,
+            'id_shift' => $this->id_shift,
             'tanggal' => $this->tanggal,
-            'mesin_id' => $this->mesin_id,
-            'tk_id' => $this->tk_id,
-            'shift_id' => $this->shift_id,
-            'waktu_kerja' => $this->waktu_kerja,
-            'mulai_istirahat' => $this->mulai_istirahat,
-            'selesai_istirahat' => $this->selesai_istirahat,
+            'status' => $this->status,
         ]);
 
         return $dataProvider;

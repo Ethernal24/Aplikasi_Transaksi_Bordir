@@ -35,7 +35,7 @@ class RoutingDetail extends \yii\db\ActiveRecord
             [['urutan', 'standard_time_menit', 'workcenter_id', 'waktu_setup_menit', 'output_jam'], 'required'],
             [['routing_id', 'urutan', 'standard_time_menit', 'waktu_setup_menit', 'workcenter_id'], 'integer'],
             [['output_jam'], 'number'],
-            [['routing_id', 'deskripsi_kerja'], 'safe'],
+            [['routing_id', 'deskripsi_kerja', 'routing_detail_id'], 'safe'],
             [['deskripsi_kerja'], 'string', 'max' => 255],
         ];
     }
@@ -69,5 +69,10 @@ class RoutingDetail extends \yii\db\ActiveRecord
     public function getWorkCenter()
     {
         return $this->hasOne(Workcenter::class, ['workcenter_id' => 'workcenter_id']);
+    }
+
+    public function getRouting()
+    {
+        return $this->hasOne(MasterRouting::class, ['routing_id' => 'routing_id']);
     }
 }

@@ -27,19 +27,17 @@ $this->params['breadcrumbs'][] = $this->title;
                     ['class' => 'yii\grid\SerialColumn'],
 
                     // 'mps_id',
-                    'barang_id' => [
-                        'attribute' => 'barang_id',
-                        'value' => function ($model) {
-                            return $model->barangName;
-                        },
-                        'label' => 'Nama barang',
-                    ],
                     'periode' => [
                         'attribute' => 'periode',
                         'label' => 'Periode',
                         'value' => function ($model) {
                             return date('M-Y', strtotime($model->periode));
                         },
+                    ],
+                    [
+                        'attribute' => 'kode_mps',
+                        'label' => 'Kode MPS',
+                        'value' => 'kode_mps'
                     ],
                     'tanggal_awal' => [
                         'attribute' => 'tanggal_awal',
@@ -48,31 +46,12 @@ $this->params['breadcrumbs'][] = $this->title;
                             return $model->tanggal_awal ? date('d-M-Y', strtotime($model->tanggal_awal)) : "-";
                         },
                     ],
-                    'qty',
-                    'tipe' => [
-                        'attribute' => 'tipe',
+                    'tanggal_akhir' => [
+                        'attribute' => 'tanggal_akhir',
+                        'label' => 'Tanggal Akhir',
                         'value' => function ($model) {
-                            $list = [
-                                0 => 'MTS',
-                                1 => 'MTO',
-                            ];
-                            return $list[$model->tipe] ?? null;
+                            return date('d-M-Y', strtotime($model->tanggal_akhir));
                         },
-                        "label" => 'Tipe',
-                    ],
-                    'dateline' => [
-                        'attribute' => 'dateline',
-                        'label' => 'dateline',
-                        'value' => function ($model) {
-                            return date('d-M-Y', strtotime($model->dateline));
-                        },
-                    ],
-                    'sumber' => [
-                        'attribute' => 'sumber',
-                        'value' => function ($model) {
-                            return $model->sumber ? $model->permintaan->kode_permintaan : "Forecast";
-                        },
-                        "label" => 'Sumber'
                     ],
                     'status_mps' => [
                         'attribute' => 'status_mps',
@@ -83,7 +62,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             ];
                             return $list[$model->status_mps] ?? null;
                         },
-                        "label" => 'Status MPS'
+                        'label' => 'Status MPS'
                     ],
                     [
                         'class' => ActionColumn::className(),
