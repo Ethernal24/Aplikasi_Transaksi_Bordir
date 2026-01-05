@@ -291,7 +291,6 @@ class RiwayatPermintaanController extends Controller
                     if ($rencanaproduksi < 0) {
                         $rencanaproduksi = 0;
                     }
-                    $this->createMps($barangId, $bulan, $tahun, $rencanaproduksi, 0, 0);
                 }
                 $transaction->commit();
 
@@ -315,67 +314,67 @@ class RiwayatPermintaanController extends Controller
         }
     }
 
-    public function createMps($barang_id, $bulan, $tahun, $rencanaproduksi, $tipe, $sumber)
-    {
-        $cekMps = Mps::find()
-            ->where([
-                'barang_id' => $barang_id,
-            ])
-            ->andWhere(['between', 'periode', "$tahun-$bulan-01", "$tahun-$bulan-31"])
-            ->exists();
+    // public function createMps($barang_id, $bulan, $tahun, $rencanaproduksi, $tipe, $sumber)
+    // {
+    //     $cekMps = Mps::find()
+    //         ->where([
+    //             'barang_id' => $barang_id,
+    //         ])
+    //         ->andWhere(['between', 'periode', "$tahun-$bulan-01", "$tahun-$bulan-31"])
+    //         ->exists();
 
-        if ($cekMps) {
-            return false;
-        }
+    //     if ($cekMps) {
+    //         return false;
+    //     }
 
-        $mps = new Mps();
-        $periodeBulan = str_pad($bulan, 2, '0', STR_PAD_LEFT);
-        $tanggalForecast = strtotime("$tahun-$periodeBulan-01");
-        $periode = date('Y-m-01', $tanggalForecast);
-        $dateline = date('Y-m-t', $tanggalForecast);
+    //     $mps = new Mps();
+    //     $periodeBulan = str_pad($bulan, 2, '0', STR_PAD_LEFT);
+    //     $tanggalForecast = strtotime("$tahun-$periodeBulan-01");
+    //     $periode = date('Y-m-01', $tanggalForecast);
+    //     $dateline = date('Y-m-t', $tanggalForecast);
 
 
-        $mps->periode = $periode;
-        $mps->tanggal_awal = $periode;
-        $mps->dateline = $dateline;
-        $mps->barang_id = $barang_id;
-        $mps->qty = $rencanaproduksi;
-        $mps->tipe = $tipe;
-        $mps->sumber = $sumber;
-        $mps->status_mps = 0;
-        $mps->dibuat_pada = date('Y-m-d H:i:s');
-        $mps->diupdate_pada = date('Y-m-d H:i:s');
-        $mps->save(false);
-        $this->createMpsDetail($mps);
-    }
-    public function createMpsDetail($mps)
-    {
-        $forecastBulanan = $mps->qty ?? 0;
-        $forecastMingguan = $forecastBulanan / 4;
+    //     $mps->periode = $periode;
+    //     $mps->tanggal_awal = $periode;
+    //     $mps->dateline = $dateline;
+    //     $mps->barang_id = $barang_id;
+    //     $mps->qty = $rencanaproduksi;
+    //     $mps->tipe = $tipe;
+    //     $mps->sumber = $sumber;
+    //     $mps->status_mps = 0;
+    //     $mps->dibuat_pada = date('Y-m-d H:i:s');
+    //     $mps->diupdate_pada = date('Y-m-d H:i:s');
+    //     $mps->save(false);
+    //     $this->createMpsDetail($mps);
+    // }
+    // public function createMpsDetail($mps)
+    // {
+    //     $forecastBulanan = $mps->qty ?? 0;
+    //     $forecastMingguan = $forecastBulanan / 4;
 
-        $barang = $mps->barang;
-        $stokAwal = $barang ? $barang->stok : 0;
-        $pabSebelumnya = $stokAwal;
+    //     $barang = $mps->barang;
+    //     $stokAwal = $barang ? $barang->stok : 0;
+    //     $pabSebelumnya = $stokAwal;
 
-        for ($i = 1; $i <= 4; $i++) {
-            $detail = new MpsDetail();
-            $detail->mps_id = $mps->mps_id;
-            $detail->minggu_ke = $i;
-            $detail->forecast = $forecastMingguan;
-            $detail->order_aktual = 0;
-            $rencana_produksi = max($detail->forecast, $detail->order_aktual) + max($detail->forecast, $detail->order_aktual) / 2;
-            $detail->stok = $pabSebelumnya + $rencana_produksi - max($detail->forecast, $detail->order_aktual);
-            $detail->rencana_produksi = $rencana_produksi;
-            if ($i === 1) {
-                $detail->stok = $stokAwal;
-            } else {
-                $detail->stok = $pabSebelumnya + $rencana_produksi - max($detail->forecast, $detail->order_aktual);
-            }
-            $pabSebelumnya = $detail->stok;
+    //     for ($i = 1; $i <= 4; $i++) {
+    //         $detail = new MpsDetail();
+    //         $detail->mps_id = $mps->mps_id;
+    //         $detail->minggu_ke = $i;
+    //         $detail->forecast = $forecastMingguan;
+    //         $detail->order_aktual = 0;
+    //         $rencana_produksi = max($detail->forecast, $detail->order_aktual) + max($detail->forecast, $detail->order_aktual) / 2;
+    //         $detail->stok = $pabSebelumnya + $rencana_produksi - max($detail->forecast, $detail->order_aktual);
+    //         $detail->rencana_produksi = $rencana_produksi;
+    //         if ($i === 1) {
+    //             $detail->stok = $stokAwal;
+    //         } else {
+    //             $detail->stok = $pabSebelumnya + $rencana_produksi - max($detail->forecast, $detail->order_aktual);
+    //         }
+    //         $pabSebelumnya = $detail->stok;
 
-            if (!$detail->save(false)) {
-                Yii::info('Gagal simpan MPS Detail minggu ke ' . $i . ' untuk MPS ' . $mps->mps_id, __METHOD__);
-            }
-        }
-    }
+    //         if (!$detail->save(false)) {
+    //             Yii::info('Gagal simpan MPS Detail minggu ke ' . $i . ' untuk MPS ' . $mps->mps_id, __METHOD__);
+    //         }
+    //     }
+    // }
 }
