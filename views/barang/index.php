@@ -82,12 +82,12 @@ if (Yii::$app->session->hasFlash('success')) {
                         //         'prompt' => 'Pilih Jenis'
                         //     ]
                         // ],
-                        // [
-                        //     'attribute' => 'stok',
-                        //     'value' => function ($model) {
-                        //         return $model->stocks ? $model->stocks->quantity_akhir : '-';
-                        //     },
-                        // ],
+                        [
+                            'attribute' => 'stok',
+                            'value' => function ($model) {
+                                return $model->gudang ? $model->gudang->quantity_akhir : '-';
+                            },
+                        ],
 
                         'unit.satuan' => [
                             'attribute' => 'satuan',

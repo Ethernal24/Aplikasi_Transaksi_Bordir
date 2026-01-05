@@ -19,12 +19,13 @@ class GudangSearch extends Gudang
     public $nama_pengguna;
 
     public $kode_barang;
+    public $tipe_barang;
 
     public function rules()
     {
         return [
             [['id_gudang', 'barang_id', 'user_id'], 'integer'],
-            [['tanggal', 'catatan', 'created_at', 'update_at', 'nama_pengguna', 'nama_barang', 'kode_barang'], 'safe'],
+            [['tanggal', 'catatan', 'created_at', 'update_at', 'nama_pengguna', 'nama_barang', 'kode_barang', 'tipe_barang'], 'safe'],
             [['quantity_awal', 'quantity_masuk', 'quantity_keluar', 'quantity_akhir'], 'number'],
         ];
     }
@@ -91,6 +92,9 @@ class GudangSearch extends Gudang
             // $query->where('0=1');
             return $dataProvider;
         }
+
+
+
         if (!empty($this->tanggal)) {
             $dates = explode(' - ', $this->tanggal);
             if (count($dates) == 2) {
@@ -117,8 +121,9 @@ class GudangSearch extends Gudang
             'quantity_akhir' => $this->quantity_akhir,
             'created_at' => $this->created_at,
             'update_at' => $this->update_at,
-        ]);
 
+        ]);
+        $query->andFilterWhere(['like', 'master_barang.tipe_barang', $this->tipe_barang]);
         $query->andFilterWhere(['like', 'catatan', $this->catatan]);
         $query->andFilterWhere(['like', 'barang.nama_barang', $this->nama_barang]);
         $query->andFilterWhere(['like', 'user.nama_pengguna', $this->nama_pengguna]);

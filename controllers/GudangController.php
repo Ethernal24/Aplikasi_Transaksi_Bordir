@@ -50,9 +50,24 @@ class GudangController extends BaseController
     public function actionIndex()
     {
         $searchModel = new GudangSearch();
+        $searchModel->tipe_barang = 0; // Set langsung ke model
+
         $dataProvider = $searchModel->search($this->request->queryParams);
 
         return $this->render('index', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionIndexBarangJadi()
+    {
+        $searchModel = new GudangSearch();
+        $searchModel->tipe_barang = 2; // Set langsung ke model
+
+        $dataProvider = $searchModel->search($this->request->queryParams);
+
+        return $this->render('index-barang-jadi', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);

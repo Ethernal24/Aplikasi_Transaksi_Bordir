@@ -60,7 +60,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     // 'updated_at',
                     [
                         'class' => ActionColumn::className(),
-                        'template' => '{update} {delete} {view}',
+                        'template' => '{delete} {view}',
                         'urlCreator' => function ($action, WorkOrder $model, $key, $index, $column) {
                             return Url::toRoute([$action, 'id_wo' => $model->id_wo]);
                         }

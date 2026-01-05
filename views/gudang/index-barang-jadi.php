@@ -11,14 +11,14 @@ use kartik\daterange\DateRangePicker;
 /** @var app\models\GudangSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Kartu Stock Bahan';
+$this->title = 'Kartu Stock Barang Jadi';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="pc-content">
     <div class="card card-table">
         <div class="card-header">
             <h1><?= Html::encode($this->title) ?></h1>
-            <?= Html::a('Buat Kartu Stok', ['create'], ['class' => 'btn btn-success']) ?>
+            <!-- <?= Html::a('Buat Kartu Stok', ['create'], ['class' => 'btn btn-success']) ?> -->
         </div>
         <div class="card-body">
             <div class="table-responsive">

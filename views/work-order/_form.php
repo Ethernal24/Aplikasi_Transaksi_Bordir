@@ -31,12 +31,12 @@ use yii\widgets\ActiveForm;
             )->label('Kode Routing') ?>
 
 
-            <?= $form->field($model, 'permintaan_id')->dropDownList(
-                ArrayHelper::map(PermintaanPelanggan::find()->all(), 'permintaan_id', 'kode_permintaan'),
-                [
-                    'id' => 'id-permintaan',
-                    'prompt' => 'Pilih Kode Permintaan...',
-                    'onchange' => "
+            <!-- <?= $form->field($model, 'permintaan_id')->dropDownList(
+                        ArrayHelper::map(PermintaanPelanggan::find()->all(), 'permintaan_id', 'kode_permintaan'),
+                        [
+                            'id' => 'id-permintaan',
+                            'prompt' => 'Pilih Kode Permintaan...',
+                            'onchange' => "
                         $.get('" . \yii\helpers\Url::to(['work-order/get-barang']) . "', { id: $(this).val() })
                         .done(function(data) {
                             $('#id-permintaan-detail').html(data).prop('disabled', false);
@@ -45,15 +45,14 @@ use yii\widgets\ActiveForm;
                             alert('Gagal mengambil data barang');
                         });
                     "
-                ]
-            ) ?>
+                        ]
+                    ) ?> -->
 
-            <?= $form->field($model, 'permintaan_detail_id')->dropDownList(
+            <?= $form->field($model, 'permintaan_id')->dropDownList(
                 [],
                 [
                     'id' => 'id-permintaan-detail',
                     'prompt' => 'Pilih Barang...',
-                    'disabled' => true,
                 ]
             ) ?>
 

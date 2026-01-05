@@ -1,9 +1,11 @@
 <?php
 
+use app\models\Barang;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use yii\helpers\ArrayHelper;
 use kartik\date\DatePicker;
+use kartik\select2\Select2;
 use yii\helpers\Url;
 
 
@@ -12,60 +14,72 @@ use yii\helpers\Url;
 /** @var yii\widgets\ActiveForm $form */
 ?>
 
-<div class="gudang-form">
-
-    <?php $form = ActiveForm::begin(); ?>
-
-    <!-- Menambahkan tanggal menggunakan datepicker -->
-    <?= $form->field($model, 'tanggal')->widget(DatePicker::classname(), [
-        'options' => ['placeholder' => 'dd-mm-yyyy'],
-        'pluginOptions' => [
-            'autoclose' => true,
-            'format' => 'dd-mm-yyyy',
-        ],
-    ]); ?>
+<div class="pc-content">
+    <div class="card table-card">
+        <div class="card-header">
+            <h1><?= Html::encode($this->title) ?></h1>
+        </div>
+        <div class="card-body mx-4">
+            <?php $form = ActiveForm::begin(); ?>
+            <?= $form->field($model, 'tanggal')->textInput(['type' => 'date']); ?>
 
 
-    <?php
-    $dataPost = ArrayHelper::map(\app\models\Barang::find()->asArray()->all(), 'barang_id', function ($model) {
-        return $model['barang_id'] . ' - ' . $model['kode_barang'] . ' - ' . $model['nama_barang'];
-    });
-    echo $form->field($model, 'barang_id')
-        ->dropDownList($dataPost, ['prompt' => 'Pilih Barang', 'id' => 'barang_id']);
-    ?>
+            <?php
+            $dataPost = ArrayHelper::map(
+                Barang::find()
+                    ->where(['tipe_barang' => 0]) // Tambahkan kondisi filter di sini
+                    ->asArray()
+                    ->all(),
+                'barang_id',
+                function ($model) {
+                    return $model['kode_barang'] . ' - ' . $model['nama_barang'];
+                }
+            );
+
+            echo $form->field($model, 'barang_id')->widget(Select2::classname(), [
+                'data' => $dataPost,
+                'options' => [
+                    'placeholder' => 'Pilih Bahan Baku ...',
+                    'id' => 'barang_id'
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ]);
+            ?>
 
 
 
-    <?php
-    // Menampilkan user_id dan username di satu text field (readonly)
-    $user_info = Yii::$app->user->id . ' - ' . Yii::$app->user->identity->nama_pengguna;
-    echo $form->field($model, 'user_info')->textInput(['value' => $user_info, 'readonly' => true, 'label' => 'user']) ?>
+            <?php
+            // Menampilkan user_id dan username di satu text field (readonly)
+            $user_info = Yii::$app->user->id . ' - ' . Yii::$app->user->identity->nama_pengguna;
+            echo $form->field($model, 'user_info')->textInput(['value' => $user_info, 'readonly' => true, 'label' => 'user']) ?>
 
 
-    <?= $form->field($model, 'user_id')->hiddenInput(['value' => Yii::$app->user->id])->label(false) ?>
+            <?= $form->field($model, 'user_id')->hiddenInput(['value' => Yii::$app->user->id])->label(false) ?>
 
-    <!-- <?= $form->field($model, 'tanggal')->textInput(['id' => 'tanggal']) ?> -->
 
-    <?= $form->field($model, 'quantity_awal')->textInput(['id' => 'qty_awal', 'readonly' => true]) ?>
+            <?= $form->field($model, 'quantity_awal')->textInput(['id' => 'qty_awal', 'readonly' => true]) ?>
 
-    <?= $form->field($model, 'quantity_masuk')->textInput(['id' => 'qty_masuk']) ?>
+            <?= $form->field($model, 'quantity_masuk')->textInput(['id' => 'qty_masuk']) ?>
 
-    <?= $form->field($model, 'quantity_keluar')->textInput(['id' => 'qty_keluar']) ?>
+            <?= $form->field($model, 'quantity_keluar')->textInput(['id' => 'qty_keluar']) ?>
 
-    <?= $form->field($model, 'quantity_akhir')->textInput(['readonly' => true, 'id' => 'qty_akhir']) ?>
+            <?= $form->field($model, 'quantity_akhir')->textInput(['readonly' => true, 'id' => 'qty_akhir']) ?>
 
-    <?= $form->field($model, 'catatan')->textInput(['maxlength' => true]) ?>
+            <?= $form->field($model, 'catatan')->textInput(['maxlength' => true]) ?>
 
-    <!-- <?= $form->field($model, 'created_at')->textInput() ?>
+            <div class="form-group">
+                <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+                <?= Html::a('Back', ['gudang/index'], ['class' => 'btn btn-secondary']) ?>
+            </div>
 
-    <?= $form->field($model, 'update_at')->textInput() ?> -->
-
-    <div class="form-group">
-        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
-        <?= Html::a('Back', ['gudang/index'], ['class' => 'btn btn-secondary']) ?>
+            <?php ActiveForm::end(); ?>
+        </div>
     </div>
 
-    <?php ActiveForm::end(); ?>
+    <!-- Menambahkan tanggal menggunakan datepicker -->
+
 
     <?php
     $this->registerJs("
