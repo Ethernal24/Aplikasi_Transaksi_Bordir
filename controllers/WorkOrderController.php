@@ -213,10 +213,10 @@ class WorkOrderController extends Controller
             $logHeader->id_shift = $wo->mps->shift->shift_id; // Status sesi kerja aktif
 
             if (!$logHeader->save()) {
-                $errors = $logHeader->getErrors(); 
+                $errors = $logHeader->getErrors();
                 // Ubah jadi string agar bisa dibaca di throw exception
                 $errorMessage = json_encode($errors);
-                throw new \Exception("Gagal membuat Log Header.". $errorMessage);
+                throw new \Exception("Gagal membuat Log Header." . $errorMessage);
             }
 
             // 2. Update Status Work Order menjadi In-Progress
@@ -235,5 +235,17 @@ class WorkOrderController extends Controller
             Yii::$app->session->setFlash('error', "Error: " . $e->getMessage());
             return $this->redirect(['view', 'id_wo' => $id_wo]);
         }
+    }
+
+    public function actionFinishProduction($log_id)
+    {
+        $model = ProductionLog::findOne($log_id);
+        if ($model) {
+            $model->status = 2;
+            if ($model->save()) {
+                Yii::$app->session->setFlash('success', "Tahap produksi selesai.");
+            }
+        }
+        return $this->redirect(['view', 'id_wo' => $model->id_wo]);
     }
 }

@@ -11,8 +11,11 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use app\helpers\ModelHelper;
 use app\models\Mesin;
+use app\models\Shift;
 use app\models\TenagaKerja;
+use app\models\Workcenter;
 use Yii;
+use yii\web\Response;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -83,6 +86,9 @@ class MasterRoutingController extends Controller
     {
         $model = new MasterRouting();
         $modelDetails = [new RoutingDetail()];
+
+        $model->kode_routing = $model->generateAutoNumber('KK-R', 'kode_routing');
+
 
         if ($model->load($this->request->post())) {
             $modelDetails = ModelHelper::createMultiple(RoutingDetail::class);
@@ -217,5 +223,35 @@ class MasterRoutingController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    public function actionGetOutputKapasitas($id)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $workcenter = Workcenter::findOne($id);
+        if (!$workcenter) return ['success' => false];
+        $isMesin = in_array($workcenter->tipe_kapasitas, [0, 2]);
+        $mesin = Mesin::find()->where(['workcenter_id' => $id])->one();
+        $shift = Shift::find()->one(); // Sebaiknya tambahkan ->where(['is_active' => 1])
+
+        if ($isMesin && $mesin && $shift && $shift->jam_efektif > 0) {
+            $outputHari = $mesin->max_kapasitas_operasi_hari;
+            $outputJam = $outputHari / $shift->jam_efektif;
+            $WaktuStd = 60 / $outputJam;
+
+            return [
+                'success' => true,
+                'is_mesin' => true, // Flag untuk JavaScript
+                'output_jam' => $outputJam,
+                'WaktuStd' => $WaktuStd,
+            ];
+        }
+
+        return [
+            'success' => true, // Tetap true agar JavaScript bisa memproses kondisi "bukan mesin"
+            'is_mesin' => false,
+            'output_jam' => 0,
+            'WaktuStd' => 0,
+        ];
     }
 }

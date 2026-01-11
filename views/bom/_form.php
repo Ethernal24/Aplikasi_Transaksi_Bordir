@@ -1,276 +1,180 @@
 <?php
 
+use app\models\Barang;
 use app\models\Unit;
+use kartik\select2\Select2;
 use kartik\typeahead\Typeahead;
+use wbraganca\dynamicform\DynamicFormWidget;
 use yii\grid\GridView;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\web\JqueryAsset;
+use yii\web\JsExpression;
 use yii\web\View;
 use yii\widgets\ActiveForm;
 
 /** @var yii\web\View $this */
 /** @var app\models\Bom $model */
 /** @var yii\widgets\ActiveForm $form */
+
+
+$dataSatuan = ArrayHelper::map(Unit::find()->asArray()->all(), 'unit_id', 'satuan');
 ?>
 
 <div class="bom-form">
-    <div class="card table-card">
+    <?php $form = ActiveForm::begin(['id' => 'dynamic-form']); ?>
+
+    <div class="card">
         <div class="card-header">
-            <h1><?= Html::encode($this->title) ?></h1>
+            <h1 class="mb-0">Bill of Materials</h1>
         </div>
-        <div class="card-body mx-4">
 
-            <?php $form = ActiveForm::begin(); ?>
-            <div id="bom-gridview">
-                <?= GridView::widget([
-                    'dataProvider' => new \yii\data\ArrayDataProvider([
-                        'allModels' => $modelBoms, // Pastikan $modelBoms adalah array model Bom
-                        'pagination' => false,
-                    ]),
-                    'columns' => [
-                        ['class' => 'yii\grid\SerialColumn'],
+        <div class="card-body">
+            <?php DynamicFormWidget::begin([
+                'widgetContainer' => 'dynamicform_wrapper',
+                'widgetBody' => '.container-items',
+                'widgetItem' => '.item',
+                'limit' => 20,
+                'min' => 1,
+                'insertButton' => '.add-item',
+                'deleteButton' => '.remove-item',
+                'model' => $modelBoms[0],
+                'formId' => 'dynamic-form',
+                'formFields' => [
+                    'produk_id',
+                    'bahan_id',
+                    'qty_per_unit',
+                    'unit_id',
+                ],
+            ]); ?>
 
-                        [
-                            'attribute' => 'produk_id',
-                            'label' => 'Nama Produk',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return Typeahead::widget([
-                                    'name' => "Barang[$index][produk_id]",
-                                    'options' => ['placeholder' => 'Cari produk...'],
-                                    'pluginOptions' => ['highlight' => true],
-                                    'dataset' => [[
-                                        'remote' => [
-                                            'url' => Url::to(['barang/search-produk']) . '?q=%QUERY',
-                                            'wildcard' => '%QUERY',
-                                        ],
-                                        'display' => 'nama_barang',
-                                    ]],
-                                    'pluginEvents' => [
-                                        "typeahead:select" => "function(e, suggestion) {
-                                            $(this).closest('tr').find('input[name*=\"[produk_id]\"]').val(suggestion.barang_id);
-                                        }",
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th style="width: 30%">Produk</th>
+                        <th style="width: 30%">Bahan</th>
+                        <th>Qty</th>
+                        <th style="width: 15%">Satuan</th>
+                        <th class="text-center" style="width: 90px;">
+                            <button type="button" class="add-item btn btn-success btn-xs"><i class="fas fa-plus"></i></button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="container-items">
+                    <?php foreach ($modelBoms as $i => $modelBom): ?>
+                        <tr class="item">
+                            <td class="vcenter">
+                                <?php
+                                // Field Produk (Ajax Select2)
+                                echo $form->field($modelBom, "[$i]produk_id")->widget(Select2::class, [
+                                    'options' => [
+                                        'placeholder' => 'Pilih Produk...',
+                                        'class' => 'my-select2-custom', // JANGAN gunakan class bawaan select2/kartik
+                                        'data-s2-config' => 's2_config_'
                                     ],
-                                ]) .
-                                    $form->field($model, "[$index]produk_id")->hiddenInput()->label(false);
-                            },
-                        ],
-                        [
-                            'attribute' => 'bahan_id',
-                            'label' => 'Nama Bahan',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return
-                                    Typeahead::widget([
-                                        'name' => "Barang[$index][bahan_id]",
-                                        'options' => ['placeholder' => 'Cari bahan...'],
-                                        'pluginOptions' => ['highlight' => true],
-                                        'dataset' => [
-                                            [
-                                                'remote' => [
-                                                    'url' => Url::to(['barang/search-bahan']) . '?q=%QUERY',
-                                                    'wildcard' => '%QUERY',
-                                                ],
-                                                'display' => 'nama_barang',
-                                            ]
-                                        ],
-                                        'pluginEvents' => [
-                                            "typeahead:select" => "function(e, suggestion) {
-                                                $(this).closest('tr').find('input[name*=\"[bahan_id]\"]').val(suggestion.barang_id);
-                                            }",
-                                        ],
-                                    ]) . $form->field($model, "[$index]bahan_id")->hiddenInput()->label(false);
-                            },
-                        ],
-                        [
-                            'attribute' => 'qty_per_unit',
-                            'format' => 'raw',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                return $form->field($model, "[$index]qty_per_unit")->textInput(['maxlength' => true])->label(false);
-                            },
-                        ],
-                        [
-                            'attribute' => 'unit_id',
-                            'format' => 'raw',
-                            'label' => 'satuan',
-                            'value' => function ($model, $key, $index, $column) use ($form) {
-                                $dataPost = ArrayHelper::map(Unit::find()->asArray()->all(), 'unit_id', 'satuan');
-                                return $form->field($model, "[$index]unit_id")->dropDownList($dataPost, ['prompt' => 'Pilih Satuan'])->label(false);
-                            },
-                        ],
-                        [
-                            'class' => 'yii\grid\ActionColumn',
-                            'template' => '{actions}',
-                            'buttons' => [
-                                'actions' => function ($url, $model) {
-                                    return Html::tag(
-                                        'div',
-                                        Html::a(Html::tag('i', '', ['class' => 'fas fa-plus fa-xs']), '#', [
-                                            'class' => 'btn btn-success btn-xs pb-1 px-2 add-row ',
-                                            'onclick' => 'return false;',
-                                        ]) .
-                                            Html::a(Html::tag('i', '', ['class' => 'fas fa-trash fa-xs']), '#', [
-                                                'class' => 'btn btn-danger btn-xs pb-1 px-2 delete-row ',
-                                                'onclick' => 'return false;',
-                                            ]),
-                                        ['class' => 'd-flex justify-content-center align-content-center align-items-center']
-                                    );
-                                },
-                            ], // Tambahkan kelas untuk gaya CSS khusus
-                        ],
-                    ],
-                ]); ?>
-            </div>
-            <div class="form-group">
-                <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
-                <?= Html::a('Back', '/barang/index-barang-jadi', ['class' => 'btn btn-secondary']) ?>
-            </div>
-            <?php ActiveForm::end(); ?>
+                                    'data' => ArrayHelper::map(Barang::find()
+                                        ->asArray()
+                                        ->where(['tipe_barang' => 2])
+                                        ->all(), 'barang_id', 'nama_barang'),
+
+                                    'pluginOptions' => [
+                                        'allowClear' => true,
+                                    ],
+                                ])->label(false);
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                // Field Bahan (Ajax Select2)
+                                echo $form->field($modelBom, "[$i]bahan_id")->widget(Select2::class, [
+                                    'options' => ['placeholder' => 'Pilih Bahan...', 'class' => 'select2-remote-bahan'],
+                                    'data' => ArrayHelper::map(Barang::find()
+                                        ->asArray()
+                                        ->where(['tipe_barang' => 0])
+                                        ->all(), 'barang_id', 'nama_barang'),
+                                    'pluginOptions' => [
+                                        'allowClear' => true,
+                                    ],
+                                ])->label(false);
+                                ?>
+                            </td>
+                            <td>
+                                <?= $form->field($modelBom, "[$i]qty_per_unit")->textInput()->label(false) ?>
+                            </td>
+                            <td>
+                                <?= $form->field($modelBom, "[$i]unit_id")->dropDownList($dataSatuan, ['prompt' => 'Satuan'])->label(false) ?>
+                            </td>
+                            <td class="text-center vcenter">
+                                <button type="button" class="remove-item btn btn-danger btn-xs"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <?php DynamicFormWidget::end(); ?>
+        </div>
+
+        <div class="card-footer">
+            <?= Html::submitButton('Simpan BOM', ['class' => 'btn btn-success']) ?>
         </div>
     </div>
+
+    <?php ActiveForm::end(); ?>
 </div>
 
 <?php
-$dataSatuan = ArrayHelper::map(Unit::find()->asArray()->all(), 'unit_id', 'satuan');
-$searchBahanUrl = Url::to(['barang/search-bahan']);
-// Create options HTML
-$optionsHtml = '';
-foreach ($dataSatuan as $unitId => $satuan) {
-    $optionsHtml .= "<option value=\"{$unitId}\">{$satuan}</option>";
-}
-$this->registerJsFile(
-    'https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js',
-    ['depends' => [JqueryAsset::class]]
-);
 $js = <<<JS
-    function updateRowButtons() {
-        var rows = $('#bom-gridview table tbody tr');
-        var rowCount = rows.length;
+function reinitSelect2Dynamic(item) {
+    $(item).find('.my-select2-custom').each(function () {
+        var el = $(this);
+        
+        // 1. HAPUS PAKSA ANIMASI LOADING & CONTAINER LAMA
+        el.removeClass('select2-hidden-accessible');
+        el.next('.select2-container').remove(); 
+        
+        // Menghapus class loading yang mungkin terbawa dari baris sebelumnya
+        // Serta menghapus ID unik select2 agar tidak konflik
+        el.removeClass('select2-loading'); 
+        el.removeAttr('data-select2-id');
+        el.find('option').removeAttr('data-select2-id');
 
-        rows.each(function(index) {
-            var isLastRow = index === rowCount - 1;
-            $(this).find('.add-row').toggle(isLastRow);
-            $(this).find('.delete-row').toggle(rowCount > 1);
-        });
-    }
+        // 2. BERSIHKAN DATA INTERNAl
+        if (el.data('select2')) {
+            el.select2('destroy');
+        }
+        el.val(null); // Kosongkan pilihan di baris baru
 
-    // Fungsi untuk melakukan reindex setiap baris
-    function reindexRows() {
-        $('#bom-gridview table tbody tr').each(function(newIndex) {
-            $(this).find('.serial-number').text(newIndex + 1);
-
-            // Update semua nama input agar index-nya sesuai urutan baru
-            $(this).find('input, select').each(function() {
-                var name = $(this).attr('name');
-                if (name) {
-                    var newName = name.replace(/Bom\\[\\d+\\]/, 'Bom[' + newIndex + ']');
-                    $(this).attr('name', newName);
-                }
-            });
-        });
-    }
-
-    // Inisialisasi typeahead
-    function initTypeahead(context, selector, searchUrl, hiddenSelector) {
-        $(context).find(selector).typeahead({
-            hint: true,
-            highlight: true,
-            minLength: 1
-        }, {
-            name: 'barang',
-            display: 'nama_barang',
-            limit: 15,
-            source: function(query, syncResults, asyncResults) {
-                $.getJSON(searchUrl, { q: query }, function(data) {
-                    asyncResults(data.data || data);
-                });
-            },
-            templates: {
-                suggestion: function(item) {
-                    return '<div>' + item.nama_barang + '</div>';
-                }
-            }
-        }).bind('typeahead:select', function(ev, suggestion) {
-            const parentRow = $(this).closest('tr');
-            parentRow.find(hiddenSelector).val(suggestion.barang_id);
-        });
-    }
-
-    // Inisialisasi awal
-    updateRowButtons();
-    initTypeahead($('#bom-gridview'), '.produk-typeahead', '/barang/search-produk', '.produk-id-hidden');
-    initTypeahead($('#bom-gridview'), '.bahan-typeahead', '/barang/search-bahan', '.bahan-id-hidden');
-
-    // Tambah baris baru
-    $(document).on('click', '.add-row', function(e) {
-        e.preventDefault();
-
-        var newRow = `
-            <tr>
-                <td class="serial-number"></td>
-                <td>
-                    <input type="text" name="" class="form-control produk-typeahead" placeholder="Cari produk...">
-                    <input type="hidden" name="" class="produk-id-hidden">
-                </td>
-                <td>
-                    <input type="text" name="" class="form-control bahan-typeahead" placeholder="Cari bahan...">
-                    <input type="hidden" name="" class="bahan-id-hidden">
-                </td>
-                <td><input type="text" name="" class="form-control"></td>
-                <td>
-                    <select name="" class="form-control">
-                        <option value="">Pilih Satuan</option>
-                        {$optionsHtml}
-                    </select>
-                </td>
-                <td>
-                    <div class="d-flex justify-content-center align-content-center align-items-center">
-                        <a href="#" class="btn btn-success btn-xs pb-1 px-2 add-row" title="Tambah Baris">
-                            <i class="fas fa-plus"></i>
-                        </a>
-                        <a href="#" class="btn btn-danger btn-xs pb-1 px-2 delete-row" title="Hapus Baris">
-                            <i class="fas fa-trash"></i>
-                        </a>
-                    </div>
-                </td>
-            </tr>`;
-
-        $('#bom-gridview table tbody').append(newRow);
-        reindexRows();
-        updateRowButtons();
-
-        // Re-init typeahead hanya untuk baris terakhir
-        const lastRow = $('#bom-gridview table tbody tr').last();
-        initTypeahead(lastRow, '.produk-typeahead', '/barang/search-produk', '.produk-id-hidden');
-        initTypeahead(lastRow, '.bahan-typeahead', '/barang/search-bahan', '.bahan-id-hidden');
+        // 3. RE-INISIALISASI BERSIH
+        var configAttr = el.attr('data-krajee-select2');
+        if (configAttr && window[configAttr]) {
+            var settings = window[configAttr];
+            el.select2(settings);
+        }
     });
+}
 
-    // Hapus baris
-    $(document).on('click', '.delete-row', function(e) {
-        e.preventDefault();
-        $(this).closest('tr').remove();
-        reindexRows();
-        updateRowButtons();
-    });
+// Event afterInsert tetap sama
+$(".dynamicform_wrapper").on("afterInsert", function(e, item) {
+    reinitSelect2Dynamic(item);
+});
+
+// Tetap gunakan Monkey Patch untuk mencegah error 'destroy'
+$.fn.select2 = (function(originalSelect2) {
+    return function(options) {
+        if (options === 'destroy' && !this.data('select2')) {
+            return this;
+        }
+        return originalSelect2.apply(this, arguments);
+    };
+})($.fn.select2);
+
+// Timpa fungsi loading bawaan agar tidak 'nyangkut'
+window.initSelect2Loading = function(id, opt) {
+    $('#' + id).removeClass('select2-loading');
+    return true;
+};
 JS;
-
-
 
 $this->registerJs($js, View::POS_READY);
 ?>
-<style>
-    .small-btn {
-        padding: 2px 6px;
-        font-size: 0.8em;
-        margin-right: 2px;
-    }
-
-    /* Mengatur tata letak tombol secara horizontal */
-    .action-buttons {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-</style>

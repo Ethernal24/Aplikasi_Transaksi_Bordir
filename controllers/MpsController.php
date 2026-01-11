@@ -96,21 +96,8 @@ class MpsController extends Controller
     {
         $model = new Mps();
         $modelsDetail = [new MpsDetail()];
-        $prefix = 'MPS-' . date('Ym') . '-';
-        $lastMps = Mps::find()
-            ->where(['like', 'kode_mps', $prefix])
-            ->orderBy(['mps_id' => SORT_DESC])
-            ->one();
 
-        if ($lastMps) {
-            // Ambil 4 angka terakhir, lalu tambah 1
-            $lastNumber = (int) substr($lastMps->kode_mps, -4);
-            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $newNumber = '0001';
-        }
-
-        $model->kode_mps = $prefix . $newNumber;
+        $model->kode_mps = $model->generateAutoNumber('MPS', 'kode_mps');
 
         if ($this->request->isPost) {
             $model->load($this->request->post());
@@ -272,7 +259,10 @@ class MpsController extends Controller
                     'smv'         => $d->produk->routing ? $d->produk->routing->total_menit : 25,
                 ];
             }
-            return ['items' => $items];
+            return [
+                'items' => $items,
+                'due_date' => $permintaan->tenggat_waktu
+            ];
         }
 
         return ['items' => []]; // Kembalikan array kosong jika tidak ada
@@ -303,12 +293,14 @@ class MpsController extends Controller
         if ($workcenterId) {
             $query->andWhere(['workcenter_id' => $workcenterId]);
         }
+        $hitungJumlahMesin = $query->count();
 
         // Jika ada kolom power_factor di tabel Mesin, gunakan sum, jika tidak gunakan count
         // $totalPower = $query->sum('power_factor') ?: $query->count();
 
-        return 1 * $dailyMinutes * $days;
+        return $hitungJumlahMesin * $dailyMinutes * $days;
     }
+
     protected function calculateCapacityData($start, $end, $shiftId)
     {
         $workcenters = Workcenter::find()->all();

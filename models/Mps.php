@@ -17,7 +17,7 @@ use yii\db\Expression;
  * @property int $tanggal_awal
  * @property MpsDetail[] $mpsDetails
  */
-class Mps extends \yii\db\ActiveRecord
+class Mps extends BaseModel
 {
     /**
      * {@inheritdoc}
@@ -48,7 +48,13 @@ class Mps extends \yii\db\ActiveRecord
             [['kode_mps', 'periode', 'tanggal_awal', 'tanggal_akhir', 'status_mps', 'buffer_time', 'target_efisiensi', 'prioritas'], 'required'],
             [['status_mps', 'prioritas', 'shift_id', 'total_pekerja'], 'integer'],
             [['kode_mps'], 'string'],
+            [['kode_mps'], 'unique'],
             [['target_efisiensi', 'buffer_time'], 'number'],
+
+            ['tanggal_akhir', 'compare', 'compareAttribute' => 'tanggal_awal', 'operator' => '>=', 'enableClientValidation' => true],
+
+            // Validasi: tanggal_awal minimal hari ini
+            ['tanggal_awal', 'compare', 'compareValue' => date('Y-m-d'), 'operator' => '>=', 'type' => 'date'],
         ];
     }
 

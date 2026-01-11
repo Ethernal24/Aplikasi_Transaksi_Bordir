@@ -29,9 +29,18 @@ class Bom extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['produk_id', 'bahan_id', 'qty_per_unit', 'unit_id'], 'required'],
-            [['produk_id', 'bahan_id', 'unit_id'], 'integer'],
+            // 1. Definisikan SAFE paling atas khusus untuk scenario ini
+            [['produk_id'], 'safe', 'on' => 'update'],
+
+            // 2. Rules Global (Kecuali produk_id)
+            [['bahan_id', 'qty_per_unit', 'unit_id'], 'required'],
+            [['bahan_id', 'unit_id'], 'integer'],
             [['qty_per_unit'], 'number'],
+
+            // 3. Rules khusus produk_id (HANYA jika BUKAN scenario update)
+            // Gunakan list scenario yang pasti (default) daripada except
+            [['produk_id'], 'required', 'on' => 'default'],
+            [['produk_id'], 'integer', 'on' => 'default'],
         ];
     }
 

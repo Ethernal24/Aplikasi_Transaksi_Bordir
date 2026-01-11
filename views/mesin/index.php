@@ -59,7 +59,11 @@ $user = Yii::$app->user->identity->role;
                             },
                             'label' => 'Status Mesin',
                         ],
-                        'max_waktu_operasi_menit',
+                        [
+                            'attribute' => 'max_kapasitas_operasi_hari',
+                            'value' => 'max_kapasitas_operasi_hari',
+                            'label' => 'Maksimal kapasitas (hari)',
+                        ],
                         'deskripsi',
                         [
                             'class' => ActionColumn::className(),

@@ -40,7 +40,7 @@ use yii\widgets\ActiveForm;
                     'prompt' => 'Pilih ketersedian mesin...',
                     'class' => 'form-control'
                 ]) ?>
-            <?= $form->field($model, 'max_waktu_operasi_menit')->textInput(['maxlength' => true]) ?>
+            <?= $form->field($model, 'max_kapasitas_operasi_hari')->textInput(['maxlength' => true]) ?>
             <?= $form->field($model, 'tipe_mesin')->textInput(['maxlength' => true]) ?>
             <?= $form->field($model, 'deskripsi')->textInput(['maxlength' => true]) ?>
             <div class="form-group">

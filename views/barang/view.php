@@ -62,7 +62,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 ]);
                 ?>
                 <div class="form-group mb-4">
-                    <!-- <?= Html::a('Update', ['update', 'barang_id' => $model->barang_id], ['class' => 'btn btn-success']) ?> -->
+                    <?= Html::a('Update', ['update-barang-jadi', 'barang_id' => $model->barang_id], ['class' => 'btn btn-success']) ?>
                     <?= Html::a('Back', ['index-barang-jadi'], ['class' => 'btn btn-secondary']) ?>
                 </div>
             </div>

@@ -11,7 +11,7 @@ use Yii;
  * @property string $nama_routing
  * @property string $deskripsi
  */
-class MasterRouting extends \yii\db\ActiveRecord
+class MasterRouting extends BaseModel
 {
 
 
@@ -32,6 +32,7 @@ class MasterRouting extends \yii\db\ActiveRecord
             [['nama_routing', 'kode_routing'], 'required'],
             [['produk_id'], 'integer'],
             [['nama_routing', 'kode_routing'], 'string', 'max' => 255],
+            [['kode_routing'], 'unique'],
         ];
     }
 

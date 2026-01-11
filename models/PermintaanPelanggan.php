@@ -16,7 +16,7 @@ use yii\db\Expression;
  * @property int $status_pesanan
  * @property PermintaanDetail[] $details
  */
-class PermintaanPelanggan extends \yii\db\ActiveRecord
+class PermintaanPelanggan extends BaseModel
 {
     /**
      * {@inheritdoc}

@@ -6,6 +6,7 @@ use kartik\select2\Select2;
 use wbraganca\dynamicform\DynamicFormWidget;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 
 
@@ -27,7 +28,7 @@ use yii\widgets\ActiveForm;
                     <?= $form->field($model, 'nama_routing')->textInput(['maxlength' => true]) ?>
                 </div>
                 <div class="col">
-                    <?= $form->field($model, 'kode_routing')->textInput(['maxlength' => true]) ?>
+                    <?= $form->field($model, 'kode_routing')->textInput(['maxlength' => true, 'readonly' => true]) ?>
                 </div>
                 <div class="col">
                     <?= $form->field($model, 'produk_id')->widget(Select2::className(), [
@@ -144,21 +145,52 @@ use yii\widgets\ActiveForm;
 </div>
 
 <?php
+$urlKapasitas = Url::to(['get-output-kapasitas']);
 $script = <<< JS
+$(document).on('change', 'select[id$="-workcenter_id"]', function() {
+    var workcenterId = $(this).val();
+    var currentRow = $(this).closest('tr'); 
+    
+    // Target input
+    var inputOutput = currentRow.find('.hasil-output');
+    var inputStdTime = currentRow.find('.hitung-standard');
+
+    if (workcenterId) {
+        $.get('{$urlKapasitas}', {id: workcenterId}, function(data) {
+            if (data.success) {
+                inputOutput.val(data.output_jam.toFixed(2));
+                inputStdTime.val(data.WaktuStd.toFixed(2));
+                currentRow.data('is-mesin', data.is_mesin);
+                // Jika ada mesin, buat readonly dan ubah warna abu-abu
+                if (data.is_mesin) {
+                    inputOutput.prop('readonly', true).css('background-color', '#e9ecef');
+                    inputStdTime.prop('readonly', true).css('background-color', '#e9ecef');
+                } else {
+                    inputOutput.prop('readonly', true).css('background-color', '#e9ecef');
+                    inputStdTime.prop('readonly', false).css('background-color', '#fff');
+                }
+            } else {
+                inputOutput.val(0).prop('readonly', false).css('background-color', '#fff');
+                inputStdTime.val(0).prop('readonly', false).css('background-color', '#fff');
+            }
+        });
+    }
+});
 $(document).on('input', '.hitung-standard', function() {
-    // Ambil baris (row) tempat input ini berada
-    let row = $(this).closest('tr');
+    var currentRow = $(this).closest('tr');
+    var isMesin = currentRow.data('is-mesin');
     
-    // Ambil nilai standard
-    let std = parseFloat($(this).val());
-    
-    // Logika Hitung: 60 / Standard
-    if (std > 0) {
-        let hasil = 60 / std;
-        // Set hasil ke input output_jam di baris yang sama, batasi 2 angka di belakang koma
-        row.find('.hasil-output').val(hasil);
-    } else {
-        row.find('.hasil-output').val(0);
+    // Hanya hitung otomatis jika BUKAN mesin
+    if (isMesin === false) {
+        var stdTime = parseFloat($(this).val());
+        var inputOutput = currentRow.find('.hasil-output');
+        
+        if (stdTime > 0) {
+            var outputJam = 60 / stdTime;
+            inputOutput.val(outputJam.toFixed(2));
+        } else {
+            inputOutput.val(0);
+        }
     }
 });
 JS;

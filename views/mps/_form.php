@@ -51,16 +51,26 @@ foreach ($allRouting as $routing) {
             <?php $form = ActiveForm::begin(['id' => 'dynamic-form']); ?>
             <div class="row">
                 <div class="col">
-                    <?= $form->field($model, 'periode')->textInput(['type' => 'date']) ?>
+                    <?= $form->field($model, 'periode')->textInput([
+                        'type' => 'date',
+
+                    ]) ?>
                 </div>
                 <div class="col">
                     <?= $form->field($model, 'kode_mps')->textInput(['readonly' => true]) ?>
                 </div>
                 <div class="col">
-                    <?= $form->field($model, 'tanggal_awal')->textInput(['type' => 'date']) ?>
+                    <?= $form->field($model, 'tanggal_awal')->textInput([
+                        'type' => 'date',
+                        'id' => 'tgl_awal',
+                        'min' => date('Y-m-d'),
+                    ]) ?>
                 </div>
                 <div class="col">
-                    <?= $form->field($model, 'tanggal_akhir')->textInput(['type' => 'date']) ?>
+                    <?= $form->field($model, 'tanggal_akhir')->textInput([
+                        'type' => 'date',
+                        'id' => 'tgl_akhir',
+                    ]) ?>
                 </div>
                 <div class="col">
                     <?= $form->field($model, 'status_mps')->dropDownList([
@@ -132,6 +142,7 @@ foreach ($allRouting as $routing) {
                         <th>Produk ID</th>
                         <th>Routing ID</th>
                         <th>Qty plan</th>
+                        <th>Tenggat Waktu</th>
                         <th>Estimasi Selesai</th>
                         <th style="width: 10%; text-align:center;">
                             <button type="button" class="add-item btn btn-success btn-xs">
@@ -203,6 +214,22 @@ foreach ($allRouting as $routing) {
                             <td>
                                 <?= $form->field($detail, "[{$i}]qty_plan", ['template' => "{input}\n{error}"])
                                     ->textInput(['class' => 'form-control input-qty', 'readonly' => true]) // Tambahkan class ini 
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                // Logika untuk menampilkan data saat mode Update (data sudah tersimpan di DB)
+                                $dueDateVal = '';
+                                if (!$detail->isNewRecord && $detail->permintaan) {
+                                    $dueDateVal = $detail->permintaan->tanggal_dikirim;
+                                }
+
+                                echo Html::textInput("due_date_ref[{$i}]", $dueDateVal, [
+                                    'class' => 'form-control input-due-date-ref',
+                                    'readonly' => true,
+                                    'style' => 'background-color: #f4f4f4; border: 1px dashed #ccc;',
+                                    'placeholder' => '-'
+                                ]);
                                 ?>
                             </td>
                             <td>
@@ -427,6 +454,7 @@ $(document).on('change', '.select-permintaan', function() {
     var row = $(this).closest('tr');
     var produkDropdown = row.find('.select-produk');
     var qtyInput = row.find('.input-qty');
+    var dueDateRef = row.find('.input-due-date-ref');
 
     if (permintaanId) {
         $.ajax({
@@ -434,6 +462,8 @@ $(document).on('change', '.select-permintaan', function() {
             type: 'GET',
             data: {id: permintaanId},
             success: function(data) {
+                dueDateRef.val(data.due_date);
+                updateHeaderMaxDate()
                 produkDropdown.html('<option value="">Pilih Barang...</option>');
                 if (data.items && data.items.length > 0) {
                     $.each(data.items, function(index, item) {
@@ -456,8 +486,51 @@ $(document).on('change', '.select-permintaan', function() {
     } else {
         produkDropdown.html('<option value="">Pilih Barang...</option>');
         qtyInput.val('');
+        dueDateRef.val('');
+        updateHeaderMaxDate();
         calculateCurrentLoad();
     }
+});
+
+function updateHeaderMaxDate() {
+    var dates = [];
+    // Ambil semua due date dari baris detail
+    $('.input-due-date-ref').each(function() {
+        var val = $(this).val();
+        if (val) dates.push(new Date(val));
+    });
+
+    if (dates.length > 0) {
+        // Cari tanggal paling awal (deadline paling mepet)
+        var minDate = new Date(Math.min.apply(null, dates));
+        var formatted = minDate.toISOString().split('T')[0];
+        
+        // Target element Header
+        var headerStart = $('#tgl_awal'); // Sesuaikan ID field tanggal awal header Anda
+        var headerEnd = $('#tgl_akhir');   // Sesuaikan ID field tanggal akhir header Anda
+
+        // 1. Set atribut MAX agar kalender mengunci tanggal setelah deadline
+        headerStart.attr('max', formatted);
+        headerEnd.attr('max', formatted);
+        
+        // 2. Validasi: Jika Tanggal AWAL Header melampaui deadline
+        if (headerStart.val() && headerStart.val() > formatted) {
+            headerStart.val(formatted);
+            alert('Tanggal AWAL Header disesuaikan ke ' + formatted + ' karena tidak boleh melebihi deadline SO.');
+        }
+
+        // 3. Validasi: Jika Tanggal AKHIR Header melampaui deadline
+        if (headerEnd.val() && headerEnd.val() > formatted) {
+            headerEnd.val(formatted);
+            alert('Tanggal AKHIR Header disesuaikan ke ' + formatted + ' karena tidak boleh melebihi deadline SO.');
+        }
+    }
+}
+$(document).on('click', '.remove-item', function() {
+    // Beri jeda sedikit agar baris benar-benar hilang dari DOM sebelum hitung ulang
+    setTimeout(function() {
+        updateHeaderMaxDate();
+    }, 100);
 });
 
 // 4. Event Listener saat Produk dipilih (untuk update Qty & Hitung Beban)
@@ -486,6 +559,22 @@ $(".dynamicform_wrapper").on("afterInsert", function(e, item) {
 
 $(".dynamicform_wrapper").on("afterDelete", function(e) {
     calculateCurrentLoad();
+});
+
+$(document).ready(function(){
+    // Saat tanggal awal berubah
+    $('#tgl_awal').change(function(){
+        var selectedDate = $(this).val();
+        
+        // Set minimal tanggal akhir sama dengan tanggal awal
+        $('#tgl_akhir').attr('min', selectedDate);
+        
+        // Jika tanggal akhir sudah terisi dan ternyata lebih kecil dari tanggal awal yang baru, kosongkan
+        var tglAkhir = $('#tgl_akhir').val();
+        if(tglAkhir && tglAkhir < selectedDate){
+            $('#tgl_akhir').val(selectedDate);
+        }
+    });
 });
 
 // Jalankan kapasitas saat load pertama kali (untuk mode Update)

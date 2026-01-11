@@ -86,14 +86,7 @@ class PermintaanPelangganController extends Controller
         $model = new PermintaanPelanggan();
         $modelDetails = [new PermintaanDetail()];
 
-        // Generate kode (Saran: pindahkan ke model jika ingin lebih rapi)
-        $last = PermintaanPelanggan::find()
-            ->select('kode_permintaan')
-            ->orderBy(['permintaan_id' => SORT_DESC])
-            ->one();
-
-        $nextnumber = $last ? ((int) str_replace('SO-', '', $last->kode_permintaan) + 1) : 1;
-        $model->kode_permintaan = 'SO-' . str_pad($nextnumber, 3, '0', STR_PAD_LEFT);
+        $model->kode_permintaan = $model->generateAutoNumber('SO', 'kode_permintaan');
 
         if ($model->load($this->request->post())) {
             $modelDetails = ModelHelper::createMultiple(PermintaanDetail::class);

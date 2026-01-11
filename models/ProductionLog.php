@@ -82,8 +82,8 @@ class ProductionLog extends \yii\db\ActiveRecord
         $status = [
             0      => ['label' => 'Sedang Jalan', 'class' => 'badge bg-primary'],
             1    => ['label' => 'Tertunda', 'class' => 'badge bg-warning'],
-            2    => ['label' => 'Selesai Sesi', 'class' => 'badge bg-dark'],
-            3 => ['label' => 'Terverifikasi', 'class' => 'badge bg-success'],
+
+            2 => ['label' => 'Selesai', 'class' => 'badge bg-success'],
         ];
 
         return $status[$this->status] ?? ['label' => $this->status, 'class' => 'badge badge-secondary'];

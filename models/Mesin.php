@@ -30,11 +30,12 @@ class Mesin extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['nama_mesin', 'workcenter_id', 'kode_mesin', 'status_mesin', 'max_waktu_operasi_menit', 'tipe_mesin'], 'required'],
+            [['nama_mesin', 'workcenter_id', 'kode_mesin', 'status_mesin', 'max_kapasitas_operasi_hari', 'tipe_mesin'], 'required'],
             [['deskripsi', 'kode_mesin', 'tipe_mesin'], 'string'],
             [['deskripsi'], 'safe'],
-            [['status_mesin', 'workcenter_id', 'max_waktu_operasi_menit'], 'integer'],
+            [['status_mesin', 'workcenter_id', 'max_kapasitas_operasi_hari'], 'integer'],
             [['nama_mesin'], 'string', 'max' => 200],
+            [['kode_mesin'], 'unique']
         ];
     }
 
@@ -51,7 +52,7 @@ class Mesin extends \yii\db\ActiveRecord
             'tipe_mesin' => 'Tipe Mesin',
             'deskripsi' => 'Deskripsi',
             'status_mesin' => 'Status Mesin',
-            'max_waktu_operasi_menit' => 'Maksimal Waktu Operasi (menit)',
+            'max_kapasitas_operasi_hari' => 'Max Kapasitas Operasi Hari',
         ];
     }
 

@@ -33,8 +33,8 @@ class RoutingDetail extends \yii\db\ActiveRecord
     {
         return [
             [['urutan', 'standard_time_menit', 'workcenter_id', 'waktu_setup_menit', 'output_jam'], 'required'],
-            [['routing_id', 'urutan', 'standard_time_menit', 'waktu_setup_menit', 'workcenter_id'], 'integer'],
-            [['output_jam'], 'number'],
+            [['routing_id', 'urutan', 'waktu_setup_menit', 'workcenter_id'], 'integer'],
+            [['output_jam', 'standard_time_menit'], 'number'],
             [['routing_id', 'deskripsi_kerja', 'routing_detail_id'], 'safe'],
             [['deskripsi_kerja'], 'string', 'max' => 255],
         ];

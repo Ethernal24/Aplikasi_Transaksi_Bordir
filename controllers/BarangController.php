@@ -5,13 +5,16 @@ namespace app\controllers;
 use app\helpers\ModelHelper;
 use app\models\Barang;
 use app\models\BarangSearch;
+use app\models\Bom;
 use app\models\Gudang;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use Yii;
 use yii\base\Model;
+use yii\helpers\ArrayHelper;
 use yii\web\Response;
+use yii\widgets\ActiveForm;
 
 /**
  * BarangController implements the CRUD actions for Barang model.
@@ -262,9 +265,92 @@ class BarangController extends BaseController
 
         return $this->render('update', [
             'modelBarang' => $modelBarang,
-            'backUrl' => $backUrl
+            'backUrl' => $backUrl,
+
         ]);
     }
+
+    public function actionUpdateBarangJadi($barang_id, $backUrl = null)
+    {
+        $modelBarang = Barang::findOne($barang_id);
+        if (!$modelBarang) {
+            throw new NotFoundHttpException("Barang tidak ditemukan.");
+        }
+
+        $modelBoms = $modelBarang->boms;
+
+        if ($backUrl === null) {
+            $backUrl = ($modelBarang->tipe_barang == 2) ? 'index-barang-jadi' : 'index';
+        }
+
+        if ($modelBarang->load(Yii::$app->request->post())) {
+
+            $oldIDs = ArrayHelper::map($modelBoms, 'bom_id', 'bom_id');
+            $modelBoms = ModelHelper::createMultiple(Bom::className(), $modelBoms, 'bom_id');
+            foreach ($modelBoms as $bom) {
+                $bom->scenario = 'update';
+            }
+            // Gunakan \yii\base\Model untuk loadMultiple bawaan Yii
+            Model::loadMultiple($modelBoms, Yii::$app->request->post());
+
+            $deletedIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($modelBoms, 'bom_id', 'bom_id')));
+
+            // Validasi
+            $valid = $modelBarang->validate();
+            $valid = Model::validateMultiple($modelBoms) && $valid;
+
+            if ($valid) {
+                $transaction = Yii::$app->db->beginTransaction();
+                try {
+                    if ($flag = $modelBarang->save(false)) {
+                        if (!empty($deletedIDs)) {
+                            Bom::deleteAll(['bom_id' => $deletedIDs]);
+                        }
+
+                        foreach ($modelBoms as $modelBom) {
+                            $modelBom->produk_id = $modelBarang->barang_id;
+                            if (!($flag = $modelBom->save(false))) {
+                                $transaction->rollBack();
+                                break;
+                            }
+                        }
+                    }
+
+                    if ($flag) {
+                        $transaction->commit();
+                        Yii::$app->session->setFlash('success', 'Data berhasil diperbarui.');
+                        return $this->redirect([$backUrl]);
+                    }
+                } catch (\Exception $e) {
+                    $transaction->rollBack();
+                    Yii::$app->session->setFlash('error', 'Kesalahan Database: ' . $e->getMessage());
+                }
+            } else {
+                // --- BAGIAN DEBUG: Cari tahu kenapa gagal ---
+                $errorMsg = "Gagal validasi: <br>";
+                foreach ($modelBarang->getErrors() as $attribute => $errors) {
+                    $errorMsg .= "Barang ($attribute): " . implode(', ', $errors) . "<br>";
+                }
+                foreach ($modelBoms as $i => $bom) {
+                    foreach ($bom->getErrors() as $attribute => $errors) {
+                        $errorMsg .= "BOM baris " . ($i + 1) . " ($attribute): " . implode(', ', $errors) . "<br>";
+                    }
+                }
+                Yii::$app->session->setFlash('error', $errorMsg);
+            }
+        }
+
+        if (empty($modelBoms)) {
+            $modelBoms = [new Bom()];
+        }
+
+        return $this->render('_form-update-barang-jadi', [
+            'modelBarang' => $modelBarang,
+            'backUrl' => $backUrl,
+            'modelBoms' => $modelBoms,
+        ]);
+    }
+
 
     /**
      * Deletes an existing Barang model.
@@ -293,49 +379,6 @@ class BarangController extends BaseController
 
         return \yii\helpers\Json::encode($data); // Kembalikan dalam format JSON
     }
-
-    public function actionSearchBahan($q = null)
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        $query = Barang::find()
-            ->select(['barang_id', 'nama_barang'])
-            ->where(['!=', 'tipe_barang', 2])
-            ->andFilterWhere(['like', 'nama_barang', $q])
-            ->limit(10)
-            ->all();
-
-        $result = [];
-        foreach ($query as $item) {
-            $result[] = [
-                'barang_id' => $item->barang_id,
-                'nama_barang' => $item->nama_barang,
-            ];
-        }
-        return $result;
-    }
-    public function actionSearchProduk($q = null)
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        $query = Barang::find()
-            ->select(['barang_id', 'nama_barang'])
-            ->where(['tipe_barang' => [2, 4]])
-            ->andFilterWhere(['like', 'nama_barang', $q])
-            ->limit(10)
-            ->all();
-
-        $result = [];
-        foreach ($query as $item) {
-            $result[] = [
-                'barang_id' => $item->barang_id,
-                'nama_barang' => $item->nama_barang,
-            ];
-        }
-        return $result;
-    }
-
-
-
-
 
     /**
      * Finds the Barang model based on its primary key value.

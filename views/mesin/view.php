@@ -27,7 +27,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'nama_mesin',
             'kode_mesin',
             'status_mesin',
-            'max_waktu_operasi_menit',
+            'max_kapasitas_operasi_hari',
             'tipe_mesin',
             'deskripsi:ntext',
         ],

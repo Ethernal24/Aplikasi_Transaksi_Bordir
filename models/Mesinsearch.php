@@ -17,7 +17,7 @@ class Mesinsearch extends Mesin
     public function rules()
     {
         return [
-            [['mesin_id', 'workcenter_id', 'max_waktu_operasi_menit', 'status_mesin'], 'integer'],
+            [['mesin_id', 'workcenter_id', 'max_kapasitas_operasi_hari', 'status_mesin'], 'integer'],
             [['nama_mesin', 'deskripsi' . 'tipe_mesin', 'kode_mesin'], 'safe'],
         ];
     }

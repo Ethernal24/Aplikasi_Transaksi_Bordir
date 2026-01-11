@@ -36,6 +36,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             $list = [
                                 0 => 'Mesin',
                                 1 => 'Orang',
+                                2 => 'Mesin & Orang',
                             ];
                             return $list[$model->tipe_kapasitas] ?? null;
                         }

@@ -129,4 +129,36 @@ class Workorder extends \yii\db\ActiveRecord
         ];
         return isset($status[$this->prioritas]) ? $status[$this->prioritas] : ['label' => 'unknown', 'class' => 'badge bg-secondary'];
     }
+
+    public function getProductionLog()
+    {
+        return $this->hasOne(ProductionLog::class, ['id_wo' => 'id_wo']);
+    }
+    public function getCurrentLog()
+    {
+        return $this->getProductionLog()
+            ->where(['status' => 0])
+            ->one();
+    }
+
+    // Mencari tahap routing berikutnya yang belum dikerjakan
+    public function getNextStep()
+    {
+        // Ambil semua detail routing, urutkan berdasarkan sequence
+        $routingDetails = $this->routing->details;
+
+        foreach ($routingDetails as $step) {
+            $isFinished = $this->getProductionLog()
+                ->where([
+                    'id_wo' => $this->id_wo,
+                    'id_workcenter' => $step->workcenter_id,
+                    'status' => 2
+                ])->exists();
+
+            if (!$isFinished) {
+                return $step; // Kembalikan tahap pertama yang belum "Finished"
+            }
+        }
+        return null; // Semua sudah selesai
+    }
 }

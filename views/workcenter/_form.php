@@ -24,8 +24,9 @@ use yii\widgets\ActiveForm;
             <?= $form->field($model, 'nama_workcenter')->textInput(['maxlength' => true]) ?>
             <?= $form->field($model, 'tipe_kapasitas')->dropDownList(
                 [
-                    '0' => 'mesin',
-                    '1' => 'orang',
+                    '0' => 'Mesin',
+                    '1' => 'Orang',
+                    '2' => 'Mesin & Orang',
                 ],
                 [
                     'prompt' => 'Pilih Tipe kapasitas',
