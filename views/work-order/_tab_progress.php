@@ -15,7 +15,7 @@ $nextWc = $model->getNextStep();
             <span class="badge badge-warning p-2">SEDANG BERJALAN</span>
             <h3 class="mt-2"><?= $currentLog->workcenter->nama_workcenter ?></h3>
         </div>
-        <?= Html::a('SELESAIKAN TAHAP INI', ['finish-production', 'log_id' => $currentLog->id_log], [
+        <?= Html::a('SELESAIKAN TAHAP INI', ['finish-production', 'id_log' => $currentLog->id_log], [
             'class' => 'btn btn-success btn-lg',
             'data-method' => 'post'
         ]) ?>
@@ -23,9 +23,9 @@ $nextWc = $model->getNextStep();
     <?php elseif ($nextWc): ?>
         <div class="mb-3">
             <span class="badge badge-secondary p-2">TAHAP SELANJUTNYA</span>
-            <h3 class="mt-2"><?= $nextWc->nama_workcenter ?></h3>
+            <h3 class="mt-2"><?= $nextWc->workCenter->nama_workcenter ?></h3>
         </div>
-        <?= Html::a('START PRODUKSI', ['start-production', 'wo_id' => $model->wo_id, 'wc_id' => $nextWc->id_workcenter], [
+        <?= Html::a('START PRODUKSI', ['start-production', 'id_wo' => $model->id_wo, 'wc_id' => $nextWc->workcenter_id], [
             'class' => 'btn btn-primary btn-lg',
             'data-method' => 'post'
         ]) ?>

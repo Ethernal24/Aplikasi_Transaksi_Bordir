@@ -46,7 +46,7 @@ class Mps extends BaseModel
     {
         return [
             [['kode_mps', 'periode', 'tanggal_awal', 'tanggal_akhir', 'status_mps', 'buffer_time', 'target_efisiensi', 'prioritas'], 'required'],
-            [['status_mps', 'prioritas', 'shift_id', 'total_pekerja'], 'integer'],
+            [['status_mps', 'prioritas', 'shift_id'], 'integer'],
             [['kode_mps'], 'string'],
             [['kode_mps'], 'unique'],
             [['target_efisiensi', 'buffer_time'], 'number'],
@@ -74,7 +74,6 @@ class Mps extends BaseModel
             'target_efisiensi' => "Target Efisiens (%)",
             'prioritas' => "Prioritas",
             'shift_id' => "Shift ID",
-            'total_pekerja' => "Total Pekerja",
         ];
     }
 

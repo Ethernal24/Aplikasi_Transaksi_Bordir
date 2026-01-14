@@ -243,20 +243,38 @@ class MpsController extends Controller
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
 
+
         // Mengambil data PermintaanPelanggan beserta relasi 'details' dan relasi 'produk' di dalamnya
         $permintaan = PermintaanPelanggan::find()
             ->where(['permintaan_id' => $id])
-            ->with(['details.produk'])
+            ->with(['details.produk.routing.details'])
             ->one();
 
         if ($permintaan && $permintaan->details) {
             $items = [];
             foreach ($permintaan->details as $d) {
+                $routingDetails = [];
+                $totalSmv = 0; // Inisialisasi counter total menit
+
+                if ($d->produk && $d->produk->routing && $d->produk->routing->details) {
+                    foreach ($d->produk->routing->details as $rd) {
+                        // Masukkan ke array untuk kalkulasi per Workcenter di JS
+                        $routingDetails[] = [
+                            'wc_id'   => $rd->workcenter_id,
+                            'smv'     => (float) $rd->waktu_standar,
+                            'setup'   => (float) $rd->waktu_setup,
+                        ];
+                        // Tambahkan ke total untuk kebutuhan display ringkas
+                        $totalSmv += (float) $rd->waktu_standar;
+                    }
+                }
+
                 $items[] = [
-                    'barang_id'   => $d->produk_id, // Dari model PermintaanDetail
-                    'nama_barang' => $d->produk ? $d->produk->nama_barang : 'Tanpa Nama', // Dari relasi getProduk()
-                    'qty'         => $d->jumlah, // Sesuaikan jika nama kolomnya 'jumlah' atau 'qty'
-                    'smv'         => $d->produk->routing ? $d->produk->routing->total_menit : 25,
+                    'barang_id'       => $d->produk_id,
+                    'nama_barang'     => $d->produk ? $d->produk->nama_barang : 'Tanpa Nama',
+                    'qty'             => $d->jumlah,
+                    'routing_details' => $routingDetails, // Penting untuk box per workcenter
+                    'smv'             => $totalSmv > 0 ? $totalSmv : 25, // Pakai hasil jumlah atau fallback 25
                 ];
             }
             return [
@@ -280,12 +298,11 @@ class MpsController extends Controller
         }
 
         $hitungPekerja = $tk->count();
-        return $hitungPekerja * $dailyMinutes * $days;
+        return $hitungPekerja * $dailyMinutes;
     }
 
     public static function getMachineCapacity($startDate, $endDate, $shiftId, $workcenterId = null)
     {
-        $days = (new DateTime($endDate))->diff(new DateTime($startDate))->days + 1;
         $shift = Shift::findOne($shiftId);
         $dailyMinutes = $shift ? ($shift->jam_efektif * 60) : 480;
 
@@ -298,24 +315,34 @@ class MpsController extends Controller
         // Jika ada kolom power_factor di tabel Mesin, gunakan sum, jika tidak gunakan count
         // $totalPower = $query->sum('power_factor') ?: $query->count();
 
-        return $hitungJumlahMesin * $dailyMinutes * $days;
+        return $hitungJumlahMesin * $dailyMinutes;
     }
 
     protected function calculateCapacityData($start, $end, $shiftId)
     {
+        $days = (new DateTime($end))->diff(new DateTime($start))->days + 1;
         $workcenters = Workcenter::find()->all();
         $data = [];
-
+        $shift = Shift::findOne($shiftId);
+        $durationMenit = $shift ? ($shift->jam_efektif * 60) : 480;
         foreach ($workcenters as $wc) {
             $data[$wc->workcenter_id] = [
                 'nama' => $wc->nama_workcenter,
+                'tipe_kapasitas' => $wc->tipe_kapasitas,
                 // Memanggil fungsi static yang sudah Anda buat
-                'cap_man' => self::getManPowerCapacity($start, $end, $shiftId, $wc->workcenter_id),
-                'cap_machine' => self::getMachineCapacity($start, $end, $shiftId, $wc->workcenter_id),
+                'cap_man_daily' => self::getManPowerCapacity($start, $end, $shiftId, $wc->workcenter_id),
+                'cap_man' => self::getManPowerCapacity($start, $end, $shiftId, $wc->workcenter_id) * $days,
+                'cap_machine_daily' => self::getMachineCapacity($start, $end, $shiftId, $wc->workcenter_id),
+                'cap_machine' => self::getMachineCapacity($start, $end, $shiftId, $wc->workcenter_id) * $days,
             ];
         }
-        return $data;
+        return [
+            'workcenters' => $data,
+            'shift_duration' => $durationMenit,
+        ];
     }
+
+    protected function calcualatePowerCapacity($start, $end, $shiftId) {}
 
     // --- Update Action AJAX Anda ---
     public function actionGetCapacity($start, $end, $shiftId)

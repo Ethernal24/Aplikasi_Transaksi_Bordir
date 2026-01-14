@@ -47,7 +47,7 @@ $WorkCenterUrl = Url::to(['/workcenter/index']);
 $KehadiranUrl = Url::to(['/kehadiran/index']);
 $ProductionLogUrl = Url::to(['/production-log/index']);
 $JadwalHarianUrl = Url::to(['/production-log-worker-assignment/index']);
-
+$LaporanMps = Url::to(['/mps/laporan-mps']);
 
 
 $typographyUrl = Url::to(['site/typography']);
@@ -175,16 +175,16 @@ $samplePageUrl = Url::to(['site/sample-page']);
                             </li> -->
                             <li class="pc-item"><a class="pc-link" href="<?= $WorkOrderUrl ?>">Work Order</a></li>
                             <li class="pc-item"><a class="pc-link" href="<?= $ProductionLogUrl ?>">Log Produksi</a></li>
-                            <!-- <li class="pc-item pc-hasmenu">
+                            <li class="pc-item pc-hasmenu">
                                 <a href="#!" class="pc-link">
-                                    <span class="pc-mtext">Laporan Produksi</span>
+                                    <span class="pc-mtext">Laporan</span>
                                     <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
                                 </a>
                                 <ul class="pc-submenu">
-                                    <li class="pc-item"><a class="pc-link" href="#">Laporan Besar</a></li>
-                                    <li class="pc-item"><a class="pc-link" href="#">Laporan Workcenter</a></li>
+                                    <li class="pc-item"><a class="pc-link" href="<?= $LaporanMps ?>">Laporan MPS</a></li>
+                                    <li class="pc-item"><a class="pc-link" href="#">Laporan Produksi</a></li>
                                 </ul>
-                            </li> -->
+                            </li>
                         </ul>
                     </li>
                     <li class="pc-item pc-hasmenu">

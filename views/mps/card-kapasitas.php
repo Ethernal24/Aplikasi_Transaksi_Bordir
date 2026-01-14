@@ -24,7 +24,7 @@ foreach ($detail as $item) {
 
 <h4 class="mb-3">Analisis Kapasitas Produksi</h4>
 <div class="row">
-    <?php foreach ($capacityData as $id => $wc): ?>
+    <?php foreach ($capacityData['workcenters'] as $id => $wc): ?>
         <?php
         $bebanRiil = $wcLoads[$id] ?? 0;
         $persenMan = $wc['cap_man'] > 0 ? ($bebanRiil / $wc['cap_man'] * 100) : 0;

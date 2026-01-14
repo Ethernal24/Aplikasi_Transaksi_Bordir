@@ -46,6 +46,7 @@ class PermintaanPelanggan extends BaseModel
         return [
             [['pelanggan_id', 'kode_permintaan', 'tenggat_waktu', 'status_pesanan'], 'required'],
             [['kode_permintaan'], 'string'],
+            [['kode_permintaan'], 'unique'],
             [['pelanggan_id'], 'integer'],
             [['tanggal_permintaan', 'dibuat_pada', 'diupdate_pada'], 'safe'],
         ];

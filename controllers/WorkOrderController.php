@@ -195,41 +195,64 @@ class WorkOrderController extends Controller
     public function actionStartProduction($id_wo)
     {
         $wo = $this->findModel($id_wo);
-        $currentRouting = RoutingDetail::find()
-            ->where(['routing_id' => $wo->id_routing])
-            ->orderBy(['urutan' => SORT_ASC])
+
+        // 1. Cari tahap terakhir yang sudah tercatat di ProductionLog untuk WO ini
+        $lastLog = ProductionLog::find()
+            ->where(['id_wo' => $id_wo])
+            ->orderBy(['id_log' => SORT_DESC])
             ->one();
+
+        // 2. Cari tahap berikutnya di RoutingDetail
+        if (!$lastLog) {
+            // Jika belum ada log sama sekali, ambil urutan pertama (Tahap 1)
+            $nextRouting = RoutingDetail::find()
+                ->where(['routing_id' => $wo->id_routing])
+                ->orderBy(['urutan' => SORT_ASC])
+                ->one();
+        } else {
+            // Jika sudah ada log sebelumnya, cari urutan yang LEBIH BESAR dari urutan terakhir
+            // Kita butuh tahu urutan ke berapa dari routing_id yang sekarang sedang jalan
+            $currentUrutan = RoutingDetail::find()
+                ->where(['routing_id' => $wo->id_routing, 'workcenter_id' => $lastLog->id_workcenter])
+                ->one();
+
+            $nextRouting = RoutingDetail::find()
+                ->where(['routing_id' => $wo->id_routing])
+                ->andWhere(['>', 'urutan', $currentUrutan ? $currentUrutan->urutan : 0])
+                ->orderBy(['urutan' => SORT_ASC])
+                ->one();
+        }
+
+        // Cek apakah masih ada tahap selanjutnya
+        if (!$nextRouting) {
+            Yii::$app->session->setFlash('warning', "Semua tahapan routing untuk WO ini sudah selesai.");
+            return $this->redirect(['view', 'id_wo' => $id_wo]);
+        }
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
             $newNumber = $this->generateLogNumber();
-            // 1. Buat Header Log Baru (Production_Log)
+
             $logHeader = new ProductionLog();
             $logHeader->kode_log = $newNumber;
             $logHeader->tanggal = date('Y-m-d');
-            $logHeader->id_workcenter = $currentRouting ? $currentRouting->workcenter_id : null;
+            // Sekarang id_workcenter akan mengikuti tahap urutan berikutnya
+            $logHeader->id_workcenter = $nextRouting->workcenter_id;
             $logHeader->id_wo = $wo->id_wo;
-            $logHeader->status = 0; // Status sesi kerja aktif
-            $logHeader->id_shift = $wo->mps->shift->shift_id; // Status sesi kerja aktif
+            $logHeader->status = 0;
+            $logHeader->id_shift = $wo->mps->shift->shift_id;
 
             if (!$logHeader->save()) {
-                $errors = $logHeader->getErrors();
-                // Ubah jadi string agar bisa dibaca di throw exception
-                $errorMessage = json_encode($errors);
-                throw new \Exception("Gagal membuat Log Header." . $errorMessage);
+                throw new \Exception("Gagal membuat Log Header: " . json_encode($logHeader->getErrors()));
             }
 
-            // 2. Update Status Work Order menjadi In-Progress
-            $wo->status_wo = 1;
-            if (!$wo->save(false)) {
-                throw new \Exception("Gagal mengupdate status Work Order.");
-            }
+            $wo->status_wo = 1; // In-Progress
+            $wo->save(false);
 
             $transaction->commit();
-            Yii::$app->session->setFlash('success', "Produksi dimulai. Sesi Log Header berhasil dibuat.");
+            Yii::$app->session->setFlash('success', "Memulai produksi untuk tahap: " . $nextRouting->workCenter->nama_workcenter);
 
-            // 3. Arahkan langsung ke halaman pengisian aktivitas (Log Activity)
-            return $this->redirect(['production-log/view', 'id' => $logHeader->production_log_id]);
+            return $this->redirect(['production-log/view', 'id_log' => $logHeader->id_log]);
         } catch (\Exception $e) {
             $transaction->rollBack();
             Yii::$app->session->setFlash('error', "Error: " . $e->getMessage());
@@ -237,15 +260,54 @@ class WorkOrderController extends Controller
         }
     }
 
-    public function actionFinishProduction($log_id)
+    public function actionFinishProduction($id_log)
     {
-        $model = ProductionLog::findOne($log_id);
-        if ($model) {
-            $model->status = 2;
-            if ($model->save()) {
-                Yii::$app->session->setFlash('success', "Tahap produksi selesai.");
-            }
+        $model = ProductionLog::findOne($id_log);
+        if (!$model) {
+            throw new NotFoundHttpException("Log tidak ditemukan.");
         }
+
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $model->status = 2; // Selesai
+            // Gunakan save(false) untuk memastikan status log tersimpan meskipun ada field lain yang kosong
+            if (!$model->save(false)) {
+                throw new \Exception("Gagal menyimpan status log.");
+            }
+
+            // Pastikan relasi 'idWo' ada di model ProductionLog
+            $workOrder = $model->wo;
+
+            if ($workOrder) {
+                $routingSekarang = RoutingDetail::find()
+                    ->where([
+                        'routing_id' => $workOrder->id_routing,
+                        'workcenter_id' => $model->id_workcenter
+                    ])
+                    ->one();
+
+                if ($routingSekarang) {
+                    $isLastStep = !RoutingDetail::find()
+                        ->where(['routing_id' => $workOrder->id_routing])
+                        ->andWhere(['>', 'urutan', $routingSekarang->urutan])
+                        ->exists();
+
+                    if ($isLastStep) {
+                        $workOrder->status_wo = 2; // WO Selesai Total
+                        $workOrder->save(false); // Simpan tanpa validasi untuk memastikan status berubah
+                        Yii::$app->session->setFlash('success', "Tahap terakhir selesai. Work Order ditutup.");
+                    } else {
+                        Yii::$app->session->setFlash('success', "Tahap selesai. Silahkan mulai tahap berikutnya.");
+                    }
+                }
+            }
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            Yii::$app->session->setFlash('error', "Gagal: " . $e->getMessage());
+        }
+
         return $this->redirect(['view', 'id_wo' => $model->id_wo]);
     }
 }

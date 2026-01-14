@@ -112,9 +112,6 @@ foreach ($allRouting as $routing) {
                 <div class="col">
                     <?= $form->field($model, 'target_efisiensi')->textInput() ?>
                 </div>
-                <div class="col">
-                    <?= $form->field($model, 'total_pekerja')->textInput() ?>
-                </div>
             </div>
             <hr>
             <h4>Detail MPS</h4>
@@ -280,16 +277,17 @@ $getCapacityUrl = Url::to(['get-capacity']); // Pastikan route ini benar
 
 $script = <<< JS
 var capacityData = {};
-
+var currentShiftDuration = 480
 // 1. Ambil Kapasitas (Triggered by Header: Tanggal, Shift)
 function fetchCapacity() {
-    var start = $('#mps-tanggal_awal').val();
-    var end = $('#mps-tanggal_akhir').val();
+    var start = $('#tgl_awal').val();
+    var end = $('#tgl_akhir').val();
     var shiftId = $('#mps-shift_id').val();
     
     if (start && end && shiftId) {
-        $.get('{$getCapacityUrl}', {start: start, end: end, shiftId: shiftId}, function(data) {
-            capacityData = data;
+        $.get('{$getCapacityUrl}', {start: start, end: end, shiftId: shiftId}, function(response) {
+            capacityData = response.workcenters;
+            currentShiftDuration = response.shift_duration || 480;
             renderWorkcenterBlocks(); // Buat box-box WC secara dinamis
             calculateCurrentLoad();
         });
@@ -301,43 +299,40 @@ function renderWorkcenterBlocks() {
     var container = $('#workcenter-summary-container');
     container.empty();
     
-    if ($.isEmptyObject(capacityData)) {
-        container.append('<div class="col-12 text-center text-muted"><p>Data kapasitas tidak tersedia.</p></div>');
-        return;
-    }
-
     $.each(capacityData, function(id, wc) {
-        // Format angka dengan toLocaleString() agar ada pemisah ribuan (1.000)
-        var capManFormatted = Math.round(wc.cap_man).toLocaleString('id-ID');
-        var capMachFormatted = Math.round(wc.cap_machine).toLocaleString('id-ID');
+        // Tentukan apakah bagian mesin perlu dirender
+        var machineHtml = '';
+        if (wc.tipe_kapasitas == 0 || wc.tipe_kapasitas == 2) {
+            machineHtml = `
+                <div class="d-flex justify-content-between">
+                    <label class="small mb-0">Mesin</label>
+                    <small class="text-muted"><span id="val-mach-\${id}">0</span> / \${Math . round(wc . cap_machine) . toLocaleString('id-ID')}</small>
+                </div>
+                <div class="progress mb-2" style="height: 12px;">
+                    <div id="bar-mach-\${id}" class="progress-bar bg-info" style="width:0%">0%</div>
+                </div>`;
+        }
 
-        var block = '<div class="col-md-4 mb-3">' +
-            '<div class="card card-body shadow-sm border-left-info">' +
-                '<h6 class="font-weight-bold text-uppercase">' + wc.nama + '</h6>' +
-                
-                // Info Tenaga Kerja
-                '<div class="d-flex justify-content-between">' +
-                    '<label class="small mb-0">Tenaga Kerja</label>' +
-                    '<small class="text-muted"><span id="val-man-' + id + '">0</span> / ' + capManFormatted + '</small>' +
-                '</div>' +
-                '<div class="progress mb-2" style="height: 12px;">' +
-                    '<div id="bar-man-' + id + '" class="progress-bar bg-success" style="width:0%">0%</div>' +
-                '</div>' +
-                
-                // Info Mesin
-                '<div class="d-flex justify-content-between">' +
-                    '<label class="small mb-0">Mesin</label>' +
-                    '<small class="text-muted"><span id="val-mach-' + id + '">0</span> / ' + capMachFormatted + '</small>' +
-                '</div>' +
-                '<div class="progress mb-2" style="height: 12px;">' +
-                    '<div id="bar-mach-' + id + '" class="progress-bar bg-info" style="width:0%">0%</div>' +
-                '</div>' +
-                
-                '<div class="mt-2 text-right">' +
-                    '<small class="badge badge-light">Total Beban: <span id="text-wc-' + id + '">0</span> Menit</small>' +
-                '</div>' +
-            '</div>' +
-        '</div>';
+        var block = `
+            <div class="col-md-3 mb-3">
+                <div class="card card-body shadow-sm border-left-info p-3">
+                    <h6 class="font-weight-bold text-uppercase">\${wc . nama}</h6>
+                    
+                    <div class="d-flex justify-content-between">
+                        <label class="small mb-0">Tenaga Kerja</label>
+                        <small class="text-muted"><span id="val-man-\${id}">0</span> / \${Math . round(wc . cap_man) . toLocaleString('id-ID')}</small>
+                    </div>
+                    <div class="progress mb-2" style="height: 12px;">
+                        <div id="bar-man-\${id}" class="progress-bar bg-success" style="width:0%">0%</div>
+                    </div>
+
+                    \${machineHtml} 
+
+                    <div class="mt-2 text-right">
+                        <small class="badge badge-light">Total Beban: <span id="text-wc-\${id}">0</span> Menit</small>
+                    </div>
+                </div>
+            </div>`;
         
         container.append(block);
     });
@@ -353,13 +348,24 @@ function calculateCurrentLoad() {
 
     $('.item:visible').each(function() {
         var qty = parseInt($(this).find('.input-qty').val()) || 0;
-        var routingOption = $(this).find('.input-routing-id option:selected');
-        var details = routingOption.data('details'); // Mengambil data-details JSON
+        var routingOption = $(this).find('.input-routing-id option:selected'); // Pastikan selector ke dropdown produk
+        var details = routingOption.data('details'); 
 
-        if (details) {
+        // Pengaman: Jika details berbentuk string, ubah jadi object
+        if (typeof details === 'string') {
+            details = JSON.parse(details);
+        }
+
+        if (details && Array.isArray(details)) {
             details.forEach(function(item) {
+                // Gunakan wc_id dari routing detail
                 if (!wcLoads[item.wc_id]) wcLoads[item.wc_id] = 0;
-                wcLoads[item.wc_id] += (qty * item.smv * multiplier);
+                
+                // Rumus: Qty * SMV per Workcenter * Multiplier
+                wcLoads[item.wc_id] += (qty * parseFloat(item.smv) * multiplier);
+                
+                // Opsional: Tambahkan setup menit (hanya sekali per batch)
+                wcLoads[item.wc_id] += parseFloat(item.setup || 0);
             });
         }
     });
@@ -370,17 +376,29 @@ function calculateCurrentLoad() {
         var load = wcLoads[id] || 0;
         var loadFormatted = Math.round(load).toLocaleString('id-ID');
         
+        // 1. Logika Manpower (Selalu dihitung jika ada beban)
         var manPct = wc.cap_man > 0 ? (load / wc.cap_man * 100) : 0;
-        var machPct = wc.cap_machine > 0 ? (load / wc.cap_machine * 100) : 0;
-
-        // Update Visual Bar
         updateBarVisual($('#bar-man-' + id), manPct);
-        updateBarVisual($('#bar-mach-' + id), machPct);
-        
-        // UPDATE ANGKA REALTIME
-        $('#val-man-' + id).text(loadFormatted); // Angka beban di baris Tenaga Kerja
-        $('#val-mach-' + id).text(loadFormatted); // Angka beban di baris Mesin
-        $('#text-wc-' + id).text(loadFormatted); // Angka total di badge bawah
+        $('#val-man-' + id).text(loadFormatted);
+
+        // 2. Logika Mesin (Hanya jika Workcenter memang menggunakan mesin)
+        // Asumsi: Server mengirimkan properti 'use_machine' (boolean/int)
+        if (wc.tipe_kapasitas == 2 || wc.cap_machine > 0 || wc.tipe_kapasitas == 0) {
+            var machPct = wc.cap_machine > 0 ? (load / wc.cap_machine * 100) : 0;
+            updateBarVisual($('#bar-mach-' + id), machPct);
+            $('#val-mach-' + id).text(loadFormatted);
+            
+            // Pastikan container mesin tampil
+            $('#bar-mach-' + id).parent().prev().show(); // Label 'Mesin'
+            $('#bar-mach-' + id).parent().show();      // Progress bar mesin
+        } else {
+            // Jika tidak pakai mesin, sembunyikan UI mesin agar tidak membingungkan
+            $('#bar-mach-' + id).parent().prev().hide();
+            $('#bar-mach-' + id).parent().hide();
+            $('#val-mach-' + id).text('-'); 
+        }
+
+        $('#text-wc-' + id).text(loadFormatted);
     });
     calculateEstimatedFinish(multiplier)
 }
@@ -393,12 +411,12 @@ function updateBarVisual(el, pct) {
     else el.addClass('bg-success');
 }
 function calculateEstimatedFinish(multiplier) {
-    var startStr = $('#mps-tanggal_awal').val();
+    var startStr = $('#tgl_awal').val();
     if (!startStr) return;
 
     var startDate = new Date(startStr);
     var wcRunningMinutes = {}; 
-    var dailyMinutes = 480; 
+    var dailyMinutes = currentShiftDuration; 
 
     $('.item:visible').each(function() {
         var row = $(this);
@@ -547,8 +565,7 @@ $(document).on('change', '.select-produk', function() {
 
 // 5. Listener untuk Input Manual & Tanggal
 // Listener yang memicu FETCH (Ambil data dari server karena "Tangki" Kapasitas berubah)
-$(document).on('change', '#mps-tanggal_awal, #mps-tanggal_akhir, #mps-shift_id', fetchCapacity);
-$(document).on('keyup change', '#mps-total_pekerja', fetchCapacity);
+$(document).on('change', '#tgl_awal, #tgl_akhir, #mps-shift_id', fetchCapacity);
 
 // Listener yang memicu REKALKULASI (Hitung beban karena "Isi" atau "Pengali" berubah)
 $(document).on('change keyup', '#mps-target_efisiensi, #mps-buffer_time, .input-routing-id, .input-qty', calculateCurrentLoad);$(document).on('keyup change', '.input-qty', calculateCurrentLoad);

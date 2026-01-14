@@ -137,7 +137,7 @@ class Workorder extends \yii\db\ActiveRecord
     public function getCurrentLog()
     {
         return $this->getProductionLog()
-            ->where(['status' => 0])
+            ->where(['id_wo' => $this->id_wo, 'status' => 0])
             ->one();
     }
 
