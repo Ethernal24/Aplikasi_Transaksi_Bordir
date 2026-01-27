@@ -44,14 +44,14 @@ $this->params['breadcrumbs'][] = $this->title;
                         [
                             'attribute' => 'tanggal_permintaan',
                             'value' => function ($model) {
-                                return Yii::$app->formatter->asDate($model->tanggal_permintaan, 'php:d-mm-Y');
+                                return Yii::$app->formatter->asDate($model->tanggal_permintaan, 'php:d-m-Y');
                             },
                             'label' => 'Tanggal Permintaan',
                         ],
                         [
                             'attribute' => 'tenggat_waktu',
                             'value' => function ($model) {
-                                return Yii::$app->formatter->asDate($model->tenggat_waktu, 'php:d-mm-Y');
+                                return Yii::$app->formatter->asDate($model->tenggat_waktu, 'php:d-m-Y');
                             },
                             'label' => 'Tenggat Waktu',
                         ],

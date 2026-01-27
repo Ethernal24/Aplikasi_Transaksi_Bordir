@@ -175,7 +175,7 @@ $samplePageUrl = Url::to(['site/sample-page']);
                             </li> -->
                             <li class="pc-item"><a class="pc-link" href="<?= $WorkOrderUrl ?>">Work Order</a></li>
                             <li class="pc-item"><a class="pc-link" href="<?= $ProductionLogUrl ?>">Log Produksi</a></li>
-                            <li class="pc-item pc-hasmenu">
+                            <!-- <li class="pc-item pc-hasmenu">
                                 <a href="#!" class="pc-link">
                                     <span class="pc-mtext">Laporan</span>
                                     <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
@@ -184,7 +184,7 @@ $samplePageUrl = Url::to(['site/sample-page']);
                                     <li class="pc-item"><a class="pc-link" href="<?= $LaporanMps ?>">Laporan MPS</a></li>
                                     <li class="pc-item"><a class="pc-link" href="#">Laporan Produksi</a></li>
                                 </ul>
-                            </li>
+                            </li> -->
                         </ul>
                     </li>
                     <li class="pc-item pc-hasmenu">
