@@ -55,12 +55,12 @@ $config = [
             // send all mails to a file by default.
             'useFileTransport' => false,
             'transport' => [
-                'scheme' => 'smtps',
-                'host' => 'smtp.gmail.com',
-                'username' => 'gilbertgiovanni14@gmail.com',
-                'password' => 'pogseqmsdjgncbuq',
-                'port' => 465,
-                'dsn' => 'smtps://gilbertgiovanni14@gmail.com:pogseqmsdjgncbuq@smtp.gmail.com:465',
+                'scheme' => $_ENV['SMTP_ENCRYPTION'],
+                'host' => $_ENV['SMTP_HOST'],
+                'username' => $_ENV['SMTP_USERNAME'],
+                'password' => $_ENV['SMTP_PASSWORD'],
+                'port' => $_ENV['SMTP_PORT'],
+                'dsn' => $_ENV['SMTP_DSN'],
             ]
         ],
         'log' => [
