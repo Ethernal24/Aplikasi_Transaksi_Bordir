@@ -44,11 +44,19 @@ class PermintaanPelanggan extends BaseModel
     public function rules()
     {
         return [
-            [['pelanggan_id', 'kode_permintaan', 'tenggat_waktu', 'status_pesanan'], 'required'],
+            [['pelanggan_id', 'kode_permintaan', 'tanggal_permintaan', 'tenggat_waktu', 'status_pesanan'], 'required'],
             [['kode_permintaan'], 'string'],
             [['kode_permintaan'], 'unique'],
             [['pelanggan_id'], 'integer'],
-            [['tanggal_permintaan', 'dibuat_pada', 'diupdate_pada'], 'safe'],
+            [['dibuat_pada', 'diupdate_pada', 'tracking_token'], 'safe'],
+            [
+                'tenggat_waktu',
+                'compare',
+                'compareAttribute' => 'tanggal_permintaan',
+                'operator' => '>=',
+                'type' => 'date',
+                'message' => 'Tenggat waktu tidak boleh lebih awal dari tanggal permintaan.'
+            ],
         ];
     }
 

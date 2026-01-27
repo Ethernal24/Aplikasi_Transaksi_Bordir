@@ -16,7 +16,7 @@ use yii\db\Expression;
  * @property string $kode_mrp
  * @property MrpDetail[] $MrpDetails
  */
-class MasterMrp extends \yii\db\ActiveRecord
+class MasterMrp extends BaseModel
 {
     /**
      * {@inheritdoc}

@@ -87,7 +87,7 @@ class PermintaanPelangganController extends Controller
         $modelDetails = [new PermintaanDetail()];
 
         $model->kode_permintaan = $model->generateAutoNumber('SO', 'kode_permintaan');
-
+        $model->tracking_token = Yii::$app->security->generateRandomString(16);
         if ($model->load($this->request->post())) {
             $modelDetails = ModelHelper::createMultiple(PermintaanDetail::class);
             Model::loadMultiple($modelDetails, $this->request->post());

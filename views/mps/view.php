@@ -119,17 +119,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
             <?php if ($model->status_mps === 0): ?>
                 <?= Html::a('Update', ['update', 'mps_id' => $model->mps_id], ['class' => 'btn btn-primary']) ?>
-                <?= Html::a(
-                    'Verify',
-                    ['verify', 'mps_id' => $model->mps_id],
-                    [
-                        'class' => 'btn btn-warning',
-                        'data' => [
-                            'confirm' => 'Apakah anda yakin semua data sudah benar? status akan berubah',
-                            'method' => 'post',
-                        ],
-                    ]
-                ) ?>
+
                 <?php
                 $mrpModel = MasterMrp::find()->where(['mps_id' => $model->mps_id])->one();
 
@@ -150,7 +140,27 @@ $this->params['breadcrumbs'][] = $this->title;
                             ],
                         ]
                     ) ?>
+                    <?= Html::a(
+                        'Verify',
+                        ['verify', 'mps_id' => $model->mps_id],
+                        [
+                            'class' => 'btn btn-secondary disabled',
+                            'style' => 'cursor: not-allowed;',
+                            'title' => 'MRP blom di generate atau disetujui.',
+                        ]
+                    ) ?>
                 <?php else: ?>
+                    <?= Html::a(
+                        'Verify',
+                        ['verify', 'mps_id' => $model->mps_id],
+                        [
+                            'class' => 'btn btn-warning',
+                            'data' => [
+                                'confirm' => 'Apakah anda yakin semua data sudah benar? status akan berubah',
+                                'method' => 'post',
+                            ],
+                        ]
+                    ) ?>
                     <?= Html::button('<i class="fa fa-lock"></i> MRP Terkunci (Approved)', [
                         'class' => 'btn btn-secondary disabled',
                         'style' => 'cursor: not-allowed;',

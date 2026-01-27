@@ -25,6 +25,7 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 use yii\web\Response;
 use yii\widgets\ActiveForm;
 
@@ -350,23 +351,6 @@ class MpsController extends Controller
         Yii::$app->response->format = Response::FORMAT_JSON;
         return $this->calculateCapacityData($start, $end, $shiftId);
     }
-    protected function generateWoNumber()
-    {
-        $prefix = 'WO-' . date('Ym') . '-';
-        $lastWo = WorkOrder::find()
-            ->where(['like', 'kode_wo', $prefix . '%', false])
-            ->orderBy(['id_wo' => SORT_DESC])
-            ->one();
-
-        if ($lastWo) {
-            $lastNumber = (int) substr($lastWo->kode_wo, -4);
-            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $newNumber = '0001';
-        }
-
-        return $prefix . $newNumber;
-    }
 
     public function actionVerify($mps_id)
     {
@@ -374,17 +358,18 @@ class MpsController extends Controller
         $model->status_mps = 1;
 
         $transaction = Yii::$app->db->beginTransaction();
+        // Koleksi SO unik untuk dikirimi email
+        $processedSos = [];
+
         try {
             if (!$model->save(false)) throw new \Exception("Gagal update MPS.");
 
             foreach ($model->mpsDetails as $detail) {
-                // Logika Penomoran (Sama seperti sebelumnya)
-                $newNumber = $this->generateWoNumber();
-
                 $wo = new WorkOrder();
-                $wo->kode_wo = $newNumber;
+                // Panggil statis via Model Class
+                $wo->kode_wo = WorkOrder::generateAutoNumber('WO', 'kode_wo');
                 $wo->id_mps = $mps_id;
-                $wo->permintaan_id = $detail->permintaan->permintaan_id;
+                $wo->permintaan_id = $detail->permintaan_id;
                 $wo->id_produk = $detail->produk_id;
                 $wo->qty_target = $detail->qty_plan;
                 $wo->tanggal_wo = date('Y-m-d');
@@ -392,20 +377,42 @@ class MpsController extends Controller
                 $wo->status_wo = 0;
                 $wo->prioritas = $model->prioritas;
                 $wo->id_routing = $detail->routing->routing_id ?? null;
-                $wo->save(false);
+
+                // Cukup satu kali save dalam pengecekan
                 if ($wo->save()) {
-                    // PANGGIL FUNGSI TERPISAH UNTUK MATERIAL
                     $this->generateWoMaterials($wo->id_wo, $detail->mps_id, $detail->produk_id);
                 } else {
-                    throw new \Exception("Gagal membuat Header WO.");
+                    throw new \Exception("Gagal membuat Header WO untuk produk ID: " . $detail->produk_id);
+                }
+
+                // Update Status SO
+                $so = PermintaanPelanggan::findOne($detail->permintaan_id);
+                if ($so) {
+                    $so->status_pesanan = 1;
+                    // Generate token jika belum ada
+                    if (empty($so->tracking_token)) {
+                        $so->tracking_token = Yii::$app->security->generateRandomString(20);
+                    }
+
+                    if (!$so->save(false)) {
+                        throw new \Exception("Gagal memperbarui status permintaan pelanggan");
+                    }
+
+                    // Simpan SO ke dalam array agar bisa dikirimi email satu kali per SO
+                    $processedSos[$so->permintaan_id] = $so;
                 }
             }
 
+            // Kirim email ke setiap SO yang terlibat dalam MPS ini
+            foreach ($processedSos as $soObj) {
+                $this->sendTrackingEmail($soObj);
+            }
+
             $transaction->commit();
-            Yii::$app->session->setFlash('success', "MPS Verified. WO Header & Materials created.");
+            Yii::$app->session->setFlash('success', "MPS Berhasil Diverifikasi. WO telah dibuat dan email notifikasi terkirim.");
         } catch (\Exception $e) {
             $transaction->rollBack();
-            Yii::$app->session->setFlash('error', $e->getMessage());
+            Yii::$app->session->setFlash('error', "Terjadi Kesalahan: " . $e->getMessage());
         }
         return $this->redirect(['view', 'mps_id' => $mps_id]);
     }
@@ -457,26 +464,13 @@ class MpsController extends Controller
         $oldMrp = MasterMrp::findOne(['mps_id' => $mps_id]);
 
         $mrp = new MasterMrp();
-        $prefix = 'MRP-' . date('Ym') . '-';
-        $lastMrp = $mrp::find()
-            ->where(['like', 'kode_mrp', $prefix])
-            ->orderBy(['mrp_id' => SORT_DESC])
-            ->one();
-
-        if ($lastMrp) {
-            // Ambil 4 angka terakhir, lalu tambah 1
-            $lastNumber = (int) substr($lastMrp->kode_mrp, -4);
-            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $newNumber = '0001';
-        }
         $transaction = Yii::$app->db->beginTransaction();
         try {
             if ($oldMrp !== null) {
                 $oldMrp->delete();
             }
             $mrp->mps_id = $mps_id;
-            $mrp->kode_mrp = $prefix . $newNumber;
+            $mrp->kode_mrp = MasterMrp::generateAutoNumber('MRP', 'kode_mrp');
             $mrp->status = 0;
             if ($mrp->save()) {
                 foreach ($model->mpsDetails as $mpsDetail) {
@@ -510,5 +504,16 @@ class MpsController extends Controller
             Yii::$app->session->setFlash('error', "Gagal Generate MRP: " . $e->getMessage());
             return $this->redirect(['view', 'mps_id' => $mps_id]);
         }
+    }
+
+    protected function sendTrackingEmail($so)
+    {
+        $trackingLink = Url::to(['tracking/status', 'token' => $so->tracking_token], true);
+        return Yii::$app->mailer->compose()
+            ->setFrom(['admin@konveksi.com' => 'Produksi Konveksi'])
+            ->setTo($so->pelanggan->email)
+            ->setSubject('Pesanan mulai diproses - #' . $so->kode_permintaan)
+            ->setHtmlBody('Halo, pesanan anda sedang diproses. Pantau di :' . $trackingLink)
+            ->send();
     }
 }

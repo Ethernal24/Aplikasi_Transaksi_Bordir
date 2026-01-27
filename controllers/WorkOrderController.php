@@ -295,9 +295,21 @@ class WorkOrderController extends Controller
                     if ($isLastStep) {
                         $workOrder->status_wo = 2; // WO Selesai Total
                         $workOrder->save(false); // Simpan tanpa validasi untuk memastikan status berubah
-                        Yii::$app->session->setFlash('success', "Tahap terakhir selesai. Work Order ditutup.");
-                    } else {
-                        Yii::$app->session->setFlash('success', "Tahap selesai. Silahkan mulai tahap berikutnya.");
+
+                        $so = PermintaanPelanggan::findOne($workOrder->permintaan_id);
+                        if ($so) {
+                            $isAllWoFinished = !workOrder::find()
+                                ->where(['permintaan_id' => $so->permintaan_id])
+                                ->andWhere(['!=', 'status_wo', 2])
+                                ->exists();
+                            if ($isAllWoFinished) {
+                                $so->status_pesanan = 2; // Sesuaikan dengan label/ID status Anda
+                                if (!$so->save(false)) throw new \Exception("Gagal update status SO.");
+                                Yii::$app->session->setFlash('success', "Seluruh proses produksi selesai. Status SO ditutup.");
+                            } else {
+                                Yii::$app->session->setFlash('info', "WO selesai, namun masih ada item lain dalam SO ini yang dalam proses.");
+                            }
+                        }
                     }
                 }
             }

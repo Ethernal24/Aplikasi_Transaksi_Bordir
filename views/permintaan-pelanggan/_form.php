@@ -33,10 +33,18 @@ use yii\widgets\ActiveForm;
                     )->label('Nama Pelanggan') ?>
                 </div>
                 <div class="col">
-                    <?= $form->field($model, 'tanggal_permintaan')->textInput(['type' => 'date']) ?>
+                    <?= $form->field($model, 'tanggal_permintaan')->textInput([
+                        'type' => 'date',
+                        'id' => 'tanggal_permintaan',
+                        'min' => date('Y-m-d')
+                    ]) ?>
                 </div>
                 <div class="col">
-                    <?= $form->field($model, 'tenggat_waktu')->textInput(['type' => 'date']) ?>
+                    <?= $form->field($model, 'tenggat_waktu')->textInput([
+                        'type' => 'date',
+                        'id' => 'tenggat_waktu',
+                        'min' => date('Y-m-d')
+                    ]) ?>
                 </div>
                 <div class="col">
                     <?= $form->field($model, 'status_pesanan')->dropDownList(
@@ -131,6 +139,20 @@ use yii\widgets\ActiveForm;
 </div>
 
 <?php
+$js = <<<JS
+$('#tanggal_permintaan').on('change', function(){
+    let startDate = $(this).val();
+    if (startDate) {
+        $('#tenggat_waktu').attr('min', startDate);
+        let endDate = $('#tenggat_waktu').val();
+        if (endDate && endDate < startDate) {
+            $('#tenggat_waktu').val('');
+        }
+    }
+});
+
+JS;
+$this->registerJs($js)
 
 // $urlGetBarang = Url::to(['permintaan-pelanggan/get-barang-by-pelanggan']);
 // $js = <<<JS

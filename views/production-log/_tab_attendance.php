@@ -11,8 +11,8 @@ use yii\helpers\Url;
         ['class' => 'yii\grid\SerialColumn'],
 
         // 'attendance_id',
-        'log_id',
-        'tk_id',
+        // 'log_id',
+        // 'tk_id',
         'mulai_kerja',
         'selesai_kerja',
         'waktu_kerja',

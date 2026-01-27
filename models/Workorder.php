@@ -20,7 +20,7 @@ use Yii;
  * @property string|null $created_at
  * @property string|null $updated_at
  */
-class Workorder extends \yii\db\ActiveRecord
+class Workorder extends BaseModel
 {
     /**
      * {@inheritdoc}

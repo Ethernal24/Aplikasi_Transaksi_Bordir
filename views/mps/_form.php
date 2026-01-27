@@ -59,6 +59,7 @@ foreach ($allRouting as $routing) {
                 <div class="col">
                     <?= $form->field($model, 'kode_mps')->textInput(['readonly' => true]) ?>
                 </div>
+
                 <div class="col">
                     <?= $form->field($model, 'tanggal_awal')->textInput([
                         'type' => 'date',
@@ -66,12 +67,14 @@ foreach ($allRouting as $routing) {
                         'min' => date('Y-m-d'),
                     ]) ?>
                 </div>
+
                 <div class="col">
                     <?= $form->field($model, 'tanggal_akhir')->textInput([
                         'type' => 'date',
                         'id' => 'tgl_akhir',
                     ]) ?>
                 </div>
+
                 <div class="col">
                     <?= $form->field($model, 'status_mps')->dropDownList([
                         0 => 'Draft',
@@ -218,7 +221,7 @@ foreach ($allRouting as $routing) {
                                 // Logika untuk menampilkan data saat mode Update (data sudah tersimpan di DB)
                                 $dueDateVal = '';
                                 if (!$detail->isNewRecord && $detail->permintaan) {
-                                    $dueDateVal = $detail->permintaan->tanggal_dikirim;
+                                    $dueDateVal = $detail->permintaan->tenggat_waktu;
                                 }
 
                                 echo Html::textInput("due_date_ref[{$i}]", $dueDateVal, [
