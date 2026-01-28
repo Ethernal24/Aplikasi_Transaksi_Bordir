@@ -6,12 +6,14 @@ use app\helpers\ModelHelper;
 use app\models\Bom;
 use app\models\BomCustom;
 use app\models\MasterMrp;
+use app\models\MasterRouting;
 use app\models\Mesin;
 use app\models\Mps;
 use app\models\MpsDetail;
 use app\models\MpsSearch;
 use app\models\MrpDetail;
 use app\models\PermintaanPelanggan;
+use app\models\RoutingDetail;
 use app\models\Shift;
 use app\models\TenagaKerja;
 use app\models\Workcenter;
@@ -79,13 +81,10 @@ class MpsController extends Controller
         $model = $this->findModel($mps_id);
         $detail = MpsDetail::find()->where(['mps_id' => $mps_id])->all();
 
-        // Panggil fungsi internal (bukan actionGetCapacity)
-        $capacityData = $this->calculateCapacityData($model->tanggal_awal, $model->tanggal_akhir, $model->shift_id);
 
         return $this->render('view', [
             'model' => $model,
             'detail' => $detail,
-            'capacityData' => $capacityData,
         ]);
     }
     /**
@@ -287,70 +286,64 @@ class MpsController extends Controller
         return ['items' => []]; // Kembalikan array kosong jika tidak ada
     }
 
-    public static function getManPowerCapacity($startDate, $endDate, $shiftId, $workcenterId = null)
+
+    public function actionHitungKapasitasShift()
     {
-        $days = (new DateTime($endDate))->diff(new DateTime($startDate))->days + 1;
-        $shift = Shift::findOne($shiftId);
-        $dailyMinutes = $shift ? ($shift->jam_efektif * 60) : 480;
+        $shifts = Shift::find()->all();
+        $totalMenitHarian = 0;
 
-        $tk = TenagaKerja::find()->where(['status_kerja' => 0]);
-        if ($workcenterId) {
-            $tk->andWhere(['workcenter_id' => $workcenterId]); // Perbaikan: hapus tanda kutip
+        // echo "debug fungsi, ";
+        foreach ($shifts as $shift) {
+            $durasi = $shift->jam_efektif;
+            $menitEfektif = $durasi * 60;
+            // Untuk testing
+            // echo "Nama Shift : $shift->nama_shift ";
+            // echo "durasi : $durasi Jam, ";
+            // echo "menit Efektif : $menitEfektif, ";
+            // Yii::info("Shift {$shift->shift_id}: Total $durasi mnt, Efektif $menitEfektif mnt", 'debug_mps');
+            $totalMenitHarian += $menitEfektif;
         }
-
-        $hitungPekerja = $tk->count();
-        return $hitungPekerja * $dailyMinutes;
+        return $totalMenitHarian;
+        // echo "Total kapasitas harian : $totalMenitHarian Menit";
+        // exit;
     }
 
-    public static function getMachineCapacity($startDate, $endDate, $shiftId, $workcenterId = null)
+    public function actionHitungKapasitasBeban($routing_id, $qty, $buffer = 0)
     {
-        $shift = Shift::findOne($shiftId);
-        $dailyMinutes = $shift ? ($shift->jam_efektif * 60) : 480;
-
-        $query = Mesin::find()->where(['status_mesin' => 0]);
-        if ($workcenterId) {
-            $query->andWhere(['workcenter_id' => $workcenterId]);
+        $hitungKapasitas = 0;
+        $details = RoutingDetail::find()
+            ->where(['routing_id' => $routing_id])
+            ->all();
+        foreach ($details as $detail) {
+            $hitungKapasitas += $detail->waktu_setup_menit + ($detail->standard_time_menit * $qty);
         }
-        $hitungJumlahMesin = $query->count();
-
-        // Jika ada kolom power_factor di tabel Mesin, gunakan sum, jika tidak gunakan count
-        // $totalPower = $query->sum('power_factor') ?: $query->count();
-
-        return $hitungJumlahMesin * $dailyMinutes;
+        // echo "Total Kapasitas beban : $hitungKapasitas";
+        // exit;
+        return $hitungKapasitas;
     }
 
-    protected function calculateCapacityData($start, $end, $shiftId)
+    public function actionAjaxHitungEstimasi($routing_id, $qty, $tanggal_awal, $buffer = 0)
     {
-        $days = (new DateTime($end))->diff(new DateTime($start))->days + 1;
-        $workcenters = Workcenter::find()->all();
-        $data = [];
-        $shift = Shift::findOne($shiftId);
-        $durationMenit = $shift ? ($shift->jam_efektif * 60) : 480;
-        foreach ($workcenters as $wc) {
-            $data[$wc->workcenter_id] = [
-                'nama' => $wc->nama_workcenter,
-                'tipe_kapasitas' => $wc->tipe_kapasitas,
-                // Memanggil fungsi static yang sudah Anda buat
-                'cap_man_daily' => self::getManPowerCapacity($start, $end, $shiftId, $wc->workcenter_id),
-                'cap_man' => self::getManPowerCapacity($start, $end, $shiftId, $wc->workcenter_id) * $days,
-                'cap_machine_daily' => self::getMachineCapacity($start, $end, $shiftId, $wc->workcenter_id),
-                'cap_machine' => self::getMachineCapacity($start, $end, $shiftId, $wc->workcenter_id) * $days,
-            ];
-        }
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $kapasitasShift = $this->actionHitungKapasitasShift();
+
+        $hitungBeban = $this->actionHitungKapasitasBeban($routing_id, $qty, $tanggal_awal);
+
+        $jumlahHari = ceil($hitungBeban / $kapasitasShift);
+
+        $estimasiSelesai = date('Y-m-d', strtotime("+$jumlahHari days", strtotime($tanggal_awal)));
+
         return [
-            'workcenters' => $data,
-            'shift_duration' => $durationMenit,
+            'status' => 'success',
+            'estimasi_selesai' => $estimasiSelesai,
+            'debug_info' => [
+                'beban' => $hitungBeban,
+                'hari_needed' => $jumlahHari
+            ]
         ];
     }
 
-    protected function calcualatePowerCapacity($start, $end, $shiftId) {}
-
-    // --- Update Action AJAX Anda ---
-    public function actionGetCapacity($start, $end, $shiftId)
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        return $this->calculateCapacityData($start, $end, $shiftId);
-    }
 
     public function actionVerify($mps_id)
     {
@@ -380,7 +373,7 @@ class MpsController extends Controller
 
                 // Cukup satu kali save dalam pengecekan
                 if ($wo->save()) {
-                    $this->generateWoMaterials($wo->id_wo, $detail->mps_id, $detail->produk_id);
+                    $this->generateWoMaterials($wo->id_wo, $detail->mps_id, $detail->produk_id, $detail->qty_plan);
                 } else {
                     throw new \Exception("Gagal membuat Header WO untuk produk ID: " . $detail->produk_id);
                 }
@@ -417,43 +410,29 @@ class MpsController extends Controller
         return $this->redirect(['view', 'mps_id' => $mps_id]);
     }
 
-    protected function generateWoMaterials($id_wo, $mps_id, $produk_id)
+    protected function generateWoMaterials($id_wo, $mps_id, $produk_id, $qty_target)
     {
-        // 1. Cari Header MRP terkait MPS ini
-        $mrp = MasterMrp::findOne(['mps_id' => $mps_id]);
+        // 1. Ambil struktur BOM untuk produk spesifik ini
+        $bomDetails = Bom::find()->where(['produk_id' => $produk_id])->all();
 
-        if (!$mrp) {
-            throw new \Exception("Data MRP tidak ditemukan untuk MPS ini. Silakan generate MRP terlebih dahulu.");
+        if (empty($bomDetails)) {
+            // Opsional: Lempar error jika produk wajib punya BOM
+            return true;
         }
 
-        // 2. Ambil detail material dari MRP khusus untuk produk ini
-        // Catatan: Pastikan di tabel MRP Detail Anda menyimpan 'product_id' 
-        // atau bisa memfilternya melalui relasi BOM.
-        $mrpDetails = MrpDetail::find()
-            ->where(['mrp_id' => $mrp->mrp_id])
-            ->all();
+        foreach ($bomDetails as $itemBom) {
+            $woMat = new WorkorderMaterial();
+            $woMat->wo_id = $id_wo;
+            $woMat->bahan_id = $itemBom->bahan_id;
 
-        foreach ($mrpDetails as $mrpItem) {
-            // Cek apakah material ini memang bagian dari BOM produk yang sedang diproses
-            // Ini penting jika 1 MPS punya banyak produk agar material tidak tertukar
-            $isRelated = Bom::find()->where([
-                'produk_id' => $produk_id,
-                'bahan_id' => $mrpItem->bahan_id
-            ])->exists();
+            // Logika: Qty Plan WO = Jumlah di BOM * Jumlah Unit yang diproduksi (Qty Target WO)
+            $woMat->qty_plan = $itemBom->qty_per_unit * $qty_target;
 
-            if ($isRelated) {
-                $woMat = new WorkorderMaterial();
-                $woMat->wo_id = $id_wo;
-                $woMat->bahan_id = $mrpItem->bahan_id;
+            $woMat->qty_aktual = 0;
+            $woMat->status_pengambilan_bahan = 0;
 
-                // Mengambil Qty dari hasil kalkulasi MRP
-                $woMat->qty_plan = $mrpItem->kebutuhan_kotor;
-                $woMat->qty_aktual = 0;
-                $woMat->status_pengambilan_bahan = 0;
-
-                if (!$woMat->save()) {
-                    throw new \Exception("Gagal menyalin data MRP ke Material WO ID: $id_wo");
-                }
+            if (!$woMat->save()) {
+                throw new \Exception("Gagal menyalin material BOM ke Material WO untuk Produk ID: $produk_id");
             }
         }
         return true;
@@ -485,6 +464,7 @@ class MpsController extends Controller
 
                         $mrpDetail = new MrpDetail();
                         $mrpDetail->mrp_id = $mrp->mrp_id;
+                        $mrpDetail->produk_id = $mpsDetail->produk_id;
                         $mrpDetail->bahan_id = $bom->bahan_id;
                         $mrpDetail->kebutuhan_kotor = $totalNeeded;
                         $mrpDetail->stock_tersedia = $material->stock ?? 0;

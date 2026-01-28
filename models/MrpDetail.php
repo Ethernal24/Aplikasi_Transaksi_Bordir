@@ -34,7 +34,7 @@ class MrpDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['mrp_id', 'bahan_id', 'kebutuhan_kotor', 'stock_tersedia', 'kebutuhan_bersih'], 'required'],
+            [['mrp_id', 'produk_id', 'bahan_id', 'kebutuhan_kotor', 'stock_tersedia', 'kebutuhan_bersih'], 'required'],
             [['mrp_id', 'bahan_id', 'stock_tersedia', 'kebutuhan_bersih'], 'integer'],
             [['kebutuhan_kotor'], 'number'],
         ];
@@ -48,6 +48,7 @@ class MrpDetail extends \yii\db\ActiveRecord
         return [
             'mrp_detail_id' => 'Mrp Detail ID',
             'mrp_id' => 'Mrp ID',
+            'produk_id' => 'Produk ID',
             'bahan_id' => 'Bahan ID',
             'kebutuhan_kotor' => 'Kebutuhan Kotor',
             'stock_tersedia' => 'Stock Tersedia',
@@ -62,5 +63,10 @@ class MrpDetail extends \yii\db\ActiveRecord
     public function getMrp()
     {
         return $this->hasOne(MasterMrp::class, ['mrp_id' => 'mrp_id']);
+    }
+
+    public function getProduk()
+    {
+        return $this->hasOne(Barang::class, ['barang_id' => 'produk_id'])->alias('produk');
     }
 }

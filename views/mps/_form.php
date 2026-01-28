@@ -276,200 +276,92 @@ foreach ($allRouting as $routing) {
 
 <?php
 $getPermintaanUrl = Url::to(['get-permintaan']);
-$getCapacityUrl = Url::to(['get-capacity']); // Pastikan route ini benar
 
 $script = <<< JS
-var capacityData = {};
-var currentShiftDuration = 480
+
+async function hitungSemuaBaris(){
+    let tglMulaiHeader = $('#tgl_awal').val();
+    if(!tglMulaiHeader) return;
+
+    let currentStartDate = tglMulaiHeader;
+    let rows = $('.container-items .item');
+    
+    for (let i = 0; i < rows.length; i++) {
+        let row = $(rows[i]);
+        // Tunggu hasil estimasi baris saat ini
+        let tglSelesai = await hitungEstimasi(row, currentStartDate);
+        
+        if (tglSelesai) {
+            // Baris berikutnya mulai H+1 setelah baris ini selesai
+            currentStartDate = tambahHari(tglSelesai, 1);
+        }
+    }
+ 
+}
+
+
 // 1. Ambil Kapasitas (Triggered by Header: Tanggal, Shift)
-function fetchCapacity() {
-    var start = $('#tgl_awal').val();
-    var end = $('#tgl_akhir').val();
-    var shiftId = $('#mps-shift_id').val();
+function hitungEstimasi(row, tanggalMulai){
+    return new Promise((resolve)=>{
+        let routingId = row.find('.input-routing-id').val();
+        let qty = row.find('.input-qty').val();
+        console.log("Mencoba hitung: ", {routingId, qty, tanggalMulai})
     
-    if (start && end && shiftId) {
-        $.get('{$getCapacityUrl}', {start: start, end: end, shiftId: shiftId}, function(response) {
-            capacityData = response.workcenters;
-            currentShiftDuration = response.shift_duration || 480;
-            renderWorkcenterBlocks(); // Buat box-box WC secara dinamis
-            calculateCurrentLoad();
-        });
-    }
-}
-
-// 2. Render Box Workcenter secara dinamis ke UI
-function renderWorkcenterBlocks() {
-    var container = $('#workcenter-summary-container');
-    container.empty();
+        if(routingId && qty && tanggalMulai){
+            $.ajax({
+                url:'/mps/ajax-hitung-estimasi',
+                type:'GET',
+                dataType: 'json',
+                data: {
+                    routing_id:routingId,
+                    qty:qty,
+                    tanggal_awal:tanggalMulai,
+                },
+                success: function (response){
+                    if (response.status == 'success') {
+                        let estimasi = response.estimasi_selesai;
+                        let deadline = row.find('.input-due-date-ref').val();
+                        let inputEstimasi = row.find('input[id$="-estimasi_selesai"]');
     
-    $.each(capacityData, function(id, wc) {
-        // Tentukan apakah bagian mesin perlu dirender
-        var machineHtml = '';
-        if (wc.tipe_kapasitas == 0 || wc.tipe_kapasitas == 2) {
-            machineHtml = `
-                <div class="d-flex justify-content-between">
-                    <label class="small mb-0">Mesin</label>
-                    <small class="text-muted"><span id="val-mach-\${id}">0</span> / \${Math . round(wc . cap_machine) . toLocaleString('id-ID')}</small>
-                </div>
-                <div class="progress mb-2" style="height: 12px;">
-                    <div id="bar-mach-\${id}" class="progress-bar bg-info" style="width:0%">0%</div>
-                </div>`;
-        }
-
-        var block = `
-            <div class="col-md-3 mb-3">
-                <div class="card card-body shadow-sm border-left-info p-3">
-                    <h6 class="font-weight-bold text-uppercase">\${wc . nama}</h6>
-                    
-                    <div class="d-flex justify-content-between">
-                        <label class="small mb-0">Tenaga Kerja</label>
-                        <small class="text-muted"><span id="val-man-\${id}">0</span> / \${Math . round(wc . cap_man) . toLocaleString('id-ID')}</small>
-                    </div>
-                    <div class="progress mb-2" style="height: 12px;">
-                        <div id="bar-man-\${id}" class="progress-bar bg-success" style="width:0%">0%</div>
-                    </div>
-
-                    \${machineHtml} 
-
-                    <div class="mt-2 text-right">
-                        <small class="badge badge-light">Total Beban: <span id="text-wc-\${id}">0</span> Menit</small>
-                    </div>
-                </div>
-            </div>`;
-        
-        container.append(block);
-    });
-}
-
-
-// 3. Hitung Beban dari Detail MPS
-function calculateCurrentLoad() {
-    var wcLoads = {};
-    var targetEff = parseFloat($('#mps-target_efisiensi').val()) || 100;
-    var bufferTime = parseFloat($('#mps-buffer_time').val()) || 0;
-    var multiplier = (1 / (targetEff / 100)) * (1 + (bufferTime / 100));
-
-    $('.item:visible').each(function() {
-        var qty = parseInt($(this).find('.input-qty').val()) || 0;
-        var routingOption = $(this).find('.input-routing-id option:selected'); // Pastikan selector ke dropdown produk
-        var details = routingOption.data('details'); 
-
-        // Pengaman: Jika details berbentuk string, ubah jadi object
-        if (typeof details === 'string') {
-            details = JSON.parse(details);
-        }
-
-        if (details && Array.isArray(details)) {
-            details.forEach(function(item) {
-                // Gunakan wc_id dari routing detail
-                if (!wcLoads[item.wc_id]) wcLoads[item.wc_id] = 0;
-                
-                // Rumus: Qty * SMV per Workcenter * Multiplier
-                wcLoads[item.wc_id] += (qty * parseFloat(item.smv) * multiplier);
-                
-                // Opsional: Tambahkan setup menit (hanya sekali per batch)
-                wcLoads[item.wc_id] += parseFloat(item.setup || 0);
-            });
-        }
-    });
-
-    // Update Progress Bar masing-masing Workcenter
-    // Update Progress Bar & Angka masing-masing Workcenter
-    $.each(capacityData, function(id, wc) {
-        var load = wcLoads[id] || 0;
-        var loadFormatted = Math.round(load).toLocaleString('id-ID');
-        
-        // 1. Logika Manpower (Selalu dihitung jika ada beban)
-        var manPct = wc.cap_man > 0 ? (load / wc.cap_man * 100) : 0;
-        updateBarVisual($('#bar-man-' + id), manPct);
-        $('#val-man-' + id).text(loadFormatted);
-
-        // 2. Logika Mesin (Hanya jika Workcenter memang menggunakan mesin)
-        // Asumsi: Server mengirimkan properti 'use_machine' (boolean/int)
-        if (wc.tipe_kapasitas == 2 || wc.cap_machine > 0 || wc.tipe_kapasitas == 0) {
-            var machPct = wc.cap_machine > 0 ? (load / wc.cap_machine * 100) : 0;
-            updateBarVisual($('#bar-mach-' + id), machPct);
-            $('#val-mach-' + id).text(loadFormatted);
-            
-            // Pastikan container mesin tampil
-            $('#bar-mach-' + id).parent().prev().show(); // Label 'Mesin'
-            $('#bar-mach-' + id).parent().show();      // Progress bar mesin
-        } else {
-            // Jika tidak pakai mesin, sembunyikan UI mesin agar tidak membingungkan
-            $('#bar-mach-' + id).parent().prev().hide();
-            $('#bar-mach-' + id).parent().hide();
-            $('#val-mach-' + id).text('-'); 
-        }
-
-        $('#text-wc-' + id).text(loadFormatted);
-    });
-    calculateEstimatedFinish(multiplier)
-}
-
-function updateBarVisual(el, pct) {
-    el.css('width', (pct > 100 ? 100 : pct) + '%').text(Math.round(pct) + '%');
-    el.removeClass('bg-success bg-warning bg-danger');
-    if (pct > 100) el.addClass('bg-danger');
-    else if (pct > 80) el.addClass('bg-warning');
-    else el.addClass('bg-success');
-}
-function calculateEstimatedFinish(multiplier) {
-    var startStr = $('#tgl_awal').val();
-    if (!startStr) return;
-
-    var startDate = new Date(startStr);
-    var wcRunningMinutes = {}; 
-    var dailyMinutes = currentShiftDuration; 
-
-    $('.item:visible').each(function() {
-        var row = $(this);
-        var qty = parseInt(row.find('.input-qty').val()) || 0;
-        var details = row.find('.input-routing-id option:selected').data('details');
-        
-        var maxCompletionMinutes = 0;
-
-        if (details && qty > 0) {
-            details.forEach(function(item) {
-                // Rumus: (Qty * SMV * Multiplier) + Waktu Setup
-                // Setup biasanya tidak dikalikan target efisiensi karena bersifat statis
-                var totalTaskDuration = (qty * item.smv * multiplier) + item.setup;
-                
-                wcRunningMinutes[item.wc_id] = (wcRunningMinutes[item.wc_id] || 0) + totalTaskDuration;
-                
-                if (wcRunningMinutes[item.wc_id] > maxCompletionMinutes) {
-                    maxCompletionMinutes = wcRunningMinutes[item.wc_id];
+                        inputEstimasi.val(estimasi);
+    
+                        // Jika estimasi melewati deadline, beri warna merah
+                        if (deadline && estimasi > deadline) {
+                            inputEstimasi.css({'background-color': '#ffcccc', 'color': 'red', 'font-weight': 'bold'});
+                            // Opsional: Tampilkan pesan peringatan
+                            alert('Peringatan: Estimasi selesai melebihi tenggat waktu pelanggan!');
+                        } else {
+                            inputEstimasi.css({'background-color': '#ccffcc', 'color': 'green', 'font-weight': 'bold'});
+                        }
+                        resolve(estimasi);
+                    }else{
+                        resolve(null);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Gagal hitung di baris ini")
+                    resolve(null);
+                    console.error("AJAX Error Terdeteksi:");
+                    console.error("Status: " + status);
+                    console.error("Error: " + error);
+                    console.log("Response Text: " + xhr.responseText);
                 }
-            });
-
-            var daysToAdd = Math.ceil(maxCompletionMinutes / dailyMinutes);
-            var estimatedDate = addWorkDays(startDate, daysToAdd - 1);
-            
-            row.find('.est-finish-display').val(formatDate(estimatedDate));
-        } else {
-            row.find('.est-finish-display').val('-');
+            })
+        }else{
+            resolve(null);
         }
     });
 }
 
-// Fungsi pembantu untuk format tanggal YYYY-MM-DD
-function formatDate(date) {
-    return date.toISOString().split('T')[0];
+// Fungsi pembantu tambah hari
+function tambahHari(dateStr, days) {
+    let result = new Date(dateStr);
+    result.setDate(result.getDate() + days);
+    return result.toISOString().split('T')[0];
 }
 
-// Fungsi pembantu untuk menambah hari kerja (Melompati hari Minggu)
-function addWorkDays(startDate, days) {
-    var result = new Date(startDate);
-    var added = 0;
-    while (added < days) {
-        result.setDate(result.getDate() + 1);
-        if (result.getDay() !== 0) { // 0 adalah hari Minggu
-            added++;
-        }
-    }
-    return result;
-}
 
-// 3. AJAX Pilih Permintaan (Mengambil Produk & SMV)
+// 2. Pilih Permintaan (SO)
 $(document).on('change', '.select-permintaan', function() {
     var permintaanId = $(this).val();
     var row = $(this).closest('tr');
@@ -484,77 +376,25 @@ $(document).on('change', '.select-permintaan', function() {
             data: {id: permintaanId},
             success: function(data) {
                 dueDateRef.val(data.due_date);
-                updateHeaderMaxDate()
+                updateHeaderMaxDate();
                 produkDropdown.html('<option value="">Pilih Barang...</option>');
-                if (data.items && data.items.length > 0) {
-                    $.each(data.items, function(index, item) {
-                        produkDropdown.append(
-                            $('<option>', {
-                                value: item.barang_id,
-                                text: item.nama_barang,
-                                'data-qty': item.qty,
-                                'data-smv': item.smv // PENTING: Pastikan Controller mengirim data smv
-                            })
-                        );
-                    });
+                $.each(data.items, function(index, item) {
+                    produkDropdown.append($('<option>', {
+                        value: item.barang_id,
+                        text: item.nama_barang,
+                        'data-qty': item.qty
+                    }));
+                });
 
-                    if (data.items.length === 1) {
-                        produkDropdown.val(data.items[0].barang_id).trigger('change');
-                    }
+                if (data.items.length === 1) {
+                    produkDropdown.val(data.items[0].barang_id).trigger('change');
                 }
             }
         });
-    } else {
-        produkDropdown.html('<option value="">Pilih Barang...</option>');
-        qtyInput.val('');
-        dueDateRef.val('');
-        updateHeaderMaxDate();
-        calculateCurrentLoad();
     }
 });
 
-function updateHeaderMaxDate() {
-    var dates = [];
-    // Ambil semua due date dari baris detail
-    $('.input-due-date-ref').each(function() {
-        var val = $(this).val();
-        if (val) dates.push(new Date(val));
-    });
-
-    if (dates.length > 0) {
-        // Cari tanggal paling awal (deadline paling mepet)
-        var minDate = new Date(Math.min.apply(null, dates));
-        var formatted = minDate.toISOString().split('T')[0];
-        
-        // Target element Header
-        var headerStart = $('#tgl_awal'); // Sesuaikan ID field tanggal awal header Anda
-        var headerEnd = $('#tgl_akhir');   // Sesuaikan ID field tanggal akhir header Anda
-
-        // 1. Set atribut MAX agar kalender mengunci tanggal setelah deadline
-        headerStart.attr('max', formatted);
-        headerEnd.attr('max', formatted);
-        
-        // 2. Validasi: Jika Tanggal AWAL Header melampaui deadline
-        if (headerStart.val() && headerStart.val() > formatted) {
-            headerStart.val(formatted);
-            alert('Tanggal AWAL Header disesuaikan ke ' + formatted + ' karena tidak boleh melebihi deadline SO.');
-        }
-
-        // 3. Validasi: Jika Tanggal AKHIR Header melampaui deadline
-        if (headerEnd.val() && headerEnd.val() > formatted) {
-            headerEnd.val(formatted);
-            alert('Tanggal AKHIR Header disesuaikan ke ' + formatted + ' karena tidak boleh melebihi deadline SO.');
-        }
-    }
-}
-$(document).on('click', '.remove-item', function() {
-    // Beri jeda sedikit agar baris benar-benar hilang dari DOM sebelum hitung ulang
-    setTimeout(function() {
-        updateHeaderMaxDate();
-    }, 100);
-});
-
-// 4. Event Listener saat Produk dipilih (untuk update Qty & Hitung Beban)
+// 3. Pilih Produk -> Otomatis cari Routing & Hitung Estimasi
 $(document).on('change', '.select-produk', function() {
     var selected = $(this).find('option:selected');
     var qty = selected.data('qty');
@@ -562,67 +402,71 @@ $(document).on('change', '.select-produk', function() {
     var produkId = $(this).val();
     
     var routingDropdown = row.find('.input-routing-id');
-    var hiddenRouting = row.find('.hidden-routing-id'); // Tambahkan selector ini
+    var hiddenRouting = row.find('.hidden-routing-id');
 
     if (produkId) {
-        // Mencari option yang memiliki data-produk yang sesuai
         var matchedOption = routingDropdown.find('option[data-produk="' + produkId + '"]');
         var matchedValue = matchedOption.val();
         
         if (matchedValue) {
             routingDropdown.val(matchedValue).trigger('change');
-            hiddenRouting.val(matchedValue); // Isi hidden input untuk dikirim ke server
-        } else {
-            routingDropdown.val('').trigger('change');
-            hiddenRouting.val('');
+            hiddenRouting.val(matchedValue);
         }
-    } else {
-        routingDropdown.val('').trigger('change');
-        hiddenRouting.val('');
     }
     
     if (qty !== undefined) {
         row.find('.input-qty').val(qty);
     }
 
-    calculateCurrentLoad(); // Hitung ulang saat produk (SMV) berubah
+    hitungSemuaBaris(); 
 });
 
-
-
-// 5. Listener untuk Input Manual & Tanggal
-// Listener yang memicu FETCH (Ambil data dari server karena "Tangki" Kapasitas berubah)
-$(document).on('change', '#tgl_awal, #tgl_akhir, #mps-shift_id', fetchCapacity);
-
-// Listener yang memicu REKALKULASI (Hitung beban karena "Isi" atau "Pengali" berubah)
-$(document).on('change keyup', '#mps-target_efisiensi, #mps-buffer_time, .input-routing-id, .input-qty', calculateCurrentLoad);$(document).on('keyup change', '.input-qty', calculateCurrentLoad);
-// 6. Listener untuk Dynamic Form (Tambah/Hapus Baris)
-$(".dynamicform_wrapper").on("afterInsert", function(e, item) {
-    calculateCurrentLoad();
-});
-
-$(".dynamicform_wrapper").on("afterDelete", function(e) {
-    calculateCurrentLoad();
-});
-
-$(document).ready(function(){
-    // Saat tanggal awal berubah
-    $('#tgl_awal').change(function(){
-        var selectedDate = $(this).val();
-        
-        // Set minimal tanggal akhir sama dengan tanggal awal
-        $('#tgl_akhir').attr('min', selectedDate);
-        
-        // Jika tanggal akhir sudah terisi dan ternyata lebih kecil dari tanggal awal yang baru, kosongkan
-        var tglAkhir = $('#tgl_akhir').val();
-        if(tglAkhir && tglAkhir < selectedDate){
-            $('#tgl_akhir').val(selectedDate);
-        }
+// 4. Update Batasan Tanggal (Deadline SO)
+function updateHeaderMaxDate() {
+    var dates = [];
+    $('.input-due-date-ref').each(function() {
+        var val = $(this).val();
+        if (val) dates.push(new Date(val));
     });
+
+    if (dates.length > 0) {
+        var minDate = new Date(Math.min.apply(null, dates));
+        var formatted = minDate.toISOString().split('T')[0];
+        
+        $('#tgl_awal, #tgl_akhir').attr('max', formatted);
+
+        if ($('#tgl_awal').val() > formatted) $('#tgl_awal').val(formatted);
+        if ($('#tgl_akhir').val() > formatted) $('#tgl_akhir').val(formatted);
+    }
+}
+
+// 5. Trigger hitung ulang saat input berubah
+$(document).on('change keyup', '.input-qty, #tgl_awal', function() {
+    var row = $(this).closest('tr');
+    if (row.length) {
+        hitungSemuaBaris();
+    } else {
+        // Jika tgl_awal yang berubah, hitung ulang semua baris
+        $('.dynamicform_wrapper tr').each(function() {
+            hitungSemuaBaris();
+        });
+    }
 });
 
-// Jalankan kapasitas saat load pertama kali (untuk mode Update)
-fetchCapacity();
+// 6. Validasi Tanggal Range
+$('#tgl_awal').change(function(){
+    var selectedDate = $(this).val();
+    $('#tgl_akhir').attr('min', selectedDate);
+    if($('#tgl_akhir').val() < selectedDate) $('#tgl_akhir').val(selectedDate);
+});
+
+$(document).on('click', '.remove-item', function() {
+    setTimeout(function() {
+        console.log("Baris dihapus, menghitung ulang jadwal...");
+        updateHeaderMaxDate();
+        hitungSemuaBaris(); 
+    }, 100);
+});
 JS;
 $this->registerJs($script);
 ?>

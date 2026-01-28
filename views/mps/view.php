@@ -76,12 +76,12 @@ $this->params['breadcrumbs'][] = $this->title;
                         [
                             'attribute' => 'permintaan_id',
                             'value' => 'permintaan.kode_permintaan',
-                            'label' => 'Permintaan ID',
+                            'label' => 'Kode Permintaan',
                         ],
                         [
                             'attribute' => 'produk_id',
                             'value' => 'produk.nama_barang',
-                            'label' => 'Produk ID',
+                            'label' => 'Nama Produk',
                         ],
                         [
                             'attribute' => 'qty_plan',

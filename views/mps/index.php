@@ -55,14 +55,20 @@ $this->params['breadcrumbs'][] = $this->title;
                     ],
                     'status_mps' => [
                         'attribute' => 'status_mps',
+                        'format' => 'raw',
                         'value' => function ($model) {
-                            $list = [
-                                0 => 'Draft',
-                                1 => 'Approved',
-                            ];
-                            return $list[$model->status_mps] ?? null;
+                            $label = $model->StatusLabel;
+                            return "<span class= '{$label['class']}'>{$label['label']}</span>";
                         },
                         'label' => 'Status MPS'
+                    ],
+                    [
+                        'attribute' => 'prioritas',
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            $label = $model->PrioritasLabel;
+                            return "<span class= '{$label['class']}'>{$label['label']}</span>";
+                        },
                     ],
                     [
                         'class' => ActionColumn::className(),

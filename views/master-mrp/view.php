@@ -42,8 +42,15 @@ $this->params['breadcrumbs'][] = $this->title;
                     ]),
                     'columns' => [
                         [
+                            'attribute' => 'produk_id',
+                            'value' => function ($model) {
+                                return $model->produk->nama_barang ?? '-';
+                            },
+                            'label' => 'Nama Produk',
+                        ],
+                        [
                             'attribute' => 'bahan_id',
-                            'label' => 'Bahan ID',
+                            'label' => 'Nama Bahan',
                             'value' => function ($model) {
                                 return $model->bahan->nama_barang;
                             },
