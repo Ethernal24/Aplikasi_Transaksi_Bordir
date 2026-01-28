@@ -161,4 +161,12 @@ class Workorder extends BaseModel
         }
         return null; // Semua sudah selesai
     }
+
+    public function getOutputByWorkcenter($workcenter_id)
+    {
+        return $this->getProductionLog()
+            ->where(['id_workcenter' => $workcenter_id])
+            ->joinWith('activity') // Relasi dari Header ke Activity
+            ->sum('qty_output_total') ?: 0;
+    }
 }

@@ -7,7 +7,7 @@ defined('YII_ENV') or define('YII_ENV', 'dev');
 require __DIR__ . '/../vendor/autoload.php';
 
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->safeLoad();
 
 require __DIR__ . '/../vendor/yiisoft/yii2/Yii.php';

@@ -55,4 +55,9 @@ class Workcenter extends \yii\db\ActiveRecord
     {
         return $this->hasOne(TenagaKerja::class, ['tk_id' => 'tk_id']);
     }
+
+    public function getRoutingDetails()
+    {
+        return $this->hasMany(RoutingDetail::class, ['workcenter_id' => 'workcenter_id']);
+    }
 }

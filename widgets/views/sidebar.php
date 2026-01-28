@@ -48,6 +48,8 @@ $KehadiranUrl = Url::to(['/kehadiran/index']);
 $ProductionLogUrl = Url::to(['/production-log/index']);
 $JadwalHarianUrl = Url::to(['/production-log-worker-assignment/index']);
 $LaporanMps = Url::to(['/mps/laporan-mps']);
+$LaporanWipUrl = Url::to(['/laporan/laporan-wip']);
+
 
 
 $typographyUrl = Url::to(['site/typography']);
@@ -175,6 +177,7 @@ $samplePageUrl = Url::to(['site/sample-page']);
                             </li> -->
                             <li class="pc-item"><a class="pc-link" href="<?= $WorkOrderUrl ?>">Work Order</a></li>
                             <li class="pc-item"><a class="pc-link" href="<?= $ProductionLogUrl ?>">Log Produksi</a></li>
+                            <li class="pc-item"><a class="pc-link" href="<?= $LaporanWipUrl ?>">Laporan WIP</a></li>
                             <!-- <li class="pc-item pc-hasmenu">
                                 <a href="#!" class="pc-link">
                                     <span class="pc-mtext">Laporan</span>

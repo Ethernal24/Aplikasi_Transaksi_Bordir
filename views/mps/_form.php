@@ -36,7 +36,8 @@ foreach ($allRouting as $routing) {
 
     // Simpan ke dalam format yang dipahami DropDownList Yii2
     $routingOptions[$routing->routing_id] = [
-        'data-details' => Json::encode($details)
+        'data-details' => Json::encode($details),
+        'data-produk' => $routing->produk_id
     ];
 }
 
@@ -107,14 +108,12 @@ foreach ($allRouting as $routing) {
                             'prompt' => 'Pilih shift....',
                             'id' => 'mps-shift_id',
                         ]
-                    ) ?>
+                    )->label('Shift') ?>
                 </div>
                 <div class="col">
                     <?= $form->field($model, 'buffer_time')->textInput() ?>
                 </div>
-                <div class="col">
-                    <?= $form->field($model, 'target_efisiensi')->textInput() ?>
-                </div>
+
             </div>
             <hr>
             <h4>Detail MPS</h4>
@@ -138,9 +137,9 @@ foreach ($allRouting as $routing) {
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Permintaan ID</th>
-                        <th>Produk ID</th>
-                        <th>Routing ID</th>
+                        <th>Kode Permintaan</th>
+                        <th>Nama Produk</th>
+                        <th>Rute Produk</th>
                         <th>Qty plan</th>
                         <th>Tenggat Waktu</th>
                         <th>Estimasi Selesai</th>
@@ -206,10 +205,12 @@ foreach ($allRouting as $routing) {
                                         [
                                             'prompt' => 'Pilih Routing...',
                                             'class' => 'form-control input-routing-id',
+                                            'disabled' => true,
                                             'options' => $routingOptions
                                         ]
                                     ) // Tambahkan class ini 
                                 ?>
+                                <?= Html::activeHiddenInput($detail, "[{$i}]routing_id", ['class' => 'hidden-routing-id']) ?>
                             </td>
                             <td>
                                 <?= $form->field($detail, "[{$i}]qty_plan", ['template' => "{input}\n{error}"])
@@ -227,7 +228,6 @@ foreach ($allRouting as $routing) {
                                 echo Html::textInput("due_date_ref[{$i}]", $dueDateVal, [
                                     'class' => 'form-control input-due-date-ref',
                                     'readonly' => true,
-                                    'style' => 'background-color: #f4f4f4; border: 1px dashed #ccc;',
                                     'placeholder' => '-'
                                 ]);
                                 ?>
@@ -249,7 +249,7 @@ foreach ($allRouting as $routing) {
 
             <?php DynamicFormWidget::end(); ?>
             <hr>
-            <div>
+            <!-- <div>
                 <h4>Ringkasan Beban Produksi (Per Workcenter)</h4>
                 <hr>
                 <div id="workcenter-summary-container" class="row">
@@ -262,7 +262,7 @@ foreach ($allRouting as $routing) {
                     <strong>Peringatan!</strong> Salah satu Workcenter melebihi kapasitas (Bottleneck).
                     Silakan sesuaikan jadwal, efisiensi, atau total pekerja.
                 </div>
-            </div>
+            </div> -->
             <div class="form-group">
                 <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
                 <?= Html::a('Back', Yii::$app->request->referrer ?: ['index'], [
@@ -559,12 +559,36 @@ $(document).on('change', '.select-produk', function() {
     var selected = $(this).find('option:selected');
     var qty = selected.data('qty');
     var row = $(this).closest('tr');
+    var produkId = $(this).val();
+    
+    var routingDropdown = row.find('.input-routing-id');
+    var hiddenRouting = row.find('.hidden-routing-id'); // Tambahkan selector ini
+
+    if (produkId) {
+        // Mencari option yang memiliki data-produk yang sesuai
+        var matchedOption = routingDropdown.find('option[data-produk="' + produkId + '"]');
+        var matchedValue = matchedOption.val();
+        
+        if (matchedValue) {
+            routingDropdown.val(matchedValue).trigger('change');
+            hiddenRouting.val(matchedValue); // Isi hidden input untuk dikirim ke server
+        } else {
+            routingDropdown.val('').trigger('change');
+            hiddenRouting.val('');
+        }
+    } else {
+        routingDropdown.val('').trigger('change');
+        hiddenRouting.val('');
+    }
     
     if (qty !== undefined) {
         row.find('.input-qty').val(qty);
     }
+
     calculateCurrentLoad(); // Hitung ulang saat produk (SMV) berubah
 });
+
+
 
 // 5. Listener untuk Input Manual & Tanggal
 // Listener yang memicu FETCH (Ambil data dari server karena "Tangki" Kapasitas berubah)

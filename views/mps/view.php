@@ -62,14 +62,6 @@ $this->params['breadcrumbs'][] = $this->title;
                     <?= $model->buffer_time ?>%
                 </div>
             </div>
-            <div class="col">
-                <div>
-                    <strong>
-                        Target Efisiensi :
-                    </strong>
-                    <span><?= $model->target_efisiensi ?>%</span>
-                </div>
-            </div>
         </div>
         <hr>
         <div class="card-body">
@@ -111,11 +103,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 ?>
             </div>
             <hr>
-            <?= $this->render('card-kapasitas', [
-                'model' => $model,
-                'capacityData' => $capacityData,
-                'detail' => $detail,
-            ]) ?>
+
 
             <?php if ($model->status_mps === 0): ?>
                 <?= Html::a('Update', ['update', 'mps_id' => $model->mps_id], ['class' => 'btn btn-primary']) ?>
