@@ -54,7 +54,7 @@ AppAsset::register($this);
     <nav class="tracking-navbar">
         <div class="container text-center">
             <a href="#" class="logo-text">
-                📦 SISTEM TRACKING KONVEKSI
+                INFORMASI TRACKING
             </a>
         </div>
     </nav>

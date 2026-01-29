@@ -40,7 +40,8 @@ $this->params['breadcrumbs'][] = $this->title;
                         <strong>
                             Status :
                         </strong>
-                        <?= $model->status ?>
+                       <span class="<?= $model->getLabelStatus()['class'] ?>"><?= $model->getLabelStatus()['label']  ?>
+                       </span> 
                     </span>
                 </div>
             </div>

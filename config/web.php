@@ -60,7 +60,6 @@ $config = [
                 'username' => $_ENV['SMTP_USERNAME'],
                 'password' => $_ENV['SMTP_PASSWORD'],
                 'port' => $_ENV['SMTP_PORT'],
-                'dsn' => $_ENV['SMTP_DSN'],
             ]
         ],
         'log' => [

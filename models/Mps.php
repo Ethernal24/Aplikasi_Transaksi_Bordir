@@ -45,11 +45,12 @@ class Mps extends BaseModel
     public function rules()
     {
         return [
-            [['kode_mps', 'periode', 'tanggal_awal', 'tanggal_akhir', 'status_mps', 'buffer_time', 'prioritas'], 'required'],
+            [['kode_mps', 'periode', 'tanggal_awal', 'tanggal_akhir', 'status_mps', 'buffer_time'], 'required'],
             [['status_mps', 'prioritas', 'shift_id'], 'integer'],
             [['kode_mps'], 'string'],
             [['kode_mps'], 'unique'],
             [['buffer_time'], 'number'],
+            [['prioritas', 'shift_id'],'safe'],
 
             ['tanggal_akhir', 'compare', 'compareAttribute' => 'tanggal_awal', 'operator' => '>=', 'enableClientValidation' => true],
 

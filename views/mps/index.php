@@ -62,14 +62,14 @@ $this->params['breadcrumbs'][] = $this->title;
                         },
                         'label' => 'Status MPS'
                     ],
-                    [
-                        'attribute' => 'prioritas',
-                        'format' => 'raw',
-                        'value' => function ($model) {
-                            $label = $model->PrioritasLabel;
-                            return "<span class= '{$label['class']}'>{$label['label']}</span>";
-                        },
-                    ],
+                    // [
+                    //     'attribute' => 'prioritas',
+                    //     'format' => 'raw',
+                    //     'value' => function ($model) {
+                    //         $label = $model->PrioritasLabel;
+                    //         return "<span class= '{$label['class']}'>{$label['label']}</span>";
+                    //     },
+                    // ],
                     [
                         'class' => ActionColumn::className(),
                         'template' => '{view}',

@@ -54,6 +54,7 @@ foreach ($allRouting as $routing) {
                 <div class="col">
                     <?= $form->field($model, 'periode')->textInput([
                         'type' => 'date',
+                        'min' => date('Y-m-d'),
 
                     ]) ?>
                 </div>
@@ -89,7 +90,7 @@ foreach ($allRouting as $routing) {
                     ]) ?>
                 </div>
 
-                <div class="col">
+                <!-- <div class="col">
                     <?= $form->field($model, 'prioritas')->dropDownList([
                         0 => 'Low',
                         1 => 'Normal',
@@ -98,10 +99,10 @@ foreach ($allRouting as $routing) {
                     ], [
                         'prompt' => 'Pilih Prioritas...'
                     ]) ?>
-                </div>
+                </div> -->
             </div>
             <div class="row">
-                <div class="col">
+                <!-- <div class="col">
                     <?= $form->field($model, 'shift_id')->dropDownList(
                         ArrayHelper::map(Shift::find()->all(), 'shift_id', 'nama_shift'),
                         [
@@ -109,7 +110,7 @@ foreach ($allRouting as $routing) {
                             'id' => 'mps-shift_id',
                         ]
                     )->label('Shift') ?>
-                </div>
+                </div> -->
                 <div class="col">
                     <?= $form->field($model, 'buffer_time')->textInput() ?>
                 </div>

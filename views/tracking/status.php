@@ -1,14 +1,20 @@
 <?php
 
 use app\models\ProductionLog;
+$statusData = $so->getLabel();
 ?>
-<div class="container mt-5">
-    <div class="card shadow">
+<div class="pc-content">
+    <div class="card card-table">
         <div class="card-header bg-primary text-white">
             <h4>Tracking Pesanan: #<?= $so->kode_permintaan ?></h4>
         </div>
+        <hr>
         <div class="card-body">
-            <h5>Status Saat Ini: <span class="badge badge-info"><?= $so->status_pesanan ?></span></h5>
+            <h5>Status Saat Ini:
+            <span class="<?= $statusData['class'] ?>">
+                <?= $statusData['label'] ?>
+            </span>
+            </h5>
             <hr>
             <?php
             foreach ($so->workOrder as $wo): ?>
@@ -24,7 +30,7 @@ use app\models\ProductionLog;
                                 'id_workcenter' => $step->workcenter_id
                             ]);
 
-                            $class = "stepper-item";
+                            $class = "stepper-item";636
                             if ($log && $log->status == 2) $class .= " completed";
                             elseif ($log && $log->status == 1) $class .= " active";
                         ?>
