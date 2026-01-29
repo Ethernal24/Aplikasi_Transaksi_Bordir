@@ -4,8 +4,8 @@
 /** @var string $content */
 
 use app\assets\AppAsset;
-use yii\helpers\Html;
 use yii\helpers\Url;
+use yii\bootstrap5\Html;
 
 AppAsset::register($this);
 ?>
@@ -14,8 +14,10 @@ AppAsset::register($this);
 <html lang="<?= Yii::$app->language ?>">
 
 <head>
+    <title><?= Html::encode($this->title) ?></title>
     <meta charset="<?= Yii::$app->charset ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="<?= Yii::getAlias('@web') ?>/assets/images/diwarna-logo-png.png" type="image/x-icon">
     <?php $this->registerCsrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
     <?php $this->head() ?>

@@ -18,7 +18,10 @@ use yii\widgets\ActiveForm;
         </div>
         <div class="card-body mx-4">
             <?php $form = ActiveForm::begin(); ?>
-            <?= $form->field($model, 'tanggal')->textInput(['type' => 'date']) ?>
+            <?= $form->field($model, 'tanggal')->textInput([
+                'type' => 'date',
+                'min' => date('Y-m-d'),
+            ]) ?>
 
             <?= $form->field($model, 'tk_id')->dropDownList(
                 ArrayHelper::map(TenagaKerja::find()->all(), 'tk_id', 'nama'),

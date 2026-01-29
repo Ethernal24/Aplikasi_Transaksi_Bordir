@@ -37,7 +37,8 @@ class AppAsset extends AssetBundle
         'assets/js/pcoded.js',
         'assets/js/plugins/feather.min.js',
         'https://kit.fontawesome.com/445c1285d8.js',
-        'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js'
+        'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js',
+        'https://cdn.jsdelivr.net/npm/sweetalert2@11',
     ];
     public $depends = [
         'yii\web\YiiAsset',

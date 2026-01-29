@@ -489,11 +489,13 @@ class MpsController extends Controller
     protected function sendTrackingEmail($so)
     {
         $trackingLink = Url::to(['tracking/status', 'token' => $so->tracking_token], true);
-        return Yii::$app->mailer->compose()
+        return Yii::$app->mailer->compose('tracking-order', [ // Nama file view
+            'so' => $so,
+            'trackingLink' => $trackingLink,
+        ])
             ->setFrom(['admin@konveksi.com' => 'Produksi Konveksi'])
             ->setTo($so->pelanggan->email)
             ->setSubject('Pesanan mulai diproses - #' . $so->kode_permintaan)
-            ->setHtmlBody('Halo, pesanan anda sedang diproses. Pantau di :' . $trackingLink)
             ->send();
     }
 }

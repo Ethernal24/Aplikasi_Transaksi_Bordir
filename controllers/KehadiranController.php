@@ -135,4 +135,58 @@ class KehadiranController extends Controller
 
         throw new NotFoundHttpException('The requested page does not exist.');
     }
+
+    public function actionAbsen()
+    {
+        $model = new Kehadiran();
+
+        if ($model->load(Yii::$app->request->post())) {
+            $hariIni = date('Y-m-d');
+            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+            // Cari apakah karyawan sudah absen masuk hari ini
+            $existingModel = Kehadiran::find()
+                ->where(['tk_id' => $model->tk_id, 'tanggal' => $hariIni])
+                ->one();
+
+            if ($existingModel) {
+                // SKENARIO 2: Sudah absen masuk, tapi mau absen pulang
+                if (empty($existingModel->jam_pulang_real) || $existingModel->jam_pulang_real == '00:00:00') {
+                    $existingModel->jam_pulang_real = date('H:i:s');
+                    if ($existingModel->save()) {
+                        return [
+                            'success' => true,
+                            'message' => 'Absen Pulang berhasil dicatat pada ' . $existingModel->jam_pulang_real
+                        ];
+                    }
+                } else {
+                    // SKENARIO 3: Sudah absen masuk DAN pulang
+                    return [
+                        'success' => false,
+                        'message' => 'Karyawan ini sudah melengkapi absensi (Masuk & Pulang) untuk hari ini!'
+                    ];
+                }
+            } else {
+                // SKENARIO 1: Belum ada data sama sekali (Absen Masuk)
+                $model->tanggal = $hariIni;
+                $model->jam_masuk_real = date('H:i:s');
+                $model->status_kehadiran = 0; // Default Hadir
+                if ($model->save()) {
+                    return [
+                        'success' => true,
+                        'message' => 'Absen Masuk berhasil dicatat pada ' . $model->jam_masuk_real
+                    ];
+                }
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Gagal mencatat absensi. Silakan cek data kembali.'
+            ];
+        }
+
+        return $this->renderAjax('_form_absen_cepat', [
+            'model' => $model,
+        ]);
+    }
 }

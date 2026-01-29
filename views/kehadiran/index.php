@@ -1,6 +1,7 @@
 <?php
 
 use app\models\Kehadiran;
+use yii\bootstrap5\Modal;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\grid\ActionColumn;
@@ -18,6 +19,11 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="card-header">
             <h1><?= Html::encode($this->title) ?></h1>
             <?= Html::a('Create Kehadiran', ['create'], ['class' => 'btn btn-success']) ?>
+            <?= Html::button('Absen Cepat', [
+                'value' => Url::to(['absen']), // URL target untuk AJAX
+                'class' => 'btn btn-success',
+                'id' => 'modalButton',
+            ],) ?>
 
         </div>
         <div class="card-body mx-4">
@@ -79,6 +85,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     ],
                     [
                         'class' => ActionColumn::className(),
+                        'template' => '{update}',
                         'urlCreator' => function ($action, Kehadiran $model, $key, $index, $column) {
                             return Url::toRoute([$action, 'kehadiran_id' => $model->kehadiran_id]);
                         }
@@ -87,4 +94,29 @@ $this->params['breadcrumbs'][] = $this->title;
             ]); ?>
         </div>
     </div>
+    <!-- Modal View -->
+    <?php
+    // Letakkan Modal di bagian bawah file view
+    Modal::begin([
+        'title' => '<h4>Absensi Cepat Karyawan</h4>',
+        'id' => 'modal',
+        'size' => 'modal-md',
+    ]);
+    echo "<div id='modalContent'></div>";
+    Modal::end();
+    ?>
 </div>
+
+<?php
+// Script untuk memanggil modal via AJAX
+$script = <<< JS
+$(function(){
+    $('#modalButton').click(function (){
+        $('#modal').modal('show')
+            .find('#modalContent')
+            .load($(this).attr('value'));
+    });
+});
+JS;
+$this->registerJs($script);
+?>
