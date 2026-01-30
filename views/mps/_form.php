@@ -237,11 +237,26 @@ foreach ($allRouting as $routing) {
                                 <?= $form->field($detail, "[{$i}]estimasi_selesai", ['template' => "{input}\n{error}"])
                                     ->textInput(['class' => 'form-control est-finish-display', 'readonly' => true]) // Tambahkan class ini 
                                 ?>
+                                <!-- <small>
+                                    <a href="javascript:void(0)" class="btn-setup-mesin" data-index="<?= $i ?>">
+                                        <i class="fa fa-cogs"></i> Atur Alokasi Mesin
+                                    </a>
+                                </small> -->
                             </td>
                             <td style="text-align:center;">
                                 <button type="button" class="remove-item btn btn-danger btn-sm">
                                     <i class="fa fa-minus"></i>
                                 </button>
+                            </td>
+                        </tr>
+                        <tr class="allocation-detail-row" id="allocation-<?= $i ?>" style="display:none; background-color: #f9f9f9;">
+                            <td colspan="7">
+                                <div class="p-3 border">
+                                    <h5>Alokasi Mesin per Tahapan Rute</h5>
+                                    <div class="row" id="allocation-content-<?= $i ?>">
+                                        <p class="text-muted">Pilih rute produk terlebih dahulu...</p>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -468,6 +483,166 @@ $(document).on('click', '.remove-item', function() {
         hitungSemuaBaris(); 
     }, 100);
 });
+
+$(document).on('click', '.btn-setup-mesin', function() {
+    var index = $(this).data('index');
+    // Pastikan ID selector ini sesuai dengan yang ada di <tr> detail alokasi
+    $('#allocation-' + index).slideToggle(); 
+    
+    // Ambil data rute dari dropdown
+    var routingId = $('select[name="MpsDetail[' + index + '][routing_id]"]').val();
+    
+    if(routingId) {
+        // SESUAIKAN NAMA FUNGSI: loadAllocationDetails
+        loadAllocationDetails(index, routingId);
+    } else {
+        alert("Silakan pilih Rute Produk terlebih dahulu.");
+    }
+});
+
+function loadAllocationDetails(index, routingId) {
+    // Pastikan ID selector ini sama dengan yang ada di elemen HTML pembungkus
+    var containers = $('#allocation-content-' + index); 
+    
+    // Cek apakah containers ditemukan agar tidak error undefined
+    if (containers.length === 0) {
+        console.error("Elemen #allocation-content-" + index + " tidak ditemukan!");
+        return;
+    }
+
+    // Cegah load berulang jika tabel sudah dirender
+    if (containers.find('table').length > 0) return;
+
+    containers.html('<i class="fa fa-spinner fa-spin"></i> Memuat tahapan rute...');
+
+    $.ajax({
+        url: 'get-routing-details', // Pastikan URL ini sesuai dengan routing di Controller Anda
+        type: 'GET',
+        data: { routing_id: routingId },
+        success: function(data) {
+            var html = '<table class="table table-condensed table-bordered" style="background: white; margin-bottom: 0;">' +
+                       '<thead class="bg-blue" style="color: white;"><tr>' +
+                       '<th>Tahapan (Workcenter)</th>' +
+                       '<th>Waktu Setup (Min)</th>' +
+                       '<th>Standard Time (Min)</th>' +
+                       '<th style="width: 150px;">Jumlah Mesin</th>' +
+                       '</tr></thead><tbody>';
+            
+            if (data.length > 0) {
+                $.each(data, function(i, item) {
+                    html += '<tr>' +
+                            '<td>' + item.nama_workcenter + '</td>' +
+                            '<td>' + item.waktu_setup_menit + '</td>' +
+                            '<td>' + item.std_time + '</td>' +
+                            '<td><input type="number" name="MpsDetail['+index+'][allocation]['+item.workcenter_id+']" ' +
+                            'class="form-control input-sm input-mesin" value="1" min="1"></td>' +
+                            '</tr>';
+                });
+            } else {
+                html += '<tr><td colspan="3" class="text-center">Tidak ada detail tahapan untuk rute ini.</td></tr>';
+            }
+            
+            html += '</tbody></table>';
+            containers.html(html);
+        },
+        error: function() {
+            containers.html('<span class="text-danger">Gagal mengambil data tahapan.</span>');
+        }
+    });
+}
+// Listener ketika jumlah mesin diubah
+$(document).on('input', '.input-mesin', function() {
+    var row = $(this).closest('.allocation-detail-row');
+    var index = row.attr('id').split('-')[1]; // Ambil index dari id allocation-0, allocation-1
+    
+    hitungUlangEstimasi(index);
+});
+
+function hitungUlangEstimasi(index) {
+    var totalWaktu = 0;
+    var qtyPlan = parseFloat($('input[name="MpsDetail[' + index + '][qty_plan]"]').val()) || 0;
+    var menitPerHari = 900; 
+
+    // 1. Ambil Tanggal Mulai (Harus teliti di sini)
+    var tanggalMulai;
+    if (index == 0) {
+        tanggalMulai = $('#tgl_awal').val();
+    } else {
+        var prevIndex = index - 1;
+        tanggalMulai = $('input[name="MpsDetail[' + prevIndex + '][estimasi_selesai]"]').val();
+    }
+
+    if (!tanggalMulai || tanggalMulai === "-") return;
+
+    // 2. Hitung total menit dari tabel alokasi
+    var rowsAlokasi = $('#allocation-content-' + index + ' tbody tr');
+    
+    if (rowsAlokasi.length > 0) {
+        rowsAlokasi.each(function() {
+            var setupTime = parseFloat($(this).find('td:eq(1)').text()) || 0; 
+            var stdTime = parseFloat($(this).find('td:eq(2)').text()) || 0; 
+            var qtyMesin = parseFloat($(this).find('.input-mesin').val()) || 1;
+            
+            totalWaktu += setupTime + ((stdTime * qtyPlan) / qtyMesin);
+        });
+    } else {
+        // FALLBACK: Jika tabel alokasi belum dibuka/dimuat, 
+        // jangan set totalWaktu ke 0, tapi ambil nilai lama atau hitung standar (mesin=1)
+        // Ini penyebab tanggal baris 2 jadi ngaco (loncat ke tanggal yg sama)
+        return; 
+    }
+
+    // 3. Update Tanggal Selesai
+    var displayEst = $('input[name="MpsDetail[' + index + '][estimasi_selesai]"]');
+    var tglSelesai = formatMenitKeTanggal(totalWaktu, tanggalMulai, menitPerHari);
+    displayEst.val(tglSelesai);
+
+    // 4. Update Log Info
+    var hariNeeded = Math.ceil(totalWaktu / menitPerHari);
+    var infoHtml = `<small class="text-muted">Beban: \${totalWaktu . toFixed(1)} m | Butuh: \${hariNeeded} Hari</small>`;
+    $('#allocation-content-' + index).find('.info-beban').remove();
+    $('#allocation-content-' + index).append(`<div class="info-beban text-right">\${infoHtml}</div>`);
+
+    // 5. Teruskan ke baris bawahnya
+    updateEfekDomino(index); 
+}
+
+function formatMenitKeTanggal(totalWaktu, baseDate, menitPerHari) {
+    if (isNaN(totalWaktu) || totalWaktu <= 0 || !baseDate) return "-";
+
+    // 1. Hitung berapa hari yang dibutuhkan berdasarkan kapasitas konveksi (misal 900 menit/hari)
+    // Kita kurangi 1 karena hari pertama dihitung sebagai hari kerja pertama
+    let hariNeeded = Math.ceil(totalWaktu / menitPerHari);
+    let tambahanHari = hariNeeded > 0 ? hariNeeded - 1 : 0;
+
+    // 2. Olah tanggal
+    let safeDateStr = baseDate.replace(/-/g, "/");
+    let date = new Date(safeDateStr);
+    date.setHours(0, 0, 0, 0);
+
+    // 3. Tambahkan hari, bukan menit
+    date.setDate(date.getDate() + hariNeeded);
+
+    let year = date.getFullYear();
+    let month = ("0" + (date.getMonth() + 1)).slice(-2);
+    let day = ("0" + date.getDate()).slice(-2);
+
+    return year + "-" + month + "-" + day;
+}
+
+function updateEfekDomino(currentIndex) {
+    let nextIndex = parseInt(currentIndex) + 1;
+    let nextRow = $('input[name="MpsDetail[' + nextIndex + '][qty_plan]"]');
+
+    // Jika baris berikutnya ada di form
+    if (nextRow.length > 0) {
+        console.log("Memicu hitung ulang untuk baris: " + nextIndex);
+        
+        // Panggil fungsi hitung untuk baris selanjutnya
+        // Ini akan menciptakan rantai otomatis sampai baris terakhir
+        hitungUlangEstimasi(nextIndex);
+    }
+}
 JS;
 $this->registerJs($script);
 ?>

@@ -498,4 +498,24 @@ class MpsController extends Controller
             ->setSubject('Pesanan mulai diproses - #' . $so->kode_permintaan)
             ->send();
     }
+
+    public function actionGetRoutingDetails($routing_id)
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $details = RoutingDetail::find()
+            ->where(['routing_id' => $routing_id])
+            ->with('workCenter') // Pastikan ada relasi ke Master_Workcenter
+            ->all();
+
+        $results = [];
+        foreach ($details as $detail) {
+            $results[] = [
+                'nama_workcenter' => $detail->workCenter->nama_workcenter,
+                'workcenter_id'   => $detail->workcenter_id,
+                'std_time'        => $detail->standard_time_menit,
+                'waktu_setup_menit'        => $detail->waktu_setup_menit,
+            ];
+        }
+        return $results;
+    }
 }

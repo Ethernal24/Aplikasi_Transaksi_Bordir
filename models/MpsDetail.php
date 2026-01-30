@@ -69,4 +69,9 @@ class MpsDetail extends \yii\db\ActiveRecord
     {
         return $this->hasOne(MasterRouting::class, ['routing_id' => 'routing_id']);
     }
+
+    public function getAlokasi()
+    {
+        return $this->hasMany(MpsDetailAllocation::class, ['mps_detail_id' => 'mps_detail_id']);
+    }
 }

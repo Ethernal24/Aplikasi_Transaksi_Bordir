@@ -40,8 +40,8 @@ $this->params['breadcrumbs'][] = $this->title;
                         <strong>
                             Status :
                         </strong>
-                       <span class="<?= $model->getLabelStatus()['class'] ?>"><?= $model->getLabelStatus()['label']  ?>
-                       </span> 
+                        <span class="<?= $model->getLabelStatus()['class'] ?>"><?= $model->getLabelStatus()['label']  ?>
+                        </span>
                     </span>
                 </div>
             </div>
@@ -85,30 +85,30 @@ $this->params['breadcrumbs'][] = $this->title;
                         ]),
                         'active' => true,
                     ],
-                    [
-                        'label' => '<i class="fa fa-box"></i> Detail',
-                        'content' => $this->render('_tab_detail', [
-                            'model' => $model,
-                            'detailProvider' => $detailProvider,
-                        ]),
-                        'encode' => false,
-                    ],
-                    [
-                        'label' => '<i class="fa fa-tasks"></i> Downtime (Kendala)',
-                        'content' => $this->render('_tab_downtime', [
-                            'model' => $model,
-                            'downtimeProvider' => $downtimeProvider,
-                        ]),
-                        'encode' => false,
-                    ],
-                    [
-                        'label' => '<i class="fa fa-tasks"></i> Attendance (lama kerja) ',
-                        'content' => $this->render('_tab_attendance', [
-                            'model' => $model,
-                            'attendanceProvider' => $attendanceProvider,
-                        ]),
-                        'encode' => false,
-                    ],
+                    // [
+                    //     'label' => '<i class="fa fa-box"></i> Detail',
+                    //     'content' => $this->render('_tab_detail', [
+                    //         'model' => $model,
+                    //         'detailProvider' => $detailProvider,
+                    //     ]),
+                    //     'encode' => false,
+                    // ],
+                    // [
+                    //     'label' => '<i class="fa fa-tasks"></i> Downtime (Kendala)',
+                    //     'content' => $this->render('_tab_downtime', [
+                    //         'model' => $model,
+                    //         'downtimeProvider' => $downtimeProvider,
+                    //     ]),
+                    //     'encode' => false,
+                    // ],
+                    // [
+                    //     'label' => '<i class="fa fa-tasks"></i> Attendance (lama kerja) ',
+                    //     'content' => $this->render('_tab_attendance', [
+                    //         'model' => $model,
+                    //         'attendanceProvider' => $attendanceProvider,
+                    //     ]),
+                    //     'encode' => false,
+                    // ],
                     // [
                     //     'label' => '<i class="fa fa-tasks"></i> Pekerja',
                     //     'encode' => false,
