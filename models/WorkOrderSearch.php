@@ -5,6 +5,7 @@ namespace app\models;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\WorkOrder;
+use yii\db\Expression;
 
 /**
  * WorkOrderSearch represents the model behind the search form of `app\models\WorkOrder`.
@@ -41,11 +42,40 @@ class WorkOrderSearch extends WorkOrder
     public function search($params)
     {
         $query = WorkOrder::find();
+        $statusOrder = new Expression("
+    CASE 
+        WHEN status_wo IN (3, 4) THEN 1 
+        ELSE 0 
+    END
+");
 
-        // add conditions that should always apply here
+        $query->addSelect([
+            'workorder.*', // Gunakan nama_tabel.* agar lebih aman
+            'is_finished' => $statusOrder
+        ]);
+
+        // HAPUS ATAU KOMENTARI BARIS DI BAWAH INI:
+        // ->andWhere(['not in', 'status_wo', [3, 4]]); 
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => [
+                'attributes' => [
+                    'prioritas',
+                    'status_wo',
+                    'due_date',
+                    'is_finished' => [
+                        'asc' => ['is_finished' => SORT_ASC],
+                        'desc' => ['is_finished' => SORT_DESC],
+                        'label' => 'Status Selesai',
+                    ],
+                ],
+                'defaultOrder' => [
+                    'is_finished' => SORT_ASC, // Ini yang memastikan 3 & 4 masuk grup bawah
+                    'prioritas'   => SORT_DESC,
+                    'due_date'    => SORT_ASC,
+                ]
+            ],
         ]);
 
         $this->load($params);

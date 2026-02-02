@@ -61,10 +61,25 @@ $this->params['breadcrumbs'][] = $this->title;
                     [
                         'class' => ActionColumn::className(),
                         'template' => '{delete} {view}',
-                        'urlCreator' => function ($action, WorkOrder $model, $key, $index, $column) {
+                        'buttons' => [
+                            'view' => function ($url, $model, $key) {
+                                // Kita buat URL manual khusus untuk tombol View dengan 2 variabel
+                                $customUrl = Url::to([
+                                    'view',
+                                    'id_wo' => $model->id_wo,
+                                    'token' => $model->permintaan->tracking_token // Variabel kedua Anda di sini
+                                ]);
+                                return Html::a('<span class="fas fa-eye"></span>', $customUrl, [
+                                    'title' => 'View',
+                                    'data-pjax' => '0',
+                                ]);
+                            },
+                        ],
+                        'urlCreator' => function ($action, $model, $key, $index, $column) {
+                            // urlCreator ini akan tetap melayani tombol Delete (karena hanya 1 variabel)
                             return Url::toRoute([$action, 'id_wo' => $model->id_wo]);
                         }
-                    ],
+                    ]
                 ],
             ]); ?>
         </div>

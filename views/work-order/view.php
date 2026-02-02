@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     ],
                     [
                         'label' => '<i class="fa fa-tasks"></i> Production Progress',
-                        'content' => $this->render('_tab_progress', ['model' => $model]),
+                        'content' => $this->render('_tab_progress', ['model' => $model, 'so' => $so]),
                         'encode' => false,
                     ],
                 ]

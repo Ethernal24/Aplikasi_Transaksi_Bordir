@@ -79,10 +79,36 @@ class MpsController extends Controller
     public function actionView($mps_id)
     {
         $model = $this->findModel($mps_id);
-        $detail = MpsDetail::find()->where(['mps_id' => $mps_id])->all();
+        $details = MpsDetail::find()->where(['mps_id' => $mps_id])->all();
+        $workcenterData = [];
 
+        foreach ($details as $detail) {
+            // Ambil routing detail untuk memecah beban per workcenter
+            $routings = RoutingDetail::find()->where(['routing_id' => $detail->routing_id])->all();
+
+            foreach ($routings as $step) {
+                $beban = ($step->waktu_setup_menit + ($step->standard_time_menit * $detail->qty_plan));
+
+                if (!isset($workcenterData[$step->workcenter_id])) {
+                    $workcenterData[$step->workcenter_id] = [
+                        'nama' => $step->workcenter->nama_workcenter,
+                        'total_beban' => 0,
+                        'kapasitas' => 0
+                    ];
+                }
+                $workcenterData[$step->workcenter_id]['total_beban'] += $beban;
+            }
+        }
+
+        // Hitung Kapasitas Tersedia per Workcenter berdasarkan Alokasi Header
+        foreach ($workcenterData as $id => $data) {
+            $kapasitasPerHari = $model->total_operator_alloc * MPS::hitungKapasitasShift();
+            $totalDays = (strtotime($model->tanggal_akhir) - strtotime($model->tanggal_awal)) / (60 * 60 * 24) + 1;
+            $workcenterData[$id]['kapasitas'] = $kapasitasPerHari * $totalDays;
+        }
 
         return $this->render('view', [
+            'workcenterData' => $workcenterData,
             'model' => $model,
             'detail' => $detail,
         ]);
@@ -286,65 +312,6 @@ class MpsController extends Controller
         return ['items' => []]; // Kembalikan array kosong jika tidak ada
     }
 
-
-    public function actionHitungKapasitasShift()
-    {
-        $shifts = Shift::find()->all();
-        $totalMenitHarian = 0;
-
-        // echo "debug fungsi, ";
-        foreach ($shifts as $shift) {
-            $durasi = $shift->jam_efektif;
-            $menitEfektif = $durasi * 60;
-            // Untuk testing
-            // echo "Nama Shift : $shift->nama_shift ";
-            // echo "durasi : $durasi Jam, ";
-            // echo "menit Efektif : $menitEfektif, ";
-            // Yii::info("Shift {$shift->shift_id}: Total $durasi mnt, Efektif $menitEfektif mnt", 'debug_mps');
-            $totalMenitHarian += $menitEfektif;
-        }
-        return $totalMenitHarian;
-        // echo "Total kapasitas harian : $totalMenitHarian Menit";
-        // exit;
-    }
-
-    public function actionHitungKapasitasBeban($routing_id, $qty, $buffer = 0)
-    {
-        $hitungKapasitas = 0;
-        $details = RoutingDetail::find()
-            ->where(['routing_id' => $routing_id])
-            ->all();
-        foreach ($details as $detail) {
-            $hitungKapasitas += $detail->waktu_setup_menit + ($detail->standard_time_menit * $qty);
-        }
-        // echo "Total Kapasitas beban : $hitungKapasitas";
-        // exit;
-        return $hitungKapasitas;
-    }
-
-    public function actionAjaxHitungEstimasi($routing_id, $qty, $tanggal_awal, $buffer = 0)
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-
-        $kapasitasShift = $this->actionHitungKapasitasShift();
-
-        $hitungBeban = $this->actionHitungKapasitasBeban($routing_id, $qty, $tanggal_awal);
-
-        $jumlahHari = ceil($hitungBeban / $kapasitasShift);
-
-        $estimasiSelesai = date('Y-m-d', strtotime("+$jumlahHari days", strtotime($tanggal_awal)));
-
-        return [
-            'status' => 'success',
-            'estimasi_selesai' => $estimasiSelesai,
-            'debug_info' => [
-                'beban' => $hitungBeban,
-                'hari_needed' => $jumlahHari
-            ]
-        ];
-    }
-
-
     public function actionVerify($mps_id)
     {
         $model = $this->findModel($mps_id);
@@ -365,7 +332,7 @@ class MpsController extends Controller
                 $wo->permintaan_id = $detail->permintaan_id;
                 $wo->id_produk = $detail->produk_id;
                 $wo->qty_target = $detail->qty_plan;
-                $wo->tanggal_wo = date('Y-m-d');
+                $wo->tanggal_wo = $model->tanggal_awal;
                 $wo->due_date = $detail->estimasi_selesai;
                 $wo->status_wo = 0;
                 $wo->prioritas = $model->prioritas;

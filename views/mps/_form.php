@@ -90,29 +90,17 @@ foreach ($allRouting as $routing) {
                     ]) ?>
                 </div>
 
-                <!-- <div class="col">
-                    <?= $form->field($model, 'prioritas')->dropDownList([
-                        0 => 'Low',
-                        1 => 'Normal',
-                        2 => 'High',
-                        3 => 'Urgent',
-                    ], [
-                        'prompt' => 'Pilih Prioritas...'
-                    ]) ?>
-                </div> -->
+
             </div>
             <div class="row">
-                <!-- <div class="col">
-                    <?= $form->field($model, 'shift_id')->dropDownList(
-                        ArrayHelper::map(Shift::find()->all(), 'shift_id', 'nama_shift'),
-                        [
-                            'prompt' => 'Pilih shift....',
-                            'id' => 'mps-shift_id',
-                        ]
-                    )->label('Shift') ?>
-                </div> -->
                 <div class="col">
                     <?= $form->field($model, 'buffer_time')->textInput() ?>
+                </div>
+                <div class="col">
+                    <?= $form->field($model, 'alokasi_mesin')->textInput() ?>
+                </div>
+                <div class="col">
+                    <?= $form->field($model, 'alokasi_karyawan')->textInput() ?>
                 </div>
 
             </div>
@@ -249,36 +237,18 @@ foreach ($allRouting as $routing) {
                                 </button>
                             </td>
                         </tr>
-                        <tr class="allocation-detail-row" id="allocation-<?= $i ?>" style="display:none; background-color: #f9f9f9;">
-                            <td colspan="7">
-                                <div class="p-3 border">
-                                    <h5>Alokasi Mesin per Tahapan Rute</h5>
-                                    <div class="row" id="allocation-content-<?= $i ?>">
-                                        <p class="text-muted">Pilih rute produk terlebih dahulu...</p>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
 
             <?php DynamicFormWidget::end(); ?>
             <hr>
-            <!-- <div>
-                <h4>Ringkasan Beban Produksi (Per Workcenter)</h4>
-                <hr>
-                <div id="workcenter-summary-container" class="row">
-                    <div class="col-12 text-center text-muted">
-                        <p>Pilih Tanggal dan Shift untuk melihat kapasitas...</p>
-                    </div>
+            <div id="card-container" class="row mt-3">
+                <h4>Ringkasan Beban</h4>
+                <div class="col-12 text-muted">
+                    <p>Silakan isi Qty dan Pilih Routing untuk melihat analisa beban kerja.</p>
                 </div>
-
-                <div id="alert-overload" class="alert alert-danger mt-3" style="display:none;">
-                    <strong>Peringatan!</strong> Salah satu Workcenter melebihi kapasitas (Bottleneck).
-                    Silakan sesuaikan jadwal, efisiensi, atau total pekerja.
-                </div>
-            </div> -->
+            </div>
             <div class="form-group">
                 <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
                 <?= Html::a('Back', Yii::$app->request->referrer ?: ['index'], [
@@ -304,15 +274,16 @@ async function hitungSemuaBaris(){
     
     for (let i = 0; i < rows.length; i++) {
         let row = $(rows[i]);
-        // Tunggu hasil estimasi baris saat ini
+        // Ambil estimasi dari API agar perhitungan Workcenter & Shift akurat
         let tglSelesai = await hitungEstimasi(row, currentStartDate);
         
         if (tglSelesai) {
-            // Baris berikutnya mulai H+1 setelah baris ini selesai
+            // Baris berikutnya mulai H+1 (asumsi satu line produksi serial)
+            // Jika konveksi Anda bisa paralel, ganti logika ini
             currentStartDate = tambahHari(tglSelesai, 1);
         }
     }
- 
+    updateKapasitasTotal();
 }
 
 
@@ -325,7 +296,7 @@ function hitungEstimasi(row, tanggalMulai){
     
         if(routingId && qty && tanggalMulai){
             $.ajax({
-                url:'/mps/ajax-hitung-estimasi',
+                url:'/api/hitung-estimasi',
                 type:'GET',
                 dataType: 'json',
                 data: {
@@ -338,7 +309,6 @@ function hitungEstimasi(row, tanggalMulai){
                         let estimasi = response.estimasi_selesai;
                         let deadline = row.find('.input-due-date-ref').val();
                         let inputEstimasi = row.find('input[id$="-estimasi_selesai"]');
-    
                         inputEstimasi.val(estimasi);
     
                         // Jika estimasi melewati deadline, beri warna merah
@@ -367,6 +337,36 @@ function hitungEstimasi(row, tanggalMulai){
             resolve(null);
         }
     });
+}
+function updateKapasitasTotal() {
+    let items = [];
+    let tglMulai = $('#tgl_awal').val(); 
+    let tglAkhir = $('#tgl_akhir').val(); 
+
+    $('.container-items .item').each(function() { // Perbaikan selector ke .item
+        let rId = $(this).find('.input-routing-id').val();
+        let q = $(this).find('.input-qty').val();
+        if (rId && q) {
+            items.push({ routing_id: rId, qty: q });
+        }
+    });
+
+    if (items.length > 0 && tglMulai && tglAkhir) {
+        $.ajax({
+            url: '/api/hitung-kapasitas-total',
+            type: 'POST',
+            data: { 
+                items: items, 
+                tgl_mulai: tglMulai, 
+                tgl_akhir: tglAkhir 
+            },
+            success: function(res) {
+                if(res.status === 'success'){
+                    $('#card-container').html(res.html_cards);
+                }            
+            }
+        });
+    }
 }
 
 // Fungsi pembantu tambah hari
@@ -474,6 +474,10 @@ $('#tgl_awal').change(function(){
     var selectedDate = $(this).val();
     $('#tgl_akhir').attr('min', selectedDate);
     if($('#tgl_akhir').val() < selectedDate) $('#tgl_akhir').val(selectedDate);
+});
+
+$('#tgl_akhir').on('change', function() {
+    updateKapasitasTotal();
 });
 
 $(document).on('click', '.remove-item', function() {

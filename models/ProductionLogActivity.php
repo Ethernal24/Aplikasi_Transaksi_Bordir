@@ -30,8 +30,10 @@ class ProductionLogActivity extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id_log', 'id_routing_detail', 'qty_output_total', 'durasi_menit'], 'required'],
-            [['id_log', 'durasi_menit', 'id_routing_detail', 'qty_output_total'], 'integer'],
+            [['id_log', 'id_routing_detail', 'qty_output_total'], 'required'],
+            [['id_log', 'id_routing_detail', 'qty_output_total'], 'integer'],
+            [['durasi_menit', 'created_at'], 'safe'],
+            [['durasi_menit'], 'number']
         ];
     }
 
@@ -46,6 +48,7 @@ class ProductionLogActivity extends \yii\db\ActiveRecord
             'id_routing_detail' => 'ID Routing Detail',
             'qty_output_total' => 'Qty Output Total',
             'durasi_menit' => 'Durasi Menit',
+            'created_at' => 'Dibuat Pada',
         ];
     }
 

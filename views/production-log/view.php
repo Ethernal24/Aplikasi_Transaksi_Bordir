@@ -85,14 +85,14 @@ $this->params['breadcrumbs'][] = $this->title;
                         ]),
                         'active' => true,
                     ],
-                    // [
-                    //     'label' => '<i class="fa fa-box"></i> Detail',
-                    //     'content' => $this->render('_tab_detail', [
-                    //         'model' => $model,
-                    //         'detailProvider' => $detailProvider,
-                    //     ]),
-                    //     'encode' => false,
-                    // ],
+                    [
+                        'label' => '<i class="fa fa-box"></i> Detail',
+                        'content' => $this->render('_tab_detail', [
+                            'model' => $model,
+                            'detailProvider' => $detailProvider,
+                        ]),
+                        'encode' => false,
+                    ],
                     // [
                     //     'label' => '<i class="fa fa-tasks"></i> Downtime (Kendala)',
                     //     'content' => $this->render('_tab_downtime', [

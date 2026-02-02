@@ -19,7 +19,7 @@ use yii\helpers\Url;
                 // $model di sini adalah ProductionLogActivity
                 // Kita panggil relasi detailRouting, lalu ambil deskripsi_kerja
                 return $model->detailRouting ?
-                    $model->detailRouting->urutan . '. ' . $model->detailRouting->deskripsi_kerja :
+                    $model->detailRouting->deskripsi_kerja :
                     '(Tanpa Nama Proses)';
             },
         ],

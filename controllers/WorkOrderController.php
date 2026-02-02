@@ -59,10 +59,14 @@ class WorkOrderController extends Controller
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($id_wo)
+    public function actionView($id_wo, $token)
     {
+        $so = PermintaanPelanggan::findOne(['tracking_token' => $token]);
+
+
         return $this->render('view', [
             'model' => $this->findModel($id_wo),
+            'so' => $so,
         ]);
     }
 
@@ -270,6 +274,7 @@ class WorkOrderController extends Controller
         $transaction = Yii::$app->db->beginTransaction();
         try {
             $model->status = 2; // Selesai
+            $model->end_at = date('Y-m-d H:i:s');
             // Gunakan save(false) untuk memastikan status log tersimpan meskipun ada field lain yang kosong
             if (!$model->save(false)) {
                 throw new \Exception("Gagal menyimpan status log.");

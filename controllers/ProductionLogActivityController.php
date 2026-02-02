@@ -75,7 +75,7 @@ class ProductionLogActivityController extends Controller
 
         // Ambil data Header untuk tahu Produk dan Workcenter-nya
         $header = ProductionLog::findOne($id_log);
-        $wo = $header->wo; // Asumsi relasi ke WO ada
+        $wo = $header->wo;
 
         // Cari Routing Detail yang pas
         $routingDetail = RoutingDetail::find()
@@ -90,13 +90,51 @@ class ProductionLogActivityController extends Controller
             $model->id_routing_detail = $routingDetail->routing_detail_id;
         }
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['/production-log/view', 'id_log' => $id_log]);
+        if ($model->load(Yii::$app->request->post())) {
+            // --- LOGIKA PERHITUNGAN DURASI ---
+
+            // 1. Catat waktu input saat ini
+            $now = date('Y-m-d H:i:s');
+            $model->created_at = $now;
+
+            // 2. Cari aktivitas sebelumnya pada header yang sama
+            $previousActivity = ProductionLogActivity::find()
+                ->where(['id_log' => $id_log])
+                ->orderBy(['id_activity' => SORT_DESC]) // Pastikan nama primary key sesuai (id_activity atau id)
+                ->one();
+
+            if ($previousActivity) {
+                // Jika sudah ada input sebelumnya, start diambil dari input terakhir
+                $startTime = strtotime($previousActivity->created_at);
+            } else {
+                // Jika ini input pertama, start diambil dari waktu mulai Header
+                // Pastikan di tabel ProductionLog ada kolom start_at
+                $startTime = strtotime($header->start_at);
+            }
+
+            // 3. Hitung selisih dalam menit
+            $endTime = strtotime($now);
+            $diffInSeconds = $endTime - $startTime;
+
+            // Simpan ke kolom duration (pastikan kolom ini ada di tabel)
+            $model->durasi_menit = ($diffInSeconds > 0) ? round($diffInSeconds / 60, 2) : 0;
+
+            if ($model->save()) {
+                return $this->redirect(['/production-log/view', 'id_log' => $id_log]);
+            }
         }
+
+        $totalSelesai = $model->find()
+            ->joinWith('log')
+            ->where(['production_log.id_wo' => $wo->id_wo])
+            ->sum('qty_output_total') ?? 0;
+
+        $sisaReal = $wo->qty_target - $totalSelesai;
 
         return $this->renderAjax('create', [
             'model' => $model,
-            'routingDetail' => $routingDetail, // Kirim ke view jika ingin ditampilkan namanya
+            'routingDetail' => $routingDetail,
+            'sisaReal' => $sisaReal,
         ]);
     }
 
