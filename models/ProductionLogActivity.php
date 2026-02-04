@@ -30,10 +30,10 @@ class ProductionLogActivity extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id_log', 'id_routing_detail', 'qty_output_total'], 'required'],
-            [['id_log', 'id_routing_detail', 'qty_output_total'], 'integer'],
+            [['id_log', 'id_routing_detail', 'qty_output_total', 'vs', 'stitch', 'bs', 'berat', 'id_assignment'], 'required'],
+            [['id_log', 'id_routing_detail', 'qty_output_total', 'bs', 'id_assignment'], 'integer'],
             [['durasi_menit', 'created_at'], 'safe'],
-            [['durasi_menit'], 'number']
+            [['durasi_menit', 'berat'], 'number']
         ];
     }
 
@@ -59,5 +59,9 @@ class ProductionLogActivity extends \yii\db\ActiveRecord
     public function getDetailRouting()
     {
         return $this->hasOne(RoutingDetail::class, ['routing_detail_id' => 'id_routing_detail']);
+    }
+    public function getAssignment()
+    {
+        return $this->hasOne(ProductionLogWorkerAssignment::class, ['id_assignment' => 'id_assignment']);
     }
 }

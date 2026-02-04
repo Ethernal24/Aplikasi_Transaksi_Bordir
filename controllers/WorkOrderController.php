@@ -196,9 +196,10 @@ class WorkOrderController extends Controller
 
         return $prefix . $newNumber;
     }
-    public function actionStartProduction($id_wo)
+    public function actionStartProduction($id_wo, $token)
     {
         $wo = $this->findModel($id_wo);
+        $so = PermintaanPelanggan::findOne(['tracking_token' => $token]);
 
         // 1. Cari tahap terakhir yang sudah tercatat di ProductionLog untuk WO ini
         $lastLog = ProductionLog::find()
@@ -230,7 +231,7 @@ class WorkOrderController extends Controller
         // Cek apakah masih ada tahap selanjutnya
         if (!$nextRouting) {
             Yii::$app->session->setFlash('warning', "Semua tahapan routing untuk WO ini sudah selesai.");
-            return $this->redirect(['view', 'id_wo' => $id_wo]);
+            return $this->redirect(['view', ['id_wo' => $id_wo, 'token' => $token]]);
         }
 
         $transaction = Yii::$app->db->beginTransaction();
@@ -244,7 +245,7 @@ class WorkOrderController extends Controller
             $logHeader->id_workcenter = $nextRouting->workcenter_id;
             $logHeader->id_wo = $wo->id_wo;
             $logHeader->status = 0;
-            $logHeader->id_shift = $wo->mps->shift->shift_id;
+            $logHeader->id_shift = 1;
 
             if (!$logHeader->save()) {
                 throw new \Exception("Gagal membuat Log Header: " . json_encode($logHeader->getErrors()));
@@ -260,11 +261,11 @@ class WorkOrderController extends Controller
         } catch (\Exception $e) {
             $transaction->rollBack();
             Yii::$app->session->setFlash('error', "Error: " . $e->getMessage());
-            return $this->redirect(['view', 'id_wo' => $id_wo]);
+            return $this->redirect(['view', 'id_wo' => $id_wo, 'token' => $so->tracking_token]);
         }
     }
 
-    public function actionFinishProduction($id_log)
+    public function actionFinishProduction($id_log, $token)
     {
         $model = ProductionLog::findOne($id_log);
         if (!$model) {
@@ -325,6 +326,6 @@ class WorkOrderController extends Controller
             Yii::$app->session->setFlash('error', "Gagal: " . $e->getMessage());
         }
 
-        return $this->redirect(['view', 'id_wo' => $model->id_wo]);
+        return $this->redirect(['view', 'id_wo' => $model->id_wo, 'token' => $token]);
     }
 }

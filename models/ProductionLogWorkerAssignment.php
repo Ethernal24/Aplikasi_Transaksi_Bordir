@@ -30,7 +30,7 @@ class ProductionLogWorkerAssignment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['tanggal_assignment', 'id_tk', 'id_workcenter', 'id_shift'], 'required'],
+            [['tanggal_assignment', 'id_tk', 'id_workcenter', 'id_shift', 'id_mesin'], 'required'],
             [['tanggal_assignment', 'id_wo'], 'safe'],
             [['id_tk', 'id_workcenter', 'id_shift', 'id_wo'], 'integer'],
         ];
@@ -48,6 +48,7 @@ class ProductionLogWorkerAssignment extends \yii\db\ActiveRecord
             'id_workcenter' => 'Id Workcenter',
             'id_shift' => 'Id Shift',
             'id_wo' => 'Id Wo',
+            'id_mesin' => 'ID Mesin',
         ];
     }
     public function getTk()
@@ -65,5 +66,9 @@ class ProductionLogWorkerAssignment extends \yii\db\ActiveRecord
     public function getWorkOrder()
     {
         return $this->hasOne(Workorder::class, ['id_wo' => 'id_wo']);
+    }
+    public function getMesin()
+    {
+        return $this->hasOne(Mesin::class, ['id_mesin' => 'mesin_id']);
     }
 }

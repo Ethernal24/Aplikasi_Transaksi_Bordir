@@ -94,16 +94,16 @@ class Mps extends BaseModel
         ];
         return isset($status[$this->status_mps]) ? $status[$this->status_mps] : ['label' => 'unknow', 'class' => 'badge bg-secondary'];
     }
-    public function getPrioritasLabel()
-    {
-        $status = [
-            0 => ['label' => 'Low', 'class' => 'badge bg-info'],
-            1 => ['label' => 'Normal', 'class' => 'badge bg-primary'],
-            2 => ['label' => 'High', 'class' => 'badge bg-warning'],
-            3 => ['label' => 'Urgent', 'class' => 'badge bg-danger'],
-        ];
-        return isset($status[$this->prioritas]) ? $status[$this->prioritas] : ['label' => 'unknow', 'class' => 'badge bg-secondary'];
-    }
+    // public function getPrioritasLabel()
+    // {
+    //     $status = [
+    //         0 => ['label' => 'Low', 'class' => 'badge bg-info'],
+    //         1 => ['label' => 'Normal', 'class' => 'badge bg-primary'],
+    //         2 => ['label' => 'High', 'class' => 'badge bg-warning'],
+    //         3 => ['label' => 'Urgent', 'class' => 'badge bg-danger'],
+    //     ];
+    //     return isset($status[$this->prioritas]) ? $status[$this->prioritas] : ['label' => 'unknow', 'class' => 'badge bg-secondary'];
+    // }
 
     public function getMpsDetails()
     {

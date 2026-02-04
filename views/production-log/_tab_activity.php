@@ -23,7 +23,14 @@ use yii\helpers\Url;
                     '(Tanpa Nama Proses)';
             },
         ],
+        [
+            'attribute' => 'vs',
+            'label' => 'Variasi',
+        ],
+        'stitch',
         'qty_output_total',
+        'bs',
+        'berat',
         'durasi_menit',
     ],
 ]); ?>
@@ -40,13 +47,20 @@ $js = <<<JS
     $('.btn-modal-trigger').on('click', function(){
         var modal = $('#modal-universal');
         var title = $(this).attr('data-title');
+        var url = $(this).attr('value');
         
-        modal.find('#modalTitle').text(title); // Ganti judul modal
+        modal.find('#modalTitle').text(title);
         modal.find('#modalContent').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
         
         modal.modal('show')
             .find('#modalContent')
-            .load($(this).attr('value'));
+            .load(url, function() {
+                // RE-BIND VALIDATOR setelah load selesai
+                var form = $(this).find('form');
+                if (form.length > 0 && typeof form.yiiActiveForm === 'function') {
+                    form.yiiActiveForm(form.data('yiiActiveForm').attributes, form.data('yiiActiveForm').settings);
+                }
+            });
     });
 JS;
 $this->registerJs($js);

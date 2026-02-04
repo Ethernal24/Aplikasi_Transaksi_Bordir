@@ -49,12 +49,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 </div>
             </div>
             <div class="col">
-                <!-- <div>
-                    <strong>
-                        Prioritas :
-                    </strong>
-                    <span class="<?= $model->getPrioritasLabel()['class'] ?>"><?= $model->getPrioritasLabel()['label'] ?></span>
-                </div> -->
                 <div>
                     <strong>
                         Buffer Time :

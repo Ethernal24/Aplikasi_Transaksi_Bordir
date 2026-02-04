@@ -79,38 +79,13 @@ class MpsController extends Controller
     public function actionView($mps_id)
     {
         $model = $this->findModel($mps_id);
+        // 1. Ambil semua detail (Array of Objects)
         $details = MpsDetail::find()->where(['mps_id' => $mps_id])->all();
-        $workcenterData = [];
 
-        foreach ($details as $detail) {
-            // Ambil routing detail untuk memecah beban per workcenter
-            $routings = RoutingDetail::find()->where(['routing_id' => $detail->routing_id])->all();
-
-            foreach ($routings as $step) {
-                $beban = ($step->waktu_setup_menit + ($step->standard_time_menit * $detail->qty_plan));
-
-                if (!isset($workcenterData[$step->workcenter_id])) {
-                    $workcenterData[$step->workcenter_id] = [
-                        'nama' => $step->workcenter->nama_workcenter,
-                        'total_beban' => 0,
-                        'kapasitas' => 0
-                    ];
-                }
-                $workcenterData[$step->workcenter_id]['total_beban'] += $beban;
-            }
-        }
-
-        // Hitung Kapasitas Tersedia per Workcenter berdasarkan Alokasi Header
-        foreach ($workcenterData as $id => $data) {
-            $kapasitasPerHari = $model->total_operator_alloc * MPS::hitungKapasitasShift();
-            $totalDays = (strtotime($model->tanggal_akhir) - strtotime($model->tanggal_awal)) / (60 * 60 * 24) + 1;
-            $workcenterData[$id]['kapasitas'] = $kapasitasPerHari * $totalDays;
-        }
 
         return $this->render('view', [
-            'workcenterData' => $workcenterData,
             'model' => $model,
-            'detail' => $detail,
+            'detail' => $details, // Perbaikan: Kirim $details (banyak), bukan $detail (satu)
         ]);
     }
     /**

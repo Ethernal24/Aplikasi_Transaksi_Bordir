@@ -141,7 +141,7 @@ $nextWc = $model->getNextStep();
             <span class="badge badge-warning p-2">SEDANG BERJALAN</span>
             <h3 class="mt-2"><?= $currentLog->workcenter->nama_workcenter ?></h3>
         </div>
-        <?= Html::a('SELESAIKAN TAHAP INI', ['finish-production', 'id_log' => $currentLog->id_log], [
+        <?= Html::a('SELESAIKAN TAHAP INI', ['finish-production', 'id_log' => $currentLog->id_log, 'token' => $so->tracking_token], [
             'class' => 'btn btn-success btn-lg',
             'data-method' => 'post'
         ]) ?>
@@ -151,7 +151,7 @@ $nextWc = $model->getNextStep();
             <span class="badge badge-secondary p-2">TAHAP SELANJUTNYA</span>
             <h3 class="mt-2"><?= $nextWc->workCenter->nama_workcenter ?></h3>
         </div>
-        <?= Html::a('START PRODUKSI', ['start-production', 'id_wo' => $model->id_wo, 'wc_id' => $nextWc->workcenter_id], [
+        <?= Html::a('START PRODUKSI', ['start-production', 'id_wo' => $model->id_wo, 'wc_id' => $nextWc->workcenter_id, 'token' => $so->tracking_token], [
             'class' => 'btn btn-primary btn-lg',
             'data-method' => 'post'
         ]) ?>
