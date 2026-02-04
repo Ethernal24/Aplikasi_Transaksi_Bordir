@@ -7,6 +7,7 @@ use app\models\MasterMrpSearch;
 use app\models\MrpDetail;
 use app\models\MrpDetailSearch;
 use app\models\WoHeader;
+use kartik\mpdf\Pdf;
 use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -151,4 +152,33 @@ class MasterMrpController extends Controller
         $model->save();
         return $this->redirect(['index']);
     }
+    public function actionDownloadPdf($id)
+    {
+        // 1. Ambil konten HTML dari view
+        $details = MrpDetail::find()->where(['mrp_id' => $id])->all(); 
+
+        // DEBUG: Aktifkan baris di bawah ini untuk cek apakah data ada atau tidak
+        // var_dump($details); die();
+
+        $content = $this->renderPartial('_view_report', [
+            'details' => $details, // Variabel ini harus sama dengan yang dipanggil di View
+        ]);
+
+        // 2. Setup komponen mPDF
+        $pdf = new Pdf([
+            'mode' => Pdf::MODE_UTF8, 
+            'format' => Pdf::FORMAT_A4, 
+            'orientation' => Pdf::ORIENT_PORTRAIT, 
+            'destination' => Pdf::DEST_BROWSER, // Langsung buka di browser
+            'content' => $content,  
+            'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
+            'options' => ['title' => 'Laporan MRP'],
+            'methods' => [ 
+                'SetHeader' => ['CV Diwarna || Dicetak pada: ' . date("r")], 
+                'SetFooter' => ['|Halaman {PAGENO}|'],
+            ]
+        ]);
+
+        return $pdf->render(); 
+    }   
 }

@@ -93,6 +93,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 ]) ?>
             <?php endif; ?>
             <?= Html::a('Back', ['index'], ['class' => 'btn btn-secondary']) ?>
+            <?= Html::a('Cetak PDF', ['download-pdf', 'id' => $model->mrp_id], ['class' => 'btn btn-secondary']) ?>
         </div>
     </div>
 

@@ -36,7 +36,8 @@
     "kartik-v/yii2-dialog": "dev-master",
     "wbraganca/yii2-dynamicform": "^2.0",
     "2amigos/yii2-chartjs-widget": "^3.0",
-    "vlucas/phpdotenv": "*"
+    "vlucas/phpdotenv": "*",
+    "kartik-v/yii2-mpdf": "^1.0"
   },
   "require-dev": {
     "yiisoft/yii2-debug": "~2.1.0",
